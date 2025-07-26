@@ -1,5 +1,10 @@
 ### History
 
+### 26/07/25
+- Next day working
+- little refactor on the project structure
+- TODO: finish the next day feature
+
 ---
 #### 17/07/25
 - Flow to create a datetime working for both sheets

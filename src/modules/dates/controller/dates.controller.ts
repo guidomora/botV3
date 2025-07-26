@@ -11,6 +11,11 @@ export class DatesController {
     return this.datesService.createDate();
   }
 
+  @Post('/next-date')
+  createNextDate(): Promise<string> {
+    return this.datesService.createNextDate();
+  }
+
   @Get()
   findAll() {
 

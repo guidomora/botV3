@@ -16,4 +16,9 @@ export class CreateDayUseCase {
         const dateTime = this.generateDatetime.createOneDayWithBookings()
         return dateTime
     }
+
+    public createNextDay(date:Date): string {
+        const dateTime = this.generateDatetime.createNextDay(date)
+        return dateTime
+    }
 }

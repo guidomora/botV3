@@ -1,7 +1,8 @@
-// shared/google-sheets/google-sheets.module.ts
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GoogleSheetsService } from './google-sheets.service';
+import { GoogleSheetsService } from './service/google-sheets.service';
+import { GoogleSheetsRepository } from './domain/entities/google-sheets.repository';
+
 
 @Module({})
 export class GoogleSheetsModule {
@@ -12,9 +13,8 @@ export class GoogleSheetsModule {
 
       providers: [
         {
-          provide: GoogleSheetsService,
+          provide: GoogleSheetsRepository,
           useFactory: (config: ConfigService) => {
-            // 🔒 Validamos que existan, así ya no son “string | undefined”
             const sheetId = config.get<string>('SPREADSHEET_ID');
             const clientEmail = config.get<string>('GOOGLE_CLIENT_EMAIL');
             const privateKey = config
@@ -25,14 +25,15 @@ export class GoogleSheetsModule {
               throw new Error('Faltan variables para Google Sheets');
             }
 
-            return new GoogleSheetsService({
+            return new GoogleSheetsRepository({
               sheetId,
               clientEmail,
               privateKey,
             });
-          },
+          },  
           inject: [ConfigService],
         },
+        GoogleSheetsService,
       ],
       exports: [GoogleSheetsService],
     };

@@ -11,7 +11,7 @@ interface GoogleSheetsOpts {
 }
 
 @Injectable()
-export class GoogleSheetsService {
+export class GoogleSheetsRepository {
   private readonly sheets: sheets_v4.Sheets;
   private readonly sheetId: string;
 
@@ -61,12 +61,18 @@ export class GoogleSheetsService {
     }
   }
 
-  async findFirstRowIndex(
-    predicate: (row: string[]) => boolean,
-    range = 'Sheet1!A:E',
-  ): Promise<number> {
-    const rows = await this.getRange(range);
-    return rows.findIndex(predicate);
+  async getLasRowValue(range: string) {
+    try {
+      const { data } = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.sheetId,
+        range,
+        majorDimension: 'ROWS',
+        valueRenderOption: 'FORMATTED_VALUE',
+      });
+      return data.values ?? [];
+    } catch (error) {
+      this.failure(error);
+    }
   }
 
   async createDate(createDateType: any) {

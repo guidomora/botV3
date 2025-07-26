@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { ReservationsController } from './reservations.controller';
-import { GoogleSheetsModule } from 'src/shared/google-sheets/google-sheets.module';
+import { GoogleSheetsModule } from 'src/shared/google-sheets.module';
 
 @Module({
   imports: [GoogleSheetsModule],
