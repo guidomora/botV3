@@ -19,7 +19,7 @@ export class DatesService {
 
       await this.googleSheetsService.appendRow(`${SHEETS_NAMES[0]}!A:C`, dateTime);
 
-      await this.googleSheetsService.appendRow(`${SHEETS_NAMES[1]}!A:C`, dateTimeWithBookings);
+      await this.googleSheetsService.appendRow(`${SHEETS_NAMES[1]}!A:E`, dateTimeWithBookings);
 
       this.logger.log(`Se agrego el dia ${dateTime[3][0]}`, DatesService.name);
       return `Se agrego el dia ${dateTime[3][0]}`;
@@ -32,14 +32,21 @@ export class DatesService {
   async createNextDate():Promise<string> {
     try {
       const lastRow = await this.googleSheetsService.getLasRowValue(`${SHEETS_NAMES[0]}!A:A`);      
-      const parsedDate = parseDate(lastRow[4][0]);
+      
+      const parsedDate = parseDate(lastRow);
+      
       const nextDay = this.createDayUseCase.createNextDay(parsedDate);
       
-      
+      const dateTime = this.createDayUseCase.createDateTime(nextDay);
 
-      // this.logger.log(`Se agrego el dia ${dateTime[3][0]}`, DatesService.name);
-      // return `Se agrego el dia ${dateTime[3][0]}`;
-      return 'hola'
+      const nextDayWithBookings = this.createDayUseCase.createOneDayWithBookings(nextDay);
+      
+      await this.googleSheetsService.appendRow(`${SHEETS_NAMES[0]}!A:C`, dateTime);
+
+      await this.googleSheetsService.appendRow(`${SHEETS_NAMES[1]}!A:E`, nextDayWithBookings);
+
+      this.logger.log(`Se agrego el dia ${dateTime[3][0]}`, DatesService.name);
+      return `Se agrego el dia ${dateTime[3][0]}`;
     } catch (error) {
       this.logger.error(`Error al agregar el dia`, error);
       throw error;

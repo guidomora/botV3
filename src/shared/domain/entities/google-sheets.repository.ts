@@ -63,13 +63,20 @@ export class GoogleSheetsRepository {
 
   async getLasRowValue(range: string) {
     try {
-      const { data } = await this.sheets.spreadsheets.values.get({
+      const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.sheetId,
         range,
-        majorDimension: 'ROWS',
-        valueRenderOption: 'FORMATTED_VALUE',
+        majorDimension: 'COLUMNS'
       });
-      return data.values ?? [];
+
+      const rows = response.data.values ?? [];
+
+      if (rows.length === 0 || rows[0].length === 0) {
+        return 'no hay valores';
+      }
+
+      const lastRowValue = rows[0][rows[0].length - 1];
+      return lastRowValue;
     } catch (error) {
       this.failure(error);
     }

@@ -6,6 +6,6 @@ export const parseDate = (date: string): Date => {
     if (!dd || !mm || !yyyy) {
         throw new Error('Formato de fecha inválido');
     }
-
+    
     return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
 }

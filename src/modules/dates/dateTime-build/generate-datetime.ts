@@ -49,8 +49,6 @@ export class GenerateDatetime {
     }
 
     public createNextDay(date:Date): string {
-        console.log('received',date);
-        
         date.setDate(date.getDate() + 1);
         const dayName = daysOfWeek[date.getDay()]
         const dayNumber = String(date.getDate()).padStart(2, '0')

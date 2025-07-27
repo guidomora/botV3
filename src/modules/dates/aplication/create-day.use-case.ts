@@ -7,13 +7,13 @@ export class CreateDayUseCase {
         private readonly generateDatetime: GenerateDatetime,
     ) {}
 
-    public createDateTime(): string[][] {
-        const dateTime = this.generateDatetime.createDateTime()
+    public createDateTime(date?: string): string[][] {
+        const dateTime = this.generateDatetime.createDateTime(date)
         return dateTime
     }
 
-    public createOneDayWithBookings(): string[][] {
-        const dateTime = this.generateDatetime.createOneDayWithBookings()
+    public createOneDayWithBookings(date?: string): string[][] {
+        const dateTime = this.generateDatetime.createOneDayWithBookings(date)
         return dateTime
     }
 

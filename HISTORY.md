@@ -3,7 +3,7 @@
 ### 26/07/25
 - Next day working
 - little refactor on the project structure
-- TODO: finish the next day feature
+- TODO: Create multiple days
 
 ---
 #### 17/07/25
