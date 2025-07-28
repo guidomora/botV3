@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { GenerateDatetime } from "../dateTime-build/generate-datetime";
+import { DateTime } from "src/lib/datetime/datetime.type";
 
 @Injectable()
 export class CreateDayUseCase {
@@ -7,12 +8,12 @@ export class CreateDayUseCase {
         private readonly generateDatetime: GenerateDatetime,
     ) {}
 
-    public createDateTime(date?: string): string[][] {
+    public createDateTime(date?: string): DateTime {
         const dateTime = this.generateDatetime.createDateTime(date)
         return dateTime
     }
 
-    public createOneDayWithBookings(date?: string): string[][] {
+    public createOneDayWithBookings(date?: string): DateTime {
         const dateTime = this.generateDatetime.createOneDayWithBookings(date)
         return dateTime
     }

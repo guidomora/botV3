@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { daysOfWeek, months, timeList } from "src/constants/dates-info/dates-info";
 import { TablesInfo } from "src/constants/tables-info/tables-info";
-
+import { DateTime } from "src/lib/datetime/datetime.type";
 
 @Injectable()
 export class GenerateDatetime {
 
-    public createDateTime(date?: string): string[][] {
+    public createDateTime(date?: string): DateTime {
         const day = date ?? this.createOneDay();
         const dateTime: string[][] = [];
 
@@ -18,7 +18,7 @@ export class GenerateDatetime {
         return dateTime;
     }
 
-    public createOneDayWithBookings(date?: string): string[][] {
+    public createOneDayWithBookings(date?: string): DateTime {
         const day = date ?? this.createOneDay();
         const dateTime: string[][] = [];
 
@@ -31,7 +31,7 @@ export class GenerateDatetime {
     }
 
     // fromThisDay is the number of days to add to the current date
-    private createOneDay(fromThisDay: number = 0): string {
+    public createOneDay(fromThisDay: number = 0): string {
         const today = new Date()
         today.setDate(today.getDate() + fromThisDay);
         const dayName = daysOfWeek[today.getDay()]

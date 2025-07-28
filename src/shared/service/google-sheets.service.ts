@@ -17,7 +17,7 @@ export class GoogleSheetsService {
     }
   }
 
-  async getLasRowValue(range: string) {
+  async getLasRowValue(range: string): Promise<string> {
     try {
       const data = await this.googleSheetsRepository.getLasRowValue(range);
       return data;

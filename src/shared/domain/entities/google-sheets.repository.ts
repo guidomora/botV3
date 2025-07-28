@@ -61,7 +61,7 @@ export class GoogleSheetsRepository {
     }
   }
 
-  async getLasRowValue(range: string) {
+  async getLasRowValue(range: string): Promise<string> {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.sheetId,
@@ -76,6 +76,7 @@ export class GoogleSheetsRepository {
       }
 
       const lastRowValue = rows[0][rows[0].length - 1];
+      
       return lastRowValue;
     } catch (error) {
       this.failure(error);

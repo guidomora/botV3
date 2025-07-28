@@ -1,15 +1,18 @@
 ### History
 
+### 27/07/25
+- Create multiple days working
+- Tests added
+- TODO: Create a lib to handle errors
+
 ### 26/07/25
 - Next day working
 - little refactor on the project structure
-- TODO: Create multiple days
 
 ---
 #### 17/07/25
 - Flow to create a datetime working for both sheets
 - Google sheets integration working
-- TODO: Next task: create multiple days and next day
 
 ---
 #### 16/07/25

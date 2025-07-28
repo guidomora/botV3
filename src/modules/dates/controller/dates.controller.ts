@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { DatesService } from '../service/dates.service';
-import { UpdateDateDto } from '../dto/update-date.dto';
 
 @Controller('dates')
 export class DatesController {
@@ -16,23 +15,9 @@ export class DatesController {
     return this.datesService.createNextDate();
   }
 
-  @Get()
-  findAll() {
-
+  @Post('/x-dates')
+  createXDates(@Body('quantity') quantity: number): Promise<string> {
+    return this.datesService.createXDates(quantity);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDateDto: UpdateDateDto) {
-
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-
-  }
 }
