@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleSheetsService } from './service/google-sheets.service';
-import { GoogleSheetsRepository } from './domain/entities/google-sheets.repository';
+import { GoogleSheetsRepository } from './domain/repository/google-sheets.repository';
 
 
 @Module({})

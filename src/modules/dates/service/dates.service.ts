@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GoogleSheetsService } from 'src/shared/service/google-sheets.service';
+import { GoogleSheetsService } from 'src/google-sheets/service/google-sheets.service';
 import { CreateDayUseCase } from '../aplication/create-day.use-case';
 import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
 import { parseDate } from '../utils/parseDate';
@@ -76,6 +76,17 @@ export class DatesService {
       return `Se agregaron ${quantity} dias`;
     } catch (error) {
       this.logger.error(`Error al agregar el dia`, error);
+      throw error;
+    }
+  }
+
+  async checkDate(date: string): Promise<boolean> {
+    try {
+      const dateExists = await this.googleSheetsService.checkDate(date)
+      
+      return dateExists;
+    } catch (error) {
+      this.logger.error(`Error al obtener el dia`, error);
       throw error;
     }
   }

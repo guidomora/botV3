@@ -1,9 +1,16 @@
 ### History
 
+#### 30/07/25
+- Check date working
+- Tests added at dates module
+- TODO: add all tests for google module and start working on the create reservation feature
+
+#### 28/07/25
+- Started working for a feature to check for a date `getDate`
+
 ### 27/07/25
 - Create multiple days working
 - Tests added
-- TODO: Create a lib to handle errors
 
 ### 26/07/25
 - Next day working

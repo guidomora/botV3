@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { GoogleSheetsService } from "src/shared/service/google-sheets.service";
+import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
 import { CreateDayUseCase } from "../aplication/create-day.use-case";
 import { DatesService } from "./dates.service";
 import { dateTimeMock, dateTimeWithBookingsMock } from "../test/mocks/date.mock";
@@ -27,6 +27,7 @@ describe('GIVEN DatesService', () => {
                     useValue: {
                         appendRow: jest.fn(),
                         getLasRowValue: jest.fn(),
+                        checkDate: jest.fn(),
                     },
                 },
                 {
@@ -156,6 +157,22 @@ describe('GIVEN DatesService', () => {
       
           expect(googleSheetsService.appendRow).toHaveBeenCalledTimes(1);
           expect(loggerErrorSpy).toHaveBeenCalledWith('Error al agregar el dia', errorMock);
+        });
+    })
+
+    describe('WHEN checkDate is called', () => {
+        it('SHOULD return true if the date exists', async () => {
+          const date = 'viernes 25 de julio 2025 25/07/2025';
+          (googleSheetsService.checkDate as jest.Mock).mockResolvedValue(true);
+          const result = await datesService.checkDate(date);
+          expect(result).toBe(true);
+        });
+
+        it('SHOULD return false if the date does not exist', async () => {
+          const date = 'viernes 26 de julio 2025 25/07/2025';
+          (googleSheetsService.checkDate as jest.Mock).mockResolvedValue(false);
+          const result = await datesService.checkDate(date);
+          expect(result).toBe(false);
         });
     })
 })

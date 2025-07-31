@@ -3,6 +3,8 @@ import { JWT } from 'google-auth-library';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
 import { AddValue } from 'src/lib/add-value.type';
+import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
+import { DateTime } from 'src/lib/datetime/datetime.type';
 
 interface GoogleSheetsOpts {
   sheetId: string;
@@ -28,12 +30,11 @@ export class GoogleSheetsRepository {
   }
 
   
-  async getRange(range = 'Sheet1!A:E') {
+  async getDates(): Promise<DateTime> {
     const { data } = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
-      range,
+      range: `${SHEETS_NAMES[0]}!A:A`,
       majorDimension: 'ROWS',
-      valueRenderOption: 'FORMATTED_VALUE',
     });
     return data.values ?? [];
   }

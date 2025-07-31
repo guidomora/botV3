@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatesModule } from './modules/dates/dates.module';
-import { GoogleSheetsModule } from './shared/google-sheets.module';
+import { GoogleSheetsModule } from './google-sheets/google-sheets.module';
 
 
 @Module({
