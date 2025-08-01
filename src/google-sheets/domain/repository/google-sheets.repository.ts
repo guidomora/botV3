@@ -2,9 +2,9 @@
 import { JWT } from 'google-auth-library';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
-import { AddValue } from 'src/lib/add-value.type';
+import { AddValue } from 'src/lib/types/add-value.type';
 import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
-import { DateTime } from 'src/lib/datetime/datetime.type';
+import { DateTime } from 'src/lib/types/datetime/datetime.type';
 
 interface GoogleSheetsOpts {
   sheetId: string;
@@ -30,10 +30,10 @@ export class GoogleSheetsRepository {
   }
 
   
-  async getDates(): Promise<DateTime> {
+  async getDates(range?: string): Promise<DateTime> {
     const { data } = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
-      range: `${SHEETS_NAMES[0]}!A:A`,
+      range: range || `${SHEETS_NAMES[0]}!A:A`,
       majorDimension: 'ROWS',
     });
     return data.values ?? [];
@@ -62,7 +62,7 @@ export class GoogleSheetsRepository {
     }
   }
 
-  async getLasRowValue(range: string): Promise<string> {
+  async getLastRowValue(range: string): Promise<string> {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.sheetId,

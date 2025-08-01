@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { daysOfWeek, months, timeList } from "src/constants/dates-info/dates-info";
 import { TablesInfo } from "src/constants/tables-info/tables-info";
-import { DateTime } from "src/lib/datetime/datetime.type";
+import { DateTime } from "src/lib/types/datetime/datetime.type";
 
 @Injectable()
 export class GenerateDatetime {

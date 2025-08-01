@@ -3,7 +3,7 @@ import { GoogleSheetsService } from 'src/google-sheets/service/google-sheets.ser
 import { CreateDayUseCase } from '../aplication/create-day.use-case';
 import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
 import { parseDate } from '../utils/parseDate';
-import { DateTime } from 'src/lib/datetime/datetime.type';
+import { DateTime } from 'src/lib/types/datetime/datetime.type';
 
 @Injectable()
 export class DatesService {
@@ -32,7 +32,7 @@ export class DatesService {
 
   async createNextDate(): Promise<string> {
     try {
-      const lastRow = await this.googleSheetsService.getLasRowValue(`${SHEETS_NAMES[0]}!A:A`);
+      const lastRow = await this.googleSheetsService.getLastRowValue(`${SHEETS_NAMES[0]}!A:A`);
       
       const parsedDate = parseDate(lastRow);
 
@@ -57,7 +57,7 @@ export class DatesService {
   async createXDates(quantity: number): Promise<string> {
     try {
       for (let i = 0; i < quantity; i++) {
-        const lastRow = await this.googleSheetsService.getLasRowValue(`${SHEETS_NAMES[0]}!A:A`);
+        const lastRow = await this.googleSheetsService.getLastRowValue(`${SHEETS_NAMES[0]}!A:A`);
 
         const parsedDate = parseDate(lastRow);
 
@@ -76,6 +76,16 @@ export class DatesService {
       return `Se agregaron ${quantity} dias`;
     } catch (error) {
       this.logger.error(`Error al agregar el dia`, error);
+      throw error;
+    }
+  }
+
+  async createReservation(date:string, time:string) {
+    try {
+      const index = this.googleSheetsService.getDate(date, time)
+      return index;
+    } catch (error) {
+      this.logger.error(`Error al agregar la reserva`, error);
       throw error;
     }
   }

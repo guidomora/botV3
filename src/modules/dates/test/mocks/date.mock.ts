@@ -1,4 +1,4 @@
-import { DateTime } from "src/lib/datetime/datetime.type"
+import { DateTime } from "src/lib/types/datetime/datetime.type"
 
 export const dateTimeMock: DateTime = [
     [ '', '' ],

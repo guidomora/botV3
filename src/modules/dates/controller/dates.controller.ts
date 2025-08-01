@@ -27,5 +27,10 @@ export class DatesController {
     return this.datesService.createXDates(quantity);
   }
 
+  @Post('/reservation')
+  createReservation(@Body('date') date: string, @Body('time') time: string): Promise<number> {
+    return this.datesService.createReservation(date, time);
+  }
+
 
 }

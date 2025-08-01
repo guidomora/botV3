@@ -26,7 +26,7 @@ describe('GIVEN DatesService', () => {
                     provide: GoogleSheetsService,
                     useValue: {
                         appendRow: jest.fn(),
-                        getLasRowValue: jest.fn(),
+                        getLastRowValue: jest.fn(),
                         checkDate: jest.fn(),
                     },
                 },
@@ -93,7 +93,7 @@ describe('GIVEN DatesService', () => {
 
 
         it('SHOULD return the matrix of datetime for the next day', async () => {
-            (googleSheetsService.getLasRowValue as jest.Mock).mockResolvedValue(beforeDate);
+            (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
             (createDayUseCase.createNextDay as jest.Mock).mockReturnValue(date);
 
             const result = await datesService.createNextDate();
@@ -108,7 +108,7 @@ describe('GIVEN DatesService', () => {
         it('SHOULD throw an error and log it', async () => {
             const errorMock = new Error('Append failed');
 
-            (googleSheetsService.getLasRowValue as jest.Mock).mockResolvedValue(beforeDate);
+            (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
             (googleSheetsService.appendRow as jest.Mock).mockImplementationOnce(() => {
                 throw errorMock;
             });
@@ -126,14 +126,14 @@ describe('GIVEN DatesService', () => {
         const parsedDate = parseDate(beforeDate);
       
         it('SHOULD create multiple dates and log the result', async () => {
-          (googleSheetsService.getLasRowValue as jest.Mock).mockResolvedValue(beforeDate);
+          (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
           (createDayUseCase.createNextDay as jest.Mock).mockReturnValue(date);
           (createDayUseCase.createDateTime as jest.Mock).mockReturnValue(dateTimeMock);
           (createDayUseCase.createOneDayWithBookings as jest.Mock).mockReturnValue(dateTimeWithBookingsMock);
       
           const result = await datesService.createXDates(quantity);
       
-          expect(googleSheetsService.getLasRowValue).toHaveBeenCalledTimes(quantity);
+          expect(googleSheetsService.getLastRowValue).toHaveBeenCalledTimes(quantity);
           expect(createDayUseCase.createNextDay).toHaveBeenCalledTimes(quantity);
           expect(createDayUseCase.createNextDay).toHaveBeenNthCalledWith(1, parsedDate); // opcional
       
@@ -148,7 +148,7 @@ describe('GIVEN DatesService', () => {
         it('SHOULD throw an error and log it', async () => {
           const errorMock = new Error('Append failed');
       
-          (googleSheetsService.getLasRowValue as jest.Mock).mockResolvedValue(beforeDate);
+          (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
           (googleSheetsService.appendRow as jest.Mock).mockImplementationOnce(() => {
             throw errorMock;
           });

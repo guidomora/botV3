@@ -1,9 +1,21 @@
 ### History
 
+#### 31/07/25
+- CreateReservation in progress: currently we are only getting the index of the date
+- Tests added at google service module
+- TODO:-
+ - This one should be at reservations module?
+ - continue working on the create reservation feature
+ - DTO for the body of the GET
+ - add all tests for google module
+
 #### 30/07/25
 - Check date working
 - Tests added at dates module
-- TODO: add all tests for google module and start working on the create reservation feature
+- TODO: 
+ - add all tests for google module 
+ - start working on the create reservation feature
+ - DTO for the body of the GET
 
 #### 28/07/25
 - Started working for a feature to check for a date `getDate`
