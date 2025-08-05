@@ -1,12 +1,14 @@
 ### History
 
+
+
 #### 05/08/25
 - index at constants added
 - some types added
 - This flow will start at reservations module
-- Continue with the creation of the CreateReservation feature (maybe we need to start the integration with openai, to parse the dates)
+- Continue with the creation of the CreateReservation feature
+- OpenAI integration started --> `ai` module
 - TODO: 
- - think about the integrtion with openai
  - add all tests for google module
  - remove the `createReservation` method from dates controller. Now is temporal
 
