@@ -11,5 +11,6 @@ import { CreateDayUseCase } from './aplication/create-day.use-case';
   providers: [ DatesService,
     GenerateDatetime,
     CreateDayUseCase],
+  exports:[DatesService]
   })
 export class DatesModule {}

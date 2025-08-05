@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/google-sheets/service/google-sheets.service';
 import { CreateDayUseCase } from '../aplication/create-day.use-case';
-import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
 import { parseDate } from '../utils/parseDate';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
+import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
+import { SHEETS_NAMES } from 'src/constants';
 
 @Injectable()
 export class DatesService {
@@ -80,9 +81,15 @@ export class DatesService {
     }
   }
 
-  async createReservation(date:string, time:string) {
+  async createReservation(createReservation:CreateReservationType) {
+    const {date, time, name, phone, quantity} = createReservation;
+
     try {
-      const index = this.googleSheetsService.getDate(date, time)
+      const index = await this.googleSheetsService.getDate(date, time)
+      console.log('index', index);
+      
+      const customerData = {name, phone, quantity}
+      await this.googleSheetsService.updateRange(`${SHEETS_NAMES[0]}!C${index}:F${index}`, {customerData})
       return index;
     } catch (error) {
       this.logger.error(`Error al agregar la reserva`, error);

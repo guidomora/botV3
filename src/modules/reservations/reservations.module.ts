@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ReservationsService } from './reservations.service';
-import { ReservationsController } from './reservations.controller';
-import { GoogleSheetsModule } from 'src/google-sheets/google-sheets.module';
+import { ReservationsService } from './service/reservations.service';
+import { ReservationsController } from './controller/reservations.controller';
+import { DatesModule } from 'src/modules/dates/dates.module';
 
 @Module({
-  imports: [GoogleSheetsModule],
+  imports: [DatesModule],
   controllers: [ReservationsController],
   providers: [ReservationsService],
 })

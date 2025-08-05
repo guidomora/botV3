@@ -1,21 +1,24 @@
 ### History
 
+#### 05/08/25
+- index at constants added
+- some types added
+- This flow will start at reservations module
+- Continue with the creation of the CreateReservation feature (maybe we need to start the integration with openai, to parse the dates)
+- TODO: 
+ - think about the integrtion with openai
+ - add all tests for google module
+ - remove the `createReservation` method from dates controller. Now is temporal
+
 #### 31/07/25
 - CreateReservation in progress: currently we are only getting the index of the date
 - Tests added at google service module
-- TODO:-
- - This one should be at reservations module?
- - continue working on the create reservation feature
- - DTO for the body of the GET
- - add all tests for google module
+
 
 #### 30/07/25
 - Check date working
 - Tests added at dates module
-- TODO: 
- - add all tests for google module 
- - start working on the create reservation feature
- - DTO for the body of the GET
+
 
 #### 28/07/25
 - Started working for a feature to check for a date `getDate`

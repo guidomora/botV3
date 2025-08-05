@@ -3,8 +3,10 @@ import { JWT } from 'google-auth-library';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
 import { AddValue } from 'src/lib/types/add-value.type';
-import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
+
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
+import { AddDataType } from 'src/lib/types/add-data.type';
+import { ServiceName, SHEETS_NAMES } from 'src/constants';
 
 interface GoogleSheetsOpts {
   sheetId: string;
@@ -39,12 +41,13 @@ export class GoogleSheetsRepository {
     return data.values ?? [];
   }
 
-  async updateRange(range: string, values: any[][]) {
+  async updateRange(range: string, values:AddDataType) {
+    const {customerData} = values;
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.sheetId,
       range,
       valueInputOption: 'RAW',
-      requestBody: { values },
+      requestBody: { values:[[customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]] },
     });
   }
 

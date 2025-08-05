@@ -28,8 +28,13 @@ export class DatesController {
   }
 
   @Post('/reservation')
-  createReservation(@Body('date') date: string, @Body('time') time: string): Promise<number> {
-    return this.datesService.createReservation(date, time);
+  createReservation(
+    @Body('date') date: string,
+    @Body('time') time: string,
+    @Body('name') name: string,
+    @Body('phone') phone: string,
+    @Body('quantity') quantity: number) {
+    return this.datesService.createReservation({date, time, name, phone, quantity});
   }
 
 

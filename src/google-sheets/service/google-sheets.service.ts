@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { GoogleSheetsRepository } from "../domain/repository/google-sheets.repository";
 import { DateTime } from "src/lib/types/datetime/datetime.type";
 import { SHEETS_NAMES } from "src/constants/sheets-name/sheets-name";
+import { AddDataType } from "src/lib/types/add-data.type";
 
 
 @Injectable()
@@ -44,6 +45,14 @@ export class GoogleSheetsService {
       
       const index = data.findIndex(row => row[0] === date && row[1] === time && (!row[2] || row[2].trim() === "")) + 1;
       return index;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  async updateRange(range: string, values:AddDataType) {
+    try {
+      await this.googleSheetsRepository.updateRange(range, values);
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }
