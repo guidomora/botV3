@@ -3,7 +3,7 @@ import { DatesService } from './service/dates.service';
 import { DatesController } from './controller/dates.controller';
 import { GoogleSheetsModule } from 'src/google-sheets/google-sheets.module';
 import { GenerateDatetime } from './dateTime-build/generate-datetime';
-import { CreateDayUseCase } from './aplication/create-day.use-case';
+import { CreateDayUseCase } from './application/create-day.use-case';
 
 @Module({
   controllers: [DatesController],

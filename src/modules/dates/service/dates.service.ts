@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/google-sheets/service/google-sheets.service';
-import { CreateDayUseCase } from '../aplication/create-day.use-case';
+import { CreateDayUseCase } from '../application/create-day.use-case';
 import { parseDate } from '../utils/parseDate';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';

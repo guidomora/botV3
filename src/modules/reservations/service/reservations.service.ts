@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { UpdateReservationDto } from '../dto/update-reservation.dto';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { AiService } from 'src/modules/ai/service/ai.service';
 
 @Injectable()
 export class ReservationsService {
@@ -9,12 +10,13 @@ export class ReservationsService {
 
     constructor(
       private readonly datesService:DatesService,
+      private readonly aiService: AiService,
     ) { }
   
   async createReservation(createReservationDto: string) {
-    // TODO: 
-    // - think about the integration with openai to parse the data coming from the controller
-    // await this.datesService.createReservation(createReservationDto);
+    const aiResponse = await this.aiService.sendMessage(createReservationDto);
+    this.logger.log(aiResponse);
+    // await this.datesService.createReservation(aiResponse);
   }
 
   findReservation(id: number) {

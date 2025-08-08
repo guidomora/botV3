@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
-import { CreateDayUseCase } from "../aplication/create-day.use-case";
+import { CreateDayUseCase } from "../application/create-day.use-case";
 import { DatesService } from "./dates.service";
 import { dateTimeMock, dateTimeWithBookingsMock } from "../test/mocks/date.mock";
 import { Logger } from "@nestjs/common";

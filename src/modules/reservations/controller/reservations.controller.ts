@@ -7,7 +7,7 @@ export class ReservationsController {
 
   @Post('/create')
   create(
-    @Body('date') createReservationDto: string) {
+    @Body('message') createReservationDto: string) {
     return this.reservationsService.createReservation(createReservationDto);
   }
 

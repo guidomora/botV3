@@ -2,15 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { CreateAiDto } from '../dto/create-ai.dto';
 import { UpdateAiDto } from '../dto/update-ai.dto';
 import { OpenAiConfig } from '../config/openai.config';
+import { datePrompt } from '../prompts';
+
 
 @Injectable()
 export class AiService {
-  constructor(private readonly openAi: OpenAiConfig) {}
+  constructor(private readonly openAi: OpenAiConfig) { }
 
   async sendMessage(message: string): Promise<string> {
     const response = await this.openAi.getClient().chat.completions.create({
-      model: 'gpt-4o', // o el modelo que uses
-      messages: [{ role: 'user', content: message }],
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: datePrompt },
+        { role: 'user', content: message }
+      ],
     });
 
     return response.choices[0]?.message?.content ?? 'No response from OpenAI';
