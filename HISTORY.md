@@ -1,13 +1,17 @@
 ### History
 
-#### 08/08/25
-- Prompt for OpenAI added and working, returns the date in a json format
-- New folder `prompts` added
+#### 09/08/25
+- Ai response type added
+- New api key for new pc
+- integration of the ai service with the reservations service -----> still need to check if it works
 - TODO:
- - Create a Type for the response from OpenAI
  - Add some validations for the creation of the reservation (date, times, availability)
  - add all tests for google module
  - remove the `createReservation` method from dates controller. Now is temporal
+
+#### 08/08/25
+- Prompt for OpenAI added and working, returns the date in a json format
+- New folder `prompts` added
 
 #### 05/08/25
 - index at constants added

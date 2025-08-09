@@ -6,17 +6,20 @@ import { AiService } from 'src/modules/ai/service/ai.service';
 
 @Injectable()
 export class ReservationsService {
-    private readonly logger = new Logger(ReservationsService.name);
+  private readonly logger = new Logger(ReservationsService.name);
 
-    constructor(
-      private readonly datesService:DatesService,
-      private readonly aiService: AiService,
-    ) { }
-  
-  async createReservation(createReservationDto: string) {
+  constructor(
+    private readonly datesService: DatesService,
+    private readonly aiService: AiService,
+  ) { }
+
+  async createReservation(createReservationDto: string): Promise<string> {
     const aiResponse = await this.aiService.sendMessage(createReservationDto);
-    this.logger.log(aiResponse);
+    const { date, time, name, quantity } = aiResponse;
+
     // await this.datesService.createReservation(aiResponse);
+    this.logger.log(`Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`, ReservationsService.name);
+    return `Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`;
   }
 
   findReservation(id: number) {
