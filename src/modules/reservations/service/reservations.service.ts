@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CreateReservationDto } from '../dto/create-reservation.dto';
 import { UpdateReservationDto } from '../dto/update-reservation.dto';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
@@ -15,10 +14,13 @@ export class ReservationsService {
 
   async createReservation(createReservationDto: string): Promise<string> {
     const aiResponse = await this.aiService.sendMessage(createReservationDto);
+    
     const { date, time, name, quantity } = aiResponse;
 
-    // await this.datesService.createReservation(aiResponse);
-    this.logger.log(`Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`, ReservationsService.name);
+    this.logger.log(`Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`, ReservationsService.name)
+    
+    await this.datesService.createReservation(aiResponse);
+
     return `Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`;
   }
 

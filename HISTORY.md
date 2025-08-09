@@ -3,7 +3,8 @@
 #### 09/08/25
 - Ai response type added
 - New api key for new pc
-- integration of the ai service with the reservations service -----> still need to check if it works
+- integration of the ai service with the reservations service works
+-  validation if a date does not exist
 - TODO:
  - Add some validations for the creation of the reservation (date, times, availability)
  - add all tests for google module

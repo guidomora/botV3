@@ -86,8 +86,7 @@ export class DatesService {
 
     try {
       const index = await this.googleSheetsService.getDate(date, time)
-      console.log('index', index);
-      
+    
       const customerData = {name, phone, quantity}
       await this.googleSheetsService.updateRange(`${SHEETS_NAMES[0]}!C${index}:F${index}`, {customerData})
       return index;

@@ -39,11 +39,16 @@ export class GoogleSheetsService {
     }
   }
 
-  async getDate(date:string, time:string){
+  async getDate(date:string, time:string): Promise<string | number> {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:C`);
       
       const index = data.findIndex(row => row[0] === date && row[1] === time && (!row[2] || row[2].trim() === "")) + 1;
+      
+      if(index === -1 || index === undefined || index === 0) {
+        return 'No se encontro la fecha'
+      }
+      
       return index;
     } catch (error) {
       this.googleSheetsRepository.failure(error);

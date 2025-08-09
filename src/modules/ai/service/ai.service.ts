@@ -18,7 +18,8 @@ export class AiService {
     });
 
     const aiResponse = response.choices[0]?.message?.content ?? 'No response from OpenAI';
-
+    console.log(aiResponse);
+    
     const parseResponse = JSON.parse(aiResponse);
     
     return parseResponse;
