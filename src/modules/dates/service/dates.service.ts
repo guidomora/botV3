@@ -5,12 +5,15 @@ import { parseDate } from '../utils/parseDate';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
 import { SHEETS_NAMES } from 'src/constants';
+import { ReservationOperation, UpdateParams } from 'src/lib';
+import { CreateReservationRowUseCase } from '../application/create-reservation-row.use-case';
 
 @Injectable()
 export class DatesService {
   private readonly logger = new Logger(DatesService.name);
   constructor(
     private readonly createDayUseCase: CreateDayUseCase,
+    private readonly createReservationRowUseCase: CreateReservationRowUseCase,
     private readonly googleSheetsService: GoogleSheetsService,
   ) { }
   async createDate(): Promise<string> {
@@ -34,7 +37,7 @@ export class DatesService {
   async createNextDate(): Promise<string> {
     try {
       const lastRow = await this.googleSheetsService.getLastRowValue(`${SHEETS_NAMES[0]}!A:A`);
-      
+
       const parsedDate = parseDate(lastRow);
 
       const nextDay = this.createDayUseCase.createNextDay(parsedDate);
@@ -81,14 +84,31 @@ export class DatesService {
     }
   }
 
-  async createReservation(createReservation:CreateReservationType) {
-    const {date, time, name, phone, quantity} = createReservation;
+  async createReservation(createReservation: CreateReservationType) {
+    const { date, time, name, phone, quantity } = createReservation;
 
     try {
       const index = await this.googleSheetsService.getDate(date, time)
-    
-      const customerData = {name, phone, quantity}
-      await this.googleSheetsService.updateRange(`${SHEETS_NAMES[0]}!C${index}:F${index}`, {customerData})
+      
+      if (index === -1) {
+        return 'No se encontro la fecha'
+      }
+      await this.createReservationRowUseCase.createReservationRow(index)
+      const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!A${index}:D${index}`)
+
+      if (!availability.isAvailable) {
+        return 'No hay disponibilidad para esa fecha y horario'
+      }
+
+      const updateParams: UpdateParams = {
+        reservations: availability.reservations,
+        available: availability.available
+      }
+
+      await this.googleSheetsService.updateAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`, ReservationOperation.ADD, updateParams)
+
+      const customerData = { name, phone, quantity }
+      await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`, { customerData })
       return index;
     } catch (error) {
       this.logger.error(`Error al agregar la reserva`, error);
@@ -99,7 +119,7 @@ export class DatesService {
   async checkDate(date: string): Promise<boolean> {
     try {
       const dateExists = await this.googleSheetsService.checkDate(date)
-      
+
       return dateExists;
     } catch (error) {
       this.logger.error(`Error al obtener el dia`, error);

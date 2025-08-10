@@ -7,6 +7,7 @@ import { AddValue } from 'src/lib/types/add-value.type';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { ServiceName, SHEETS_NAMES } from 'src/constants';
+import { parseSpreadSheetId } from 'src/google-sheets/helpers/parse-spreadsheet-id.helper';
 
 interface GoogleSheetsOpts {
   sheetId: string;
@@ -41,13 +42,32 @@ export class GoogleSheetsRepository {
     return data.values ?? [];
   }
 
-  async updateRange(range: string, values:AddDataType) {
+  async createReservation(range: string, values:AddDataType) {
     const {customerData} = values;
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.sheetId,
       range,
       valueInputOption: 'RAW',
       requestBody: { values:[[customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]] },
+    });
+  }
+
+  async getAvailability(range: string):Promise<string[][]> {
+    const { data } = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.sheetId,
+      range,
+      majorDimension: 'ROWS',
+    });
+    return data.values ?? [];
+  }
+
+  async updateAvailabilitySheet(range: string, reservations: number, available: number) {
+
+    await this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.sheetId,
+      range,
+      valueInputOption: 'RAW',
+      requestBody: { values:[[reservations, available]] },
     });
   }
 
@@ -63,6 +83,42 @@ export class GoogleSheetsRepository {
     } catch (error) {
       this.failure(error);
     }
+  }
+
+  async insertRow(range: string, values: AddValue, rowIndex: number) {
+    try {
+      const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, range);
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.sheetId,
+        requestBody: {
+          requests: [
+            {
+              insertDimension: {
+                range: {
+                    sheetId,
+                    dimension: 'ROWS',
+                    startIndex: rowIndex,
+                    endIndex: rowIndex + 1,
+                },
+                inheritFromBefore: false,
+            },
+            }
+          ]
+        },
+      });
+    } catch (error) {
+      this.failure(error);
+    }
+  }
+
+  async getRowValues(range: string): Promise<DateTime> {
+    console.log(range);
+    const { data } = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.sheetId,
+      range,
+      majorDimension: 'COLUMNS',
+    });
+    return data.values ?? [];
   }
 
   async getLastRowValue(range: string): Promise<string> {

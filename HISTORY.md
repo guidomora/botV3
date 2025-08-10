@@ -1,5 +1,16 @@
 ### History
 
+#### 10/08/25
+- New types and index files at /lib
+- Bug fixed at the reservations and availability methods
+- Started working at the addition of a reservation for the second sheet
+- flow at 85% done
+- TODO:
+ - Continue adding validations for the reservation creation flow and the addition at the second sheet
+ - start thinking what are we going to do if ai fails at parsing the date
+ - add all tests for google module
+ - remove the `createReservation` method from dates controller. Now is temporal
+
 #### 09/08/25
 - Ai response type added
 - New api key for new pc
