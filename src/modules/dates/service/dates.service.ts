@@ -93,7 +93,10 @@ export class DatesService {
       if (index === -1) {
         return 'No se encontro la fecha'
       }
-      await this.createReservationRowUseCase.createReservationRow(index)
+
+
+
+      // await this.createReservationRowUseCase.createReservationRow(index)
       const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!A${index}:D${index}`)
 
       if (!availability.isAvailable) {
@@ -104,6 +107,26 @@ export class DatesService {
         reservations: availability.reservations,
         available: availability.available
       }
+
+      const lastRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${index}:F${index}`)
+      
+      
+      if (lastRow[2] != undefined && lastRow[3] != undefined && lastRow[4] != undefined && lastRow[5] != undefined) {
+        const newRowData = {
+          date: lastRow[0],
+          time: lastRow[1],
+          name,
+          phone,
+          quantity
+        }
+        console.log('newRowData', newRowData);
+        
+        const newRowIndex = await this.googleSheetsService.insertRow(`${SHEETS_NAMES[0]}!A${index}:F${index}`, index)
+        console.log('newRowIndex', newRowIndex);
+        
+        // await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${newRowIndex}:F${newRowIndex}`, { customerData: newRowData })
+      }
+      
 
       await this.googleSheetsService.updateAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`, ReservationOperation.ADD, updateParams)
 

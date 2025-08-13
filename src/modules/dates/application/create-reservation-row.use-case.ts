@@ -9,8 +9,6 @@ export class CreateReservationRowUseCase {
     ) { }
 
     async createReservationRow(index: number) {
-        const rowValues = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${index}:F${index}`)
-        console.log(rowValues);
-        
+        await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${index}:F${index}`)
     }
 }

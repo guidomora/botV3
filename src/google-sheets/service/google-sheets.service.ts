@@ -121,4 +121,13 @@ export class GoogleSheetsService {
       this.googleSheetsRepository.failure(error);
     }
   }
+
+  async insertRow(range: string, rowIndex: number): Promise<number> {
+    try {
+      await this.googleSheetsRepository.insertRow(range, rowIndex);
+      return rowIndex + 1;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
 }

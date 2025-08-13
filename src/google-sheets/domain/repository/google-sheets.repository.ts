@@ -85,7 +85,7 @@ export class GoogleSheetsRepository {
     }
   }
 
-  async insertRow(range: string, values: AddValue, rowIndex: number) {
+  async insertRow(range: string, rowIndex: number) {
     try {
       const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, range);
       await this.sheets.spreadsheets.batchUpdate({
@@ -112,7 +112,6 @@ export class GoogleSheetsRepository {
   }
 
   async getRowValues(range: string): Promise<DateTime> {
-    console.log(range);
     const { data } = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
       range,
