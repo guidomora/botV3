@@ -5,6 +5,7 @@ import { SHEETS_NAMES } from "src/constants/sheets-name/sheets-name";
 import { AddDataType } from "src/lib/types/add-data.type";
 import { TablesInfo } from "src/constants/tables-info/tables-info";
 import { Availability, ReservationOperation, UpdateParams } from "src/lib";
+import { SheetsName } from "src/constants";
 
 
 
@@ -68,6 +69,8 @@ export class GoogleSheetsService {
   }
 
   async createReservation(range: string, values: AddDataType) {
+    console.log('values', values);
+    
     try {
       await this.googleSheetsRepository.createReservation(range, values);
     } catch (error) {
@@ -123,8 +126,14 @@ export class GoogleSheetsService {
   }
 
   async insertRow(range: string, rowIndex: number): Promise<number> {
+    const sheetNumber = range.split('!')[0];
+    let sheetIndex = 0
+    if (sheetNumber === SheetsName.AVAILABLE_BOOKINGS) {
+      sheetIndex = 1
+    }
+
     try {
-      await this.googleSheetsRepository.insertRow(range, rowIndex);
+      await this.googleSheetsRepository.insertRow(rowIndex, sheetIndex);
       return rowIndex + 1;
     } catch (error) {
       this.googleSheetsRepository.failure(error);

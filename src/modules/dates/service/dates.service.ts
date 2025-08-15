@@ -88,7 +88,7 @@ export class DatesService {
     const { date, time, name, phone, quantity } = createReservation;
 
     try {
-      const index = await this.googleSheetsService.getDate(date, time)
+      const index = await this.googleSheetsService.getDate(date!, time!)
       
       if (index === -1) {
         return 'No se encontro la fecha'
@@ -113,18 +113,16 @@ export class DatesService {
       
       if (lastRow[2] != undefined && lastRow[3] != undefined && lastRow[4] != undefined && lastRow[5] != undefined) {
         const newRowData = {
-          date: lastRow[0],
-          time: lastRow[1],
+          date: String(lastRow[0]),
+          time: String(lastRow[1]),
           name,
           phone,
           quantity
         }
-        console.log('newRowData', newRowData);
         
         const newRowIndex = await this.googleSheetsService.insertRow(`${SHEETS_NAMES[0]}!A${index}:F${index}`, index)
-        console.log('newRowIndex', newRowIndex);
         
-        // await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${newRowIndex}:F${newRowIndex}`, { customerData: newRowData })
+        await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!A${newRowIndex}:F${newRowIndex}`, { customerData: newRowData })
       }
       
 

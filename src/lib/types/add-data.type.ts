@@ -1,5 +1,5 @@
-import { CustomerDataType } from "./reservation/create-reservation.type";
+import { CreateReservationType } from "./reservation/create-reservation.type";
 
 export interface AddDataType {
-    customerData: CustomerDataType;
+    customerData: CreateReservationType;
 }

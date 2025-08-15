@@ -32,7 +32,7 @@ export class GoogleSheetsRepository {
     this.sheets = google.sheets({ version: 'v4', auth });
   }
 
-  
+
   async getDates(range?: string): Promise<DateTime> {
     const { data } = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
@@ -42,17 +42,26 @@ export class GoogleSheetsRepository {
     return data.values ?? [];
   }
 
-  async createReservation(range: string, values:AddDataType) {
-    const {customerData} = values;
+  async createReservation(range: string, values: AddDataType) {
+    const { customerData } = values;
+
+    let dataToAdd //TODO:
+
+    if (customerData.date && customerData.time) {
+      dataToAdd = [customerData.date, customerData.time, customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]
+    } else {
+      dataToAdd = [customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]
+    }
+
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.sheetId,
       range,
       valueInputOption: 'RAW',
-      requestBody: { values:[[customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]] },
+      requestBody: { values: [dataToAdd] },
     });
   }
 
-  async getAvailability(range: string):Promise<string[][]> {
+  async getAvailability(range: string): Promise<string[][]> {
     const { data } = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
       range,
@@ -67,7 +76,7 @@ export class GoogleSheetsRepository {
       spreadsheetId: this.sheetId,
       range,
       valueInputOption: 'RAW',
-      requestBody: { values:[[reservations, available]] },
+      requestBody: { values: [[reservations, available]] },
     });
   }
 
@@ -85,9 +94,9 @@ export class GoogleSheetsRepository {
     }
   }
 
-  async insertRow(range: string, rowIndex: number) {
+  async insertRow(rowIndex: number, sheetIndex: number) {
     try {
-      const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, range);
+      const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
       await this.sheets.spreadsheets.batchUpdate({
         spreadsheetId: this.sheetId,
         requestBody: {
@@ -95,13 +104,13 @@ export class GoogleSheetsRepository {
             {
               insertDimension: {
                 range: {
-                    sheetId,
-                    dimension: 'ROWS',
-                    startIndex: rowIndex,
-                    endIndex: rowIndex + 1,
+                  sheetId,
+                  dimension: 'ROWS',
+                  startIndex: rowIndex,
+                  endIndex: rowIndex + 1,
                 },
                 inheritFromBefore: false,
-            },
+              },
             }
           ]
         },
@@ -135,7 +144,7 @@ export class GoogleSheetsRepository {
       }
 
       const lastRowValue = rows[0][rows[0].length - 1];
-      
+
       return lastRowValue;
     } catch (error) {
       this.failure(error);

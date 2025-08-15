@@ -1,15 +1,18 @@
 ### History
 
-#### 13/08/25
-- Create reservation flow at 95% done
-- TODO: 
- - Just need to add the data to te new row at createReservation() dates.service to complete the flow
+#### 14/08/25
+- Create reservation flow DONE
+- TODO:
+ - Test it a little bit more
+ - add the type to the `addData` at createReservation() google repository
  - refactor the createReservation() to use use-cases
- - make dynamic the helper parseSpreadSheetId() to read the sheetId
  - start thinking what are we going to do if ai fails at parsing the date
  - Continue adding validations for the reservation creation flow and the addition at the second sheet
  - add all tests for google module
  - remove the `createReservation` method from dates controller. Now is temporal
+
+#### 13/08/25
+- Create reservation flow at 95% done
 
 #### 10/08/25
 - New types and index files at /lib
