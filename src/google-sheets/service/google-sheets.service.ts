@@ -69,7 +69,6 @@ export class GoogleSheetsService {
   }
 
   async createReservation(range: string, values: AddDataType) {
-    console.log('values', values);
     
     try {
       await this.googleSheetsRepository.createReservation(range, values);

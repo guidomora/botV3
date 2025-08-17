@@ -1,15 +1,17 @@
 ### History
 
+#### 17/08/25
+- remove the `createReservation` method from dates controller. Now is temporal
+- refactor the createReservation() to use use-cases
+- add the type to the `addData` at createReservation() google repository
+
 #### 14/08/25
 - Create reservation flow DONE
 - TODO:
- - Test it a little bit more
- - add the type to the `addData` at createReservation() google repository
- - refactor the createReservation() to use use-cases
  - start thinking what are we going to do if ai fails at parsing the date
  - Continue adding validations for the reservation creation flow and the addition at the second sheet
  - add all tests for google module
- - remove the `createReservation` method from dates controller. Now is temporal
+ 
 
 #### 13/08/25
 - Create reservation flow at 95% done

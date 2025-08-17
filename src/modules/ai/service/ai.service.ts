@@ -13,13 +13,15 @@ export class AiService {
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
+        response_format: { type: 'json_object' },
+        temperature: 0,
         messages: [
           { role: 'system', content: datePrompt },
           { role: 'user', content: message }
       ],
     });
 
-    const aiResponse = response.choices[0]?.message?.content ?? 'No response from OpenAI'
+    const aiResponse = response.choices[0]!.message!.content!
     
     const parseResponse = JSON.parse(aiResponse);
     
@@ -29,5 +31,4 @@ export class AiService {
       throw error;
     }
   }
-
 }

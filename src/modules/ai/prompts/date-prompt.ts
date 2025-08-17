@@ -1,43 +1,60 @@
 function formatedDate(fecha = new Date()): string {
-    const opciones: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    };
-  
-    const dateLong = new Intl.DateTimeFormat('es-AR', opciones).format(fecha);
-  
-    const dia = String(fecha.getDate()).padStart(2, '0');
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    const anio = fecha.getFullYear();
-  
-    const dateShort = `${dia}/${mes}/${anio}`;
-  
-    return `${dateLong} ${dateShort}`;
-  }
+  const opciones: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  };
 
-  export const datePrompt = `Fecha actual: ${formatedDate()}
+  const dateLong = new Intl.DateTimeFormat('es-AR', opciones).format(fecha);
 
-  Tu tarea es extraer información de una solicitud de reserva y devolverla exactamente en el siguiente formato JSON:
-  
-  {
-    "date": "sábado 02 de agosto 2025 02/08/2025",
-    "time": "14:00",
-    "name": "Pedro Perez",
-    "phone": "12345678",
-    "quantity": 2
-  }
-  
-  Campos requeridos:
-  - date: día completo (por ejemplo: "sábado 02 de agosto 2025 02/08/2025")
-  - time: en formato de 24 horas ("HH:mm")
-  - name: nombre y apellido
-  - phone: número de teléfono
-  - quantity: cantidad de personas
-  
-  Ejemplo de mensaje del usuario:
-  "Hola, quisiera hacer una reserva para 4 personas, para el miércoles a las 22 a nombre de Roberto."
-  
-  Tu respuesta debe ser solo el objeto JSON, sin ningún texto adicional.`;
-  
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const anio = fecha.getFullYear();
+
+  const dateShort = `${dia}/${mes}/${anio}`;
+
+  return `${dateLong} ${dateShort}`;
+}
+
+export const datePrompt =
+  `Idioma: español (es-AR). Zona horaria: America/Argentina/Buenos_Aires.
+Fecha actual: ${formatedDate()}  // ej: sábado 17 de agosto de 2025 17/08/2025
+
+Tarea: extraer datos de una solicitud de reserva y devolver **EXCLUSIVAMENTE** un JSON válido con las **siguientes claves exactas**:
+{
+  "date": "sábado 02 de agosto 2025 02/08/2025" | null,
+  "time": "HH:mm" | null,
+  "name": "Nombre Apellido" | null,
+  "phone": "solo dígitos, sin espacios ni guiones" | null,
+  "quantity": número entero | null
+}
+
+Reglas:
+- No inventes datos. Si un valor no está, usa null.
+- Devuelve SOLO el objeto JSON sin texto adicional, sin backticks, sin comentarios.
+- Formato de "time": 24 horas "HH:mm".
+- "phone": normaliza a solo dígitos (ej: "11 3456-7890" -> "1134567890").
+- "quantity": número entero (si aparece en texto, extraelo; si no, null).
+- "name": si no hay apellido, usa solo el nombre; si no hay nombre, null.
+- "date": si el mensaje da una fecha completa, respétala; si dice un día relativo:
+  - "hoy": usa la fecha de hoy.
+  - "mañana": hoy + 1 día.
+  - "pasado mañana": hoy + 2 días.
+  - "lunes/martes/…": usa el **próximo** día de semana a partir de hoy (si hoy es ese día, interpreta como HOY).
+  - Si hay referencia a "este viernes" o "el viernes que viene": interpreta como el próximo viernes.
+  - Si se indica día/mes numérico, respeta el formato y **construye** "sábado 02 de agosto 2025 02/08/2025".
+- El formato final de "date" debe ser: "díaDeSemana dd de mes yyyy dd/MM/yyyy" (ej: "sábado 02 de agosto 2025 02/08/2025").
+- Sin comas finales, sin claves extra, sin cambiar nombres de claves.
+
+Ejemplo de entrada:
+"Hola, quisiera hacer una reserva para 4 personas, para el miércoles a las 22 a nombre de Roberto. Mi tel es 11 3456-7890"
+
+Salida válida (ejemplo):
+{
+  "date": "miércoles 20 de agosto 2025 20/08/2025",
+  "time": "22:00",
+  "name": "Roberto",
+  "phone": "1134567890",
+  "quantity": 4
+}`;

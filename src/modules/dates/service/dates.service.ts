@@ -89,18 +89,33 @@ export class DatesService {
 
     try {
       const index = await this.googleSheetsService.getDate(date!, time!)
-      
+
       if (index === -1) {
         return 'No se encontro la fecha'
       }
 
-
-
-      // await this.createReservationRowUseCase.createReservationRow(index)
       const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!A${index}:D${index}`)
 
       if (!availability.isAvailable) {
         return 'No hay disponibilidad para esa fecha y horario'
+      }
+
+      const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${index}:F${index}`)
+
+
+      if (currentRow[2] != undefined && currentRow[3] != undefined && currentRow[4] != undefined && currentRow[5] != undefined) {
+        const newRowData = {
+          date: String(currentRow[0]),
+          time: String(currentRow[1]),
+          name,
+          phone,
+          quantity
+        }
+
+        await this.createReservationRowUseCase.createReservationAndRow(index, newRowData)
+      } else {
+        const customerData = { name, phone, quantity }
+        await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`, { customerData })  
       }
 
       const updateParams: UpdateParams = {
@@ -108,29 +123,8 @@ export class DatesService {
         available: availability.available
       }
 
-      const lastRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${index}:F${index}`)
-      
-      
-      if (lastRow[2] != undefined && lastRow[3] != undefined && lastRow[4] != undefined && lastRow[5] != undefined) {
-        const newRowData = {
-          date: String(lastRow[0]),
-          time: String(lastRow[1]),
-          name,
-          phone,
-          quantity
-        }
-        
-        const newRowIndex = await this.googleSheetsService.insertRow(`${SHEETS_NAMES[0]}!A${index}:F${index}`, index)
-        
-        await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!A${newRowIndex}:F${newRowIndex}`, { customerData: newRowData })
-      }
-      
-
       await this.googleSheetsService.updateAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`, ReservationOperation.ADD, updateParams)
 
-      const customerData = { name, phone, quantity }
-      await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`, { customerData })
-      return index;
     } catch (error) {
       this.logger.error(`Error al agregar la reserva`, error);
       throw error;
