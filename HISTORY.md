@@ -1,16 +1,18 @@
 ### History
 
 #### 17/08/25
-- remove the `createReservation` method from dates controller. Now is temporal
-- refactor the createReservation() to use use-cases
-- add the type to the `addData` at createReservation() google repository
+- removed the `createReservation` method from dates controller. Now is temporal
+- refactored the createReservation() to use use-cases
+- added the type to the `addData` at createReservation() google repository
+- added tests at google service
+- new feature to check availability from the controller, ai service integration
+- added validations for the reservation creation flow and the addition at the second sheet
+- TODO:
+ - continue checking if ai fails 
+ - add all tests for google module
 
 #### 14/08/25
 - Create reservation flow DONE
-- TODO:
- - start thinking what are we going to do if ai fails at parsing the date
- - Continue adding validations for the reservation creation flow and the addition at the second sheet
- - add all tests for google module
  
 
 #### 13/08/25

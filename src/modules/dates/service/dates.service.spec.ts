@@ -5,11 +5,13 @@ import { DatesService } from "./dates.service";
 import { dateTimeMock, dateTimeWithBookingsMock } from "../test/mocks/date.mock";
 import { Logger } from "@nestjs/common";
 import { parseDate } from "../utils/parseDate";
+import { CreateReservationRowUseCase } from "../application/create-reservation-row.use-case";
 
 describe('GIVEN DatesService', () => {
     let datesService: DatesService;
     let googleSheetsService: GoogleSheetsService;
     let createDayUseCase: CreateDayUseCase;
+    let createReservationRowUseCase: CreateReservationRowUseCase;
 
     const date = 'sábado 26 de julio 2025 26/07/2025';
 
@@ -36,6 +38,12 @@ describe('GIVEN DatesService', () => {
                         createDateTime: jest.fn(() => dateTimeMock),
                         createOneDayWithBookings: jest.fn(() => dateTimeWithBookingsMock),
                         createNextDay: jest.fn(() => date),
+                    },
+                },
+                {
+                    provide: CreateReservationRowUseCase,
+                    useValue: {
+                        createReservationRow: jest.fn(),
                     },
                 },
             ],

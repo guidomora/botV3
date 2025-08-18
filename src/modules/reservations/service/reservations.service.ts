@@ -2,6 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UpdateReservationDto } from '../dto/update-reservation.dto';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
+import { GoogleSheetsService } from 'src/google-sheets/service/google-sheets.service';
+import { SHEETS_NAMES } from 'src/constants';
+import { SearchAvailability } from 'src/lib';
 
 @Injectable()
 export class ReservationsService {
@@ -10,6 +13,7 @@ export class ReservationsService {
   constructor(
     private readonly datesService: DatesService,
     private readonly aiService: AiService,
+    private readonly googleSheetsService: GoogleSheetsService,
   ) { }
 
   async createReservation(createReservationDto: string): Promise<string> {
@@ -19,13 +23,28 @@ export class ReservationsService {
 
     this.logger.log(`Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`, ReservationsService.name)
     
-    await this.datesService.createReservation(aiResponse);
-
-    return `Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`;
+    return await this.datesService.createReservation(aiResponse);
   }
 
-  findReservation(id: number) {
-    return `This action returns a #${id} reservation`;
+  async getAvailability(dateTime: string) {
+    const aiResponse = await this.aiService.getAvailabilityData(dateTime);
+
+    const { date, time } = aiResponse;
+
+    const index = await this.googleSheetsService.getDate(date, time);
+
+
+    if (index === -1) {
+      return 'No se encontro la fecha'
+    }
+
+    const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`);
+    
+    if (!availability.isAvailable) {
+      return 'No hay disponibilidad para esa fecha y horario'
+    }
+    
+    return `Disponibilidad para el dia ${date} a las ${time}`
   }
 
   updateReservation(id: number, updateReservationDto: UpdateReservationDto) {

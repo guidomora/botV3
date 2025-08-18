@@ -79,16 +79,16 @@ export class GoogleSheetsService {
 
   async getAvailability(range: string): Promise<Availability> {
     let isAvailable = false;
-
+    
     try {
       const data = await this.googleSheetsRepository.getAvailability(range);
       
-      const reservations = Number(data[0][2])
+      const reservations = Number(data[0][0])
 
-      const available = Number(data[0][3])
+      const available = Number(data[0][1])
 
       const maxReservations = Number(TablesInfo.AVAILABLE)
-
+      
       if (available != null && available > 0 && reservations <= maxReservations) {
         isAvailable = true;
       }

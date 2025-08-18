@@ -3,7 +3,7 @@ import { ReservationsService } from '../service/reservations.service';
 
 @Controller('reservations')
 export class ReservationsController {
-  constructor(private readonly reservationsService: ReservationsService) {}
+  constructor(private readonly reservationsService: ReservationsService) { }
 
   @Post('/create')
   create(
@@ -11,9 +11,10 @@ export class ReservationsController {
     return this.reservationsService.createReservation(createReservationDto);
   }
 
-  @Get()
-  findAll() {
-
+  @Get('/availability')
+  getAvailability(
+    @Body('dateTime') dateTime: string) {
+    return this.reservationsService.getAvailability(dateTime);
   }
 
   @Get(':id')

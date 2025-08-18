@@ -3,6 +3,8 @@ import { GoogleSheetsRepository } from "../domain/repository/google-sheets.repos
 import { GoogleSheetsService } from "./google-sheets.service";
 import { SHEETS_NAMES } from "src/constants/sheets-name/sheets-name";
 import { dateTimeMock } from "../test/datetime.mock";
+import { AddDataType } from "src/lib/types/add-data.type";
+import { ReservationOperation } from "src/lib";
 
 describe('GIVEN GoogleSheetsService', () => {
     let googleRepository: GoogleSheetsRepository;
@@ -18,6 +20,13 @@ describe('GIVEN GoogleSheetsService', () => {
                         appendRow: jest.fn(),
                         getLastRowValue: jest.fn(),
                         getDates: jest.fn(),
+                        getRowValues: jest.fn(),
+                        createReservation: jest.fn(),
+                        getAvailability: jest.fn(),
+                        updateAvailability: jest.fn(),
+                        insertRow: jest.fn(),
+                        failure: jest.fn(),
+                        updateAvailabilitySheet: jest.fn(),
                     },
                 },
             ],
@@ -78,4 +87,122 @@ describe('GIVEN GoogleSheetsService', () => {
             expect(result).toBe(false);
         });
     })
+
+    describe('WHEN getDate is called', () => {
+        it('SHOULD return the row index if the date and time exist', async () => {
+            const date = 'sábado 26 de julio 2025 26/07/2025';
+            const time = '12:00';
+            (googleRepository.getDates as jest.Mock).mockResolvedValue(dateTimeMock);
+
+            const result = await googleService.getDate(date, time);
+
+            expect(googleRepository.getDates).toHaveBeenCalledWith(`${SHEETS_NAMES[0]}!A:C`);
+            expect(result).toBe(3);
+        });
+
+        it('SHOULD return -1 if the date and time do not exist', async () => {
+            const date = 'domingo 27 de julio 2025 27/07/2025';
+            const time = '12:00';
+            (googleRepository.getDates as jest.Mock).mockResolvedValue(dateTimeMock);
+
+            const result = await googleService.getDate(date, time);
+
+            expect(googleRepository.getDates).toHaveBeenCalledWith(`${SHEETS_NAMES[0]}!A:C`);
+            expect(result).toBe(-1);
+        });
+    })
+
+    describe('WHEN getRowValues is called', () => {
+        it('SHOULD call getRowValues on the repository', async () => {
+            (googleRepository.getRowValues as jest.Mock).mockResolvedValue(dateTimeMock);
+
+            const result = await googleService.getRowValues(range);
+
+            expect(googleRepository.getRowValues).toHaveBeenCalledWith(range);
+            expect(result).toEqual(dateTimeMock);
+        });
+    })
+
+    describe('WHEN createReservation is called', () => {
+        it('SHOULD call createReservation on the repository', async () => {
+            const values: AddDataType = {
+                customerData: {
+                    date: 'sábado 26 de julio 2025 26/07/2025',
+                    time: '12:00',
+                    name: 'John Doe',
+                    phone: '123456789',
+                    quantity: 2,
+                },
+            };
+
+            await googleService.createReservation(range, values);
+
+            expect(googleRepository.createReservation).toHaveBeenCalledWith(range, values);
+        });
+    })
+
+    describe('WHEN getAvailability is called', () => {
+        it('SHOULD return availability info from the repository', async () => {
+            const availabilityData = [[ '2025-07-26', '20:00', '5', '15' ]];
+            (googleRepository.getAvailability as jest.Mock).mockResolvedValue(availabilityData);
+
+            const result = await googleService.getAvailability(range);
+
+            expect(googleRepository.getAvailability).toHaveBeenCalledWith(range);
+            expect(result).toEqual({
+                isAvailable: true,
+                reservations: 5,
+                available: 15,
+            });
+        });
+
+        it('SHOULD set isAvailable to false when there is no availability', async () => {
+            const availabilityData = [[ '2025-07-26', '20:00', '21', '0' ]];
+            (googleRepository.getAvailability as jest.Mock).mockResolvedValue(availabilityData);
+
+            const result = await googleService.getAvailability(range);
+
+            expect(result).toEqual({
+                isAvailable: false,
+                reservations: 21,
+                available: 0,
+            });
+        });
+    });
+
+    describe('WHEN updateAvailability is called', () => {
+        it('SHOULD call updateAvailabilitySheet on the repository with updated values', async () => {
+            const params = { reservations: 3, available: 10 };
+
+            await googleService.updateAvailability(range, ReservationOperation.ADD, params);
+
+            expect(googleRepository.updateAvailabilitySheet).toHaveBeenCalledWith(range, 4, 9);
+        });
+
+        it('SHOULD call failure on the repository if there is no availability', async () => {
+            const params = { reservations: 3, available: 0 };
+
+            await googleService.updateAvailability(range, ReservationOperation.ADD, params);
+
+            expect(googleRepository.failure).toHaveBeenCalled();
+            expect(googleRepository.updateAvailabilitySheet).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('WHEN insertRow is called', () => {
+        it('SHOULD call insertRow on the repository and return the new index', async () => {
+            const rowIndex = 5;
+            const result = await googleService.insertRow(`${SHEETS_NAMES[0]}!A:C`, rowIndex);
+
+            expect(googleRepository.insertRow).toHaveBeenCalledWith(rowIndex, 0);
+            expect(result).toBe(rowIndex + 1);
+        });
+
+        it('SHOULD use sheet index 1 when using AVAILABLE_BOOKINGS sheet', async () => {
+            const rowIndex = 3;
+            await googleService.insertRow(`${SHEETS_NAMES[1]}!A:C`, rowIndex);
+
+            expect(googleRepository.insertRow).toHaveBeenCalledWith(rowIndex, 1);
+        });
+    });
 })

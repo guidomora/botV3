@@ -94,7 +94,7 @@ export class DatesService {
         return 'No se encontro la fecha'
       }
 
-      const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!A${index}:D${index}`)
+      const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`)
 
       if (!availability.isAvailable) {
         return 'No hay disponibilidad para esa fecha y horario'
@@ -125,6 +125,7 @@ export class DatesService {
 
       await this.googleSheetsService.updateAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`, ReservationOperation.ADD, updateParams)
 
+      return `Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`
     } catch (error) {
       this.logger.error(`Error al agregar la reserva`, error);
       throw error;
