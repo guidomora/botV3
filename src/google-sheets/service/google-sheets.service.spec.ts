@@ -143,7 +143,7 @@ describe('GIVEN GoogleSheetsService', () => {
 
     describe('WHEN getAvailability is called', () => {
         it('SHOULD return availability info from the repository', async () => {
-            const availabilityData = [[ '2025-07-26', '20:00', '5', '15' ]];
+            const availabilityData = [['5', '15']];
             (googleRepository.getAvailability as jest.Mock).mockResolvedValue(availabilityData);
 
             const result = await googleService.getAvailability(range);
@@ -157,7 +157,7 @@ describe('GIVEN GoogleSheetsService', () => {
         });
 
         it('SHOULD set isAvailable to false when there is no availability', async () => {
-            const availabilityData = [[ '2025-07-26', '20:00', '21', '0' ]];
+            const availabilityData = [['21', '0']];
             (googleRepository.getAvailability as jest.Mock).mockResolvedValue(availabilityData);
 
             const result = await googleService.getAvailability(range);

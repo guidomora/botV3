@@ -138,4 +138,12 @@ export class GoogleSheetsService {
       this.googleSheetsRepository.failure(error);
     }
   }
+
+  async deleteRow(rowIndex: number, sheetIndex: number) {
+    try {
+      await this.googleSheetsRepository.deleteRow(rowIndex, sheetIndex);
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
 }

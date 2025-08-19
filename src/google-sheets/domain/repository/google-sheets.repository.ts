@@ -156,6 +156,31 @@ export class GoogleSheetsRepository {
     await this.appendRow('Sheet1!A:E', [[date]]);
   }
 
+  async deleteRow(rowIndex: number, sheetIndex: number) {
+    try {
+      const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.sheetId,
+        requestBody: {
+          requests: [
+            {
+              deleteDimension: {
+                range: {
+                  sheetId,
+                  dimension: 'ROWS',
+                  startIndex: rowIndex,
+                  endIndex: rowIndex + 1,
+                },
+              },
+            }
+          ]
+        },
+      });
+    } catch (error) {
+      this.failure(error);
+    }
+  }
+
   failure(error: unknown, msg = 'Google Sheets error'): never {
     console.error(error);
     throw new InternalServerErrorException(msg);
