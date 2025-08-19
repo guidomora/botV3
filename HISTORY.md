@@ -1,5 +1,12 @@
 ### History
 
+#### 18/08/25
+- added all tests for google repository (almost)
+- added deleteRow() method at google repository and service
+- TODO:
+ - continue checking if ai fails 
+ - add all tests for google module
+
 #### 17/08/25
 - removed the `createReservation` method from dates controller. Now is temporal
 - refactored the createReservation() to use use-cases
@@ -7,9 +14,6 @@
 - added tests at google service
 - new feature to check availability from the controller, ai service integration
 - added validations for the reservation creation flow and the addition at the second sheet
-- TODO:
- - continue checking if ai fails 
- - add all tests for google module
 
 #### 14/08/25
 - Create reservation flow DONE

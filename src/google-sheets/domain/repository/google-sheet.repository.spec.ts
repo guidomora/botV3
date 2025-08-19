@@ -1,18 +1,25 @@
 import { GoogleSheetsRepository } from './google-sheets.repository';
 import { SHEETS_NAMES, ServiceName } from 'src/constants';
+import { parseSpreadSheetId } from 'src/google-sheets/helpers/parse-spreadsheet-id.helper';
 import { dateTimeMock } from 'src/google-sheets/test/datetime.mock';
 import { AddDataType } from 'src/lib/types/add-data.type';
+
+jest.mock('src/google-sheets/helpers/parse-spreadsheet-id.helper');
 
 describe('GIVEN GoogleSheetsRepository', () => {
   let repository: GoogleSheetsRepository;
   let getMock: jest.Mock;
   let updateMock: jest.Mock;
+  let appendMock: jest.Mock;
+  let batchUpdateMock: jest.Mock;
 
   const sheetId = 'test-sheet-id';
 
   beforeEach(() => {
     getMock = jest.fn();
     updateMock = jest.fn();
+    appendMock = jest.fn();
+    batchUpdateMock = jest.fn();
 
     repository = new GoogleSheetsRepository({
       sheetId,
@@ -25,7 +32,9 @@ describe('GIVEN GoogleSheetsRepository', () => {
         values: {
           get: getMock,
           update: updateMock,
+          append: appendMock,
         },
+        batchUpdate: batchUpdateMock
       },
     };
   });
@@ -120,6 +129,86 @@ describe('GIVEN GoogleSheetsRepository', () => {
         valueInputOption: 'RAW',
         requestBody: { values: [[4, 8]] },
       });
+    });
+  });
+
+  describe('WHEN insertRow is called', () => {
+    it('SHOULD insert a new row at the given index', async () => {
+      const rowIndex = 5;
+      (parseSpreadSheetId as jest.Mock).mockResolvedValue(321);
+
+      await repository.insertRow(rowIndex, 0);
+
+      expect(parseSpreadSheetId).toHaveBeenCalledWith(sheetId, (repository as any).sheets, 0);
+      expect(batchUpdateMock).toHaveBeenCalledWith({
+        spreadsheetId: sheetId,
+        requestBody: {
+          requests: [
+            {
+              insertDimension: {
+                range: {
+                  sheetId: 321,
+                  dimension: 'ROWS',
+                  startIndex: rowIndex,
+                  endIndex: rowIndex + 1,
+                },
+                inheritFromBefore: false,
+              },
+            },
+          ],
+        },
+      });
+    });
+  });
+
+  describe('WHEN getRowValues is called', () => {
+    it('SHOULD retrieve the row values in column major order', async () => {
+      getMock.mockResolvedValue({ data: { values: dateTimeMock } });
+
+      const range = 'Sheet1!A:A';
+      const result = await repository.getRowValues(range);
+
+      expect(getMock).toHaveBeenCalledWith({
+        spreadsheetId: sheetId,
+        range,
+        majorDimension: 'COLUMNS',
+      });
+      expect(result).toEqual(dateTimeMock);
+    });
+  });
+
+  describe('WHEN getLastRowValue is called', () => {
+    it('SHOULD return the last value in the column', async () => {
+      const values = [['a', 'b', 'c']];
+      getMock.mockResolvedValue({ data: { values } });
+
+      const result = await repository.getLastRowValue('Sheet1!A:A');
+
+      expect(getMock).toHaveBeenCalledWith({
+        spreadsheetId: sheetId,
+        range: 'Sheet1!A:A',
+        majorDimension: 'COLUMNS',
+      });
+      expect(result).toBe('c');
+    });
+
+    it('SHOULD return a message when no values are present', async () => {
+      getMock.mockResolvedValue({ data: {} });
+
+      const result = await repository.getLastRowValue('Sheet1!A:A');
+
+      expect(result).toBe('no hay valores');
+    });
+  });
+
+  describe('WHEN createDate is called', () => {
+    it('SHOULD append the date to the sheet', async () => {
+      const appendRowSpy = jest.spyOn(repository, 'appendRow').mockResolvedValue();
+      const date = '2025-07-26';
+
+      await repository.createDate({ date });
+
+      expect(appendRowSpy).toHaveBeenCalledWith('Sheet1!A:E', [[date]]);
     });
   });
 });
