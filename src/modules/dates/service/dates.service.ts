@@ -5,7 +5,7 @@ import { parseDate } from '../utils/parseDate';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
 import { SHEETS_NAMES } from 'src/constants';
-import { ReservationOperation, UpdateParams } from 'src/lib';
+import { DeleteReservation, ReservationOperation, UpdateParams } from 'src/lib';
 import { CreateReservationRowUseCase } from '../application/create-reservation-row.use-case';
 
 @Injectable()
@@ -140,6 +140,22 @@ export class DatesService {
     } catch (error) {
       this.logger.error(`Error al obtener el dia`, error);
       throw error;
+    }
+  }
+
+  async deleteREservation(deleteReservation:DeleteReservation){
+    const { phone, date, time } = deleteReservation;
+    try {
+      const index = await this.googleSheetsService.getDate(date!, time!)
+
+      if (index === -1) {
+        return 'No se encontro la fecha'
+      }
+
+      await this.googleSheetsService.deleteReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`)
+      
+    } catch (error) {
+      
     }
   }
 }

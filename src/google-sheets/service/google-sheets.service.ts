@@ -139,6 +139,14 @@ export class GoogleSheetsService {
     }
   }
 
+  async deleteReservation(range: string) {
+    try {
+      await this.googleSheetsRepository.deleteReservation(range);
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
   async deleteRow(rowIndex: number, sheetIndex: number) {
     try {
       await this.googleSheetsRepository.deleteRow(rowIndex, sheetIndex);

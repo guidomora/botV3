@@ -1,5 +1,11 @@
 ### History
 
+#### 22/08/25
+- started with the deleteReservation flow, need to test if it works and add integration with the delete row
+- TODO:
+ - continue checking if ai fails 
+ - add all tests for google module
+
 #### 18/08/25
 - added all tests for google repository (almost)
 - added deleteRow() method at google repository and service

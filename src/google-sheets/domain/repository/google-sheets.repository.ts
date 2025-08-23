@@ -156,6 +156,19 @@ export class GoogleSheetsRepository {
     await this.appendRow('Sheet1!A:E', [[date]]);
   }
 
+  async deleteReservation(range: string) {
+    try {
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.sheetId,
+        range,
+        valueInputOption: 'RAW',
+        requestBody: { values: [['', '', '']] },
+      });
+    } catch (error) {
+      this.failure(error);
+    }
+  }
+
   async deleteRow(rowIndex: number, sheetIndex: number) {
     try {
       const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);

@@ -26,7 +26,7 @@ export class ReservationsService {
     return await this.datesService.createReservation(aiResponse);
   }
 
-  async getAvailability(dateTime: string) {
+  async getAvailability(dateTime: string):Promise<string> {
     const aiResponse = await this.aiService.getAvailabilityData(dateTime);
 
     const { date, time } = aiResponse;
@@ -45,6 +45,14 @@ export class ReservationsService {
     }
     
     return `Disponibilidad para el dia ${date} a las ${time}`
+  }
+
+  async deleteReservation(deleteMessage:string):Promise<string>{
+    const aiResponse = await this.aiService.getPhoneFromMessage(deleteMessage);
+
+    const { phone, date, time } = aiResponse;
+    
+    return `Reserva eliminada correctamente`
   }
 
   updateReservation(id: number, updateReservationDto: UpdateReservationDto) {
