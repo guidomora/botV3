@@ -174,7 +174,7 @@ export class GoogleSheetsRepository {
         spreadsheetId: this.sheetId,
         range,
         valueInputOption: 'RAW',
-        requestBody: { values: [['', '', '']] },
+        requestBody: { values: [['', '', '', '']] },
       });
     } catch (error) {
       this.failure(error);
@@ -182,6 +182,7 @@ export class GoogleSheetsRepository {
   }
 
   async deleteRow(rowIndex: number, sheetIndex: number) {
+
     try {
       const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
       await this.sheets.spreadsheets.batchUpdate({
@@ -193,8 +194,8 @@ export class GoogleSheetsRepository {
                 range: {
                   sheetId,
                   dimension: 'ROWS',
-                  startIndex: rowIndex,
-                  endIndex: rowIndex + 1,
+                  startIndex: rowIndex - 1,
+                  endIndex: rowIndex,
                 },
               },
             }

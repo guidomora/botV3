@@ -144,24 +144,37 @@ export class DatesService {
   }
 
   async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
-    const { phone, date, time } = deleteReservation;
+    const { phone, date, time, name } = deleteReservation;
+    console.log('deleteReservation', deleteReservation);
+    
     try {
 
-      const index = await this.googleSheetsService.getDateIndexByData(date!, time!, phone!, phone!)
+      const index = await this.googleSheetsService.getDateIndexByData(date!, time!, name!, phone!)
 
       if (index === -1) {
         return 'No se encontro la fecha'
       }
-
-      const dates = await this.googleSheetsService.getDatetimeDates(date!, time!)
-
-      if (dates.length > 1) {
-        await this.googleSheetsService.deleteRow(index, 0)//TODO:
-      } else {
-        await this.googleSheetsService.deleteReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`)
-      }
-      this.logger.log(`Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`, DatesService.name)
+      console.log('index', index);
       
+      const dates = await this.googleSheetsService.getDatetimeDates(date!, time!)
+      console.log('dates', dates);
+      
+      if (dates.length === 1) {
+        await this.googleSheetsService.deleteReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`)
+      } else {
+        await this.googleSheetsService.deleteRow(index, 0)
+      }
+
+      const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`)
+
+      const updateParams: UpdateParams = {
+        reservations: availability.reservations,
+        available: availability.available
+      }
+
+      await this.googleSheetsService.updateAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`, ReservationOperation.SUBTRACT, updateParams)
+      this.logger.log(`Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`, DatesService.name)
+
       return 'Reserva eliminada correctamente'
     } catch (error) {
       this.logger.error(`Error al eliminar la reserva`, error);

@@ -57,7 +57,7 @@ export class AiService {
     }
   }
 
-  async getPhoneFromMessage(message:string):Promise<DeleteReservation>{
+  async getCancelData(message:string):Promise<DeleteReservation>{
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
@@ -72,6 +72,7 @@ export class AiService {
     const aiResponse = response.choices[0]!.message!.content!
     
     const parseResponse = JSON.parse(aiResponse);
+    console.log('parseResponse', parseResponse);
     
     return parseResponse;
     } catch (error) {

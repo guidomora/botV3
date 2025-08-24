@@ -1,7 +1,8 @@
 ### History
 
 #### 24/08/25
-- deleteReservation flow almost done, need to test it and add update to availability sheet
+- deleteReservation flow is wrking, but need to add integration with update availability sheet
+- check the types of this flow
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module

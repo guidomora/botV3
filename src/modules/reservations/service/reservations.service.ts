@@ -48,13 +48,12 @@ export class ReservationsService {
   }
 
   async deleteReservation(deleteMessage:string):Promise<string>{
-    const aiResponse = await this.aiService.getPhoneFromMessage(deleteMessage);
+    const aiResponse = await this.aiService.getCancelData(deleteMessage);
 
     const { phone, date, time, name } = aiResponse;
 
-    await this.datesService.deleteReservation({ phone, date, time, name })
+    return await this.datesService.deleteReservation({ phone, date, time, name })//TODO: create type
     
-    return `Reserva eliminada correctamente`
   }
 
   updateReservation(id: number, updateReservationDto: UpdateReservationDto) {
