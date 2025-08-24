@@ -115,7 +115,7 @@ export class DatesService {
         await this.createReservationRowUseCase.createReservationAndRow(index, newRowData)
       } else {
         const customerData = { name, phone, quantity }
-        await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`, { customerData })  
+        await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`, { customerData })
       }
 
       const updateParams: UpdateParams = {
@@ -143,17 +143,26 @@ export class DatesService {
     }
   }
 
-  async deleteReservation(deleteReservation:DeleteReservation){
+  async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
     const { phone, date, time } = deleteReservation;
     try {
-      const index = await this.googleSheetsService.getDate(date!, time!)
+
+      const index = await this.googleSheetsService.getDateIndexByData(date!, time!, phone!, phone!)
 
       if (index === -1) {
         return 'No se encontro la fecha'
       }
 
-      await this.googleSheetsService.deleteReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`)
+      const dates = await this.googleSheetsService.getDatetimeDates(date!, time!)
+
+      if (dates.length > 1) {
+        await this.googleSheetsService.deleteRow(index, 0)//TODO:
+      } else {
+        await this.googleSheetsService.deleteReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`)
+      }
+      this.logger.log(`Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`, DatesService.name)
       
+      return 'Reserva eliminada correctamente'
     } catch (error) {
       this.logger.error(`Error al eliminar la reserva`, error);
       throw error;

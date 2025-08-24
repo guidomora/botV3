@@ -59,6 +59,38 @@ export class GoogleSheetsService {
     }
   }
 
+  async getDateIndexByData(date: string, time: string, name: string, phone: string): Promise<number> {
+    try {
+      const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
+
+      const index = data.findIndex(row => row[0] === date && row[1] === time && row[2] === name && row[3] === phone) + 1;
+
+      if (index === -1 || index === undefined || index === 0) {
+        return -1
+      }
+
+      return index;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  async getDatetimeDates(date: string, time: string): Promise<DateTime> {
+    try {
+      const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
+
+      const filteredData = data.filter(row => row[0] === date && row[1] === time);
+
+      if (filteredData.length === 0) {
+        return []
+      }
+
+      return filteredData;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
   async getRowValues(range: string): Promise<DateTime> {
     try {
       const data = await this.googleSheetsRepository.getRowValues(range);
@@ -150,6 +182,15 @@ export class GoogleSheetsService {
   async deleteRow(rowIndex: number, sheetIndex: number) {
     try {
       await this.googleSheetsRepository.deleteRow(rowIndex, sheetIndex);
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  async getReservationsByDate(date: string): Promise<DateTime> {
+    try {
+      const data = await this.googleSheetsRepository.getReservationsByDate(date);
+      return data;
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }

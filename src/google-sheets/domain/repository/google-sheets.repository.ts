@@ -154,10 +154,13 @@ export class GoogleSheetsRepository {
   async getReservationsByDate(date: string): Promise<DateTime> {
     const { data } = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,
-      range: `${SHEETS_NAMES[0]}!A:A`,
+      range: `${SHEETS_NAMES[0]}!A:F`,
       majorDimension: 'ROWS',
     });
-    return data.values ?? [];
+
+    const reservations = data.values?.filter(row => row[0] === date);
+
+    return reservations ?? [];
   }
 
   async createDate(createDateType: any) {

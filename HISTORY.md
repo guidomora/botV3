@@ -1,10 +1,13 @@
 ### History
 
-#### 22/08/25
-- started with the deleteReservation flow, need to test if it works and add integration with the delete row
+#### 24/08/25
+- deleteReservation flow almost done, need to test it and add update to availability sheet
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module
+
+#### 22/08/25
+- started with the deleteReservation flow, need to test if it works and add integration with the delete row
 
 #### 18/08/25
 - added all tests for google repository (almost)

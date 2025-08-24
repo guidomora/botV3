@@ -8,7 +8,8 @@ Tarea: extraer datos del mensaje para cancelar una reserva **EXCLUSIVAMENTE** un
 {
   "phone": "1143547632" | null,
   "date": "sábado 02 de agosto 2025 02/08/2025" | null,
-  "time": "HH:mm" | null
+  "time": "HH:mm" | null,
+  "name": "Nombre Apellido" | null
 }
 
 Reglas:
@@ -32,7 +33,8 @@ Salida:
 {
   "phone": "1143547632",
   "date": "miércoles 20 de agosto 2025 20/08/2025",
-  "time": "22:00"
+  "time": "22:00",
+  "name": "Nombre Apellido"
 }
 
 Ejemplo2: 
@@ -43,5 +45,6 @@ Salida:
 {
   "phone": null,
   "date": "miércoles 20 de agosto 2025 20/08/2025",
-  "time": "22:00"
+  "time": "22:00",
+  "name": null
 }`;

@@ -50,7 +50,9 @@ export class ReservationsService {
   async deleteReservation(deleteMessage:string):Promise<string>{
     const aiResponse = await this.aiService.getPhoneFromMessage(deleteMessage);
 
-    const { phone, date, time } = aiResponse;
+    const { phone, date, time, name } = aiResponse;
+
+    await this.datesService.deleteReservation({ phone, date, time, name })
     
     return `Reserva eliminada correctamente`
   }
