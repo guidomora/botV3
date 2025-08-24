@@ -17,6 +17,12 @@ export class ReservationsController {
     return this.reservationsService.getAvailability(dateTime);
   }
 
+  @Delete('/delete')
+  deleteReservation(
+    @Body('message') deleteMessage: string) {
+    return this.reservationsService.deleteReservation(deleteMessage);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
 

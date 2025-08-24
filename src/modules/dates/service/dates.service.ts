@@ -143,7 +143,7 @@ export class DatesService {
     }
   }
 
-  async deleteREservation(deleteReservation:DeleteReservation){
+  async deleteReservation(deleteReservation:DeleteReservation){
     const { phone, date, time } = deleteReservation;
     try {
       const index = await this.googleSheetsService.getDate(date!, time!)
@@ -155,7 +155,8 @@ export class DatesService {
       await this.googleSheetsService.deleteReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`)
       
     } catch (error) {
-      
+      this.logger.error(`Error al eliminar la reserva`, error);
+      throw error;
     }
   }
 }
