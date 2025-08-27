@@ -1,11 +1,15 @@
 ### History
 
-#### 24/08/25
-- deleteReservation flow is wrking, but need to add integration with update availability sheet
-- check the types of this flow
+#### 26/08/25
+- Bug fixed: Because of the addition of new reservations, the row index was not correct, so the availability was failing at getting data and updating it. Now gets the right index for each date and time
+- delete flow works, need to test it more
 - TODO:
+ - check the types of this flow
  - continue checking if ai fails 
  - add all tests for google module
+
+#### 24/08/25
+- deleteReservation flow is wrking, but need to add integration with update availability sheet
 
 #### 22/08/25
 - started with the deleteReservation flow, need to test if it works and add integration with the delete row

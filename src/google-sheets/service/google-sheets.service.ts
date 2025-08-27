@@ -43,9 +43,9 @@ export class GoogleSheetsService {
     }
   }
 
-  async getDate(date: string, time: string): Promise<number> {
+  async getDate(date: string, time: string, range:string = `${SHEETS_NAMES[0]}!A:C`): Promise<number> {
     try {
-      const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:C`);
+      const data = await this.googleSheetsRepository.getDates(range);
 
       const index = data.findIndex(row => row[0] === date && row[1] === time) + 1;
 
@@ -109,11 +109,13 @@ export class GoogleSheetsService {
     }
   }
 
-  async getAvailability(range: string): Promise<Availability> {
+  async getAvailability(date: string, time: string): Promise<Availability> {
     let isAvailable = false;
+
+    const index = await this.getDate(date, time, `${SHEETS_NAMES[1]}!A:C`)
     
     try {
-      const data = await this.googleSheetsRepository.getAvailability(range);
+      const data = await this.googleSheetsRepository.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`);
       
       const reservations = Number(data[0][0])
 
@@ -135,9 +137,11 @@ export class GoogleSheetsService {
     }
   }
 
-  async updateAvailability(range: string, operation: ReservationOperation, updateParams: UpdateParams) {
+  async updateAvailability(operation: ReservationOperation, updateParams: UpdateParams) {
 
-    let { reservations, available } = updateParams;
+    let { reservations, available, date, time } = updateParams;
+
+    const index = await this.getDate(date, time, `${SHEETS_NAMES[1]}!A:C`)
 
     try {
 
@@ -148,9 +152,12 @@ export class GoogleSheetsService {
       if (operation === ReservationOperation.ADD) {
         reservations += 1;
         available -= 1;
+      } else {
+        reservations -= 1;
+        available += 1;
       }
 
-      await this.googleSheetsRepository.updateAvailabilitySheet(range, reservations, available);
+      await this.googleSheetsRepository.updateAvailabilitySheet(`${SHEETS_NAMES[1]}!C${index}:D${index}`, reservations, available);
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }

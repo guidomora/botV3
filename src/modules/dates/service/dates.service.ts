@@ -94,7 +94,7 @@ export class DatesService {
         return 'No se encontro la fecha'
       }
 
-      const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`)
+      const availability = await this.googleSheetsService.getAvailability(date!, time!)
 
       if (!availability.isAvailable) {
         return 'No hay disponibilidad para esa fecha y horario'
@@ -120,10 +120,12 @@ export class DatesService {
 
       const updateParams: UpdateParams = {
         reservations: availability.reservations,
-        available: availability.available
+        available: availability.available,
+        date: date!,
+        time: time!
       }
 
-      await this.googleSheetsService.updateAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`, ReservationOperation.ADD, updateParams)
+      await this.googleSheetsService.updateAvailability(ReservationOperation.ADD, updateParams)
 
       return `Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`
     } catch (error) {
@@ -145,7 +147,6 @@ export class DatesService {
 
   async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
     const { phone, date, time, name } = deleteReservation;
-    console.log('deleteReservation', deleteReservation);
     
     try {
 
@@ -154,10 +155,8 @@ export class DatesService {
       if (index === -1) {
         return 'No se encontro la fecha'
       }
-      console.log('index', index);
       
       const dates = await this.googleSheetsService.getDatetimeDates(date!, time!)
-      console.log('dates', dates);
       
       if (dates.length === 1) {
         await this.googleSheetsService.deleteReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`)
@@ -165,14 +164,16 @@ export class DatesService {
         await this.googleSheetsService.deleteRow(index, 0)
       }
 
-      const availability = await this.googleSheetsService.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`)
+      const availability = await this.googleSheetsService.getAvailability(date!, time!)
 
       const updateParams: UpdateParams = {
         reservations: availability.reservations,
-        available: availability.available
+        available: availability.available,
+        date: date!,
+        time: time!
       }
 
-      await this.googleSheetsService.updateAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`, ReservationOperation.SUBTRACT, updateParams)
+      await this.googleSheetsService.updateAvailability(ReservationOperation.SUBTRACT, updateParams)
       this.logger.log(`Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`, DatesService.name)
 
       return 'Reserva eliminada correctamente'
