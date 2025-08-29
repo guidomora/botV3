@@ -1,2 +1,2 @@
-export * from './delete-resertveation.type';
+export * from './delete-reservation.type';
 export * from './response-date';

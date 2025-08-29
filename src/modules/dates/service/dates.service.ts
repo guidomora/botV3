@@ -5,7 +5,7 @@ import { parseDate } from '../utils/parseDate';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
 import { SHEETS_NAMES } from 'src/constants';
-import { DeleteReservation, ReservationOperation, UpdateParams } from 'src/lib';
+import { DeleteReservation, GetIndexParams, ReservationOperation, UpdateParams } from 'src/lib';
 import { CreateReservationRowUseCase } from '../application/create-reservation-row.use-case';
 
 @Injectable()
@@ -147,10 +147,17 @@ export class DatesService {
 
   async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
     const { phone, date, time, name } = deleteReservation;
+
+    const getIndexParams: GetIndexParams = {
+      date: date!,
+      time: time!,
+      name: name!,
+      phone: phone!
+    }
     
     try {
 
-      const index = await this.googleSheetsService.getDateIndexByData(date!, time!, name!, phone!)
+      const index = await this.googleSheetsService.getDateIndexByData(getIndexParams)
 
       if (index === -1) {
         return 'No se encontro la fecha'

@@ -4,7 +4,7 @@ import { DateTime } from "src/lib/types/datetime/datetime.type";
 import { SHEETS_NAMES } from "src/constants/sheets-name/sheets-name";
 import { AddDataType } from "src/lib/types/add-data.type";
 import { TablesInfo } from "src/constants/tables-info/tables-info";
-import { Availability, ReservationOperation, UpdateParams } from "src/lib";
+import { Availability, GetIndexParams, ReservationOperation, UpdateParams, UpdateParamsRepository } from "src/lib";
 import { SheetsName } from "src/constants";
 
 
@@ -59,7 +59,9 @@ export class GoogleSheetsService {
     }
   }
 
-  async getDateIndexByData(date: string, time: string, name: string, phone: string): Promise<number> {
+  async getDateIndexByData(getIndexParams: GetIndexParams): Promise<number> {
+    const { date, time, name, phone } = getIndexParams;
+    
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
@@ -157,7 +159,12 @@ export class GoogleSheetsService {
         available += 1;
       }
 
-      await this.googleSheetsRepository.updateAvailabilitySheet(`${SHEETS_NAMES[1]}!C${index}:D${index}`, reservations, available);
+      const updateParams: UpdateParamsRepository = {
+        reservations,
+        available,
+      }
+
+      await this.googleSheetsRepository.updateAvailabilitySheet(`${SHEETS_NAMES[1]}!C${index}:D${index}`, updateParams);
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }

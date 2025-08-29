@@ -8,6 +8,7 @@ import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { ServiceName, SHEETS_NAMES } from 'src/constants';
 import { parseSpreadSheetId } from 'src/google-sheets/helpers/parse-spreadsheet-id.helper';
+import { UpdateParamsRepository } from 'src/lib';
 
 interface GoogleSheetsOpts {
   sheetId: string;
@@ -70,7 +71,9 @@ export class GoogleSheetsRepository {
     return data.values ?? [];
   }
 
-  async updateAvailabilitySheet(range: string, reservations: number, available: number) {
+  async updateAvailabilitySheet(range: string, updateParams: UpdateParamsRepository) {
+
+    const { reservations, available } = updateParams;
 
     await this.sheets.spreadsheets.values.update({
       spreadsheetId: this.sheetId,

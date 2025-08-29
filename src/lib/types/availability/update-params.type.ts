@@ -4,3 +4,8 @@ export interface UpdateParams {
     date: string;
     time: string;
 }
+
+export interface UpdateParamsRepository {
+    reservations: number;
+    available: number;
+}
