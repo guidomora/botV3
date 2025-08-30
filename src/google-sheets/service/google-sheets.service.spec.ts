@@ -144,11 +144,16 @@ describe('GIVEN GoogleSheetsService', () => {
     describe('WHEN getAvailability is called', () => {
         it('SHOULD return availability info from the repository', async () => {
             const availabilityData = [['5', '15']];
+            const date = '2025-07-26';
+            const time = '20:00';
+            const index = 3;
+            jest.spyOn(googleService, 'getDate').mockResolvedValue(index);
             (googleRepository.getAvailability as jest.Mock).mockResolvedValue(availabilityData);
 
-            const result = await googleService.getAvailability(range);
+            const result = await googleService.getAvailability(date, time);
 
-            expect(googleRepository.getAvailability).toHaveBeenCalledWith(range);
+            expect(googleService.getDate).toHaveBeenCalledWith(date, time, `${SHEETS_NAMES[1]}!A:C`);
+            expect(googleRepository.getAvailability).toHaveBeenCalledWith(`${SHEETS_NAMES[1]}!C${index}:D${index}`);
             expect(result).toEqual({
                 isAvailable: true,
                 reservations: 5,
@@ -158,9 +163,13 @@ describe('GIVEN GoogleSheetsService', () => {
 
         it('SHOULD set isAvailable to false when there is no availability', async () => {
             const availabilityData = [['21', '0']];
+            const date = '2025-07-26';
+            const time = '20:00';
+            const index = 3;
+            jest.spyOn(googleService, 'getDate').mockResolvedValue(index);
             (googleRepository.getAvailability as jest.Mock).mockResolvedValue(availabilityData);
 
-            const result = await googleService.getAvailability(range);
+            const result = await googleService.getAvailability(date, time);
 
             expect(result).toEqual({
                 isAvailable: false,

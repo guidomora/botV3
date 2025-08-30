@@ -1,11 +1,15 @@
 ### History
 
-#### 29/08/25
-- types added 
+#### 30/08/25
+- tests added at google repository
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module
  - divide delete flow in use-cases maybe
+ - fix broken tests at google repository and service
+
+#### 29/08/25
+- types added 
 
 #### 26/08/25
 - Bug fixed: Because of the addition of new reservations, the row index was not correct, so the availability was failing at getting data and updating it. Now gets the right index for each date and time
