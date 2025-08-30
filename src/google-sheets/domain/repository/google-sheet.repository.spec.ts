@@ -211,4 +211,48 @@ describe('GIVEN GoogleSheetsRepository', () => {
       expect(appendRowSpy).toHaveBeenCalledWith('Sheet1!A:E', [[date]]);
     });
   });
+
+  describe('WHEN deleteReservation is called', () => {
+    it('SHOULD clear the reservation data in the specified range', async () => {
+      const range = 'Sheet1!A2:D2';
+
+      await repository.deleteReservation(range);
+
+      expect(updateMock).toHaveBeenCalledWith({
+        spreadsheetId: sheetId,
+        range,
+        valueInputOption: 'RAW',
+        requestBody: { values: [['', '', '', '']] },
+      });
+    });
+  });
+
+  describe('WHEN deleteRow is called', () => {
+    it('SHOULD remove the specified row from the sheet', async () => {
+      const rowIndex = 3;
+      const sheetIndex = 0;
+      (parseSpreadSheetId as jest.Mock).mockResolvedValue(321);
+
+      await repository.deleteRow(rowIndex, sheetIndex);
+
+      expect(parseSpreadSheetId).toHaveBeenCalledWith(sheetId, (repository as any).sheets, sheetIndex);
+      expect(batchUpdateMock).toHaveBeenCalledWith({
+        spreadsheetId: sheetId,
+        requestBody: {
+          requests: [
+            {
+              deleteDimension: {
+                range: {
+                  sheetId: 321,
+                  dimension: 'ROWS',
+                  startIndex: rowIndex - 1,
+                  endIndex: rowIndex,
+                },
+              },
+            },
+          ],
+        },
+      });
+    });
+  });
 });
