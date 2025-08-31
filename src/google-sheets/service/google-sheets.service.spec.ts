@@ -181,17 +181,22 @@ describe('GIVEN GoogleSheetsService', () => {
 
     describe('WHEN updateAvailability is called', () => {
         it('SHOULD call updateAvailabilitySheet on the repository with updated values', async () => {
-            const params = { reservations: 3, available: 10 };
+            const params = { reservations: 3, available: 10, date: '2025-07-26', time: '20:00' };
+            const index = 2;
+            jest.spyOn(googleService, 'getDate').mockResolvedValue(index);
 
-            await googleService.updateAvailability(range, ReservationOperation.ADD, params);
+            await googleService.updateAvailability(ReservationOperation.ADD, params);
 
-            expect(googleRepository.updateAvailabilitySheet).toHaveBeenCalledWith(range, 4, 9);
+            expect(googleService.getDate).toHaveBeenCalledWith(params.date, params.time, `${SHEETS_NAMES[1]}!A:C`);
+            expect(googleRepository.updateAvailabilitySheet).toHaveBeenCalledWith(`${SHEETS_NAMES[1]}!C${index}:D${index}`, 4, 9);
         });
 
         it('SHOULD call failure on the repository if there is no availability', async () => {
-            const params = { reservations: 3, available: 0 };
+            const params = { reservations: 3, available: 0, date: '2025-07-26', time: '20:00' };
+            const index = 2;
+            jest.spyOn(googleService, 'getDate').mockResolvedValue(index);
 
-            await googleService.updateAvailability(range, ReservationOperation.ADD, params);
+            await googleService.updateAvailability(ReservationOperation.ADD, params);
 
             expect(googleRepository.failure).toHaveBeenCalled();
             expect(googleRepository.updateAvailabilitySheet).not.toHaveBeenCalled();
