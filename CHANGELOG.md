@@ -1,12 +1,17 @@
 ### History
 
-#### 30/08/25
-- tests added at google repository
+#### 31/08/25
+- use-case for delete flow added, less code at dates service
+- refactor at dates service. The date.service file was getting too big, so i divide it into use-cases
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module
  - divide delete flow in use-cases maybe
  - fix broken tests at google repository and service
+
+#### 30/08/25
+- tests added at google repository
+
 
 #### 29/08/25
 - types added 

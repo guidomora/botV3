@@ -5,7 +5,7 @@ import { DatesService } from "./dates.service";
 import { dateTimeMock, dateTimeWithBookingsMock } from "../test/mocks/date.mock";
 import { Logger } from "@nestjs/common";
 import { parseDate } from "../utils/parseDate";
-import { CreateReservationRowUseCase } from "../application/create-reservation-row.use-case";
+import { CreateReservationRowUseCase } from "../application/create-reservation.use-case";
 
 describe('GIVEN DatesService', () => {
     let datesService: DatesService;

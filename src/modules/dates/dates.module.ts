@@ -3,8 +3,7 @@ import { DatesService } from './service/dates.service';
 import { DatesController } from './controller/dates.controller';
 import { GoogleSheetsModule } from 'src/google-sheets/google-sheets.module';
 import { GenerateDatetime } from './dateTime-build/generate-datetime';
-import { CreateDayUseCase } from './application/create-day.use-case';
-import { CreateReservationRowUseCase } from './application/create-reservation-row.use-case';
+import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from './application';
 
 @Module({
   controllers: [DatesController],
@@ -12,7 +11,8 @@ import { CreateReservationRowUseCase } from './application/create-reservation-ro
   providers: [ DatesService,
     GenerateDatetime,
     CreateDayUseCase,
-    CreateReservationRowUseCase],
+    CreateReservationRowUseCase,
+    DeleteReservationUseCase],
   exports:[DatesService]
   })
 export class DatesModule {}

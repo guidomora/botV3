@@ -121,7 +121,10 @@ describe('GIVEN GoogleSheetsRepository', () => {
 
   describe('WHEN updateAvailabilitySheet is called', () => {
     it('SHOULD update reservations and availability cells', async () => {
-      await repository.updateAvailabilitySheet('Sheet1!C2:D2', 4, 8);
+      await repository.updateAvailabilitySheet('Sheet1!C2:D2', {
+        reservations: 4,
+        available: 8,
+      });
 
       expect(updateMock).toHaveBeenCalledWith({
         spreadsheetId: sheetId,

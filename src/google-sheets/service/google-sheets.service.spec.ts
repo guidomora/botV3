@@ -188,7 +188,10 @@ describe('GIVEN GoogleSheetsService', () => {
             await googleService.updateAvailability(ReservationOperation.ADD, params);
 
             expect(googleService.getDate).toHaveBeenCalledWith(params.date, params.time, `${SHEETS_NAMES[1]}!A:C`);
-            expect(googleRepository.updateAvailabilitySheet).toHaveBeenCalledWith(`${SHEETS_NAMES[1]}!C${index}:D${index}`, 4, 9);
+            expect(googleRepository.updateAvailabilitySheet).toHaveBeenCalledWith(`${SHEETS_NAMES[1]}!C${index}:D${index}`, {
+                reservations: 4,
+                available: 9,
+            });
         });
 
         it('SHOULD call failure on the repository if there is no availability', async () => {

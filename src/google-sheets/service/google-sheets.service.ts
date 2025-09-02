@@ -201,6 +201,14 @@ export class GoogleSheetsService {
     }
   }
 
+  // async deleteOldRows() {
+  //   try {
+  //     await this.googleSheetsRepository.deleteOldRows();
+  //   } catch (error) {
+  //     this.googleSheetsRepository.failure(error);
+  //   }
+  // }
+
   async getReservationsByDate(date: string): Promise<DateTime> {
     try {
       const data = await this.googleSheetsRepository.getReservationsByDate(date);
