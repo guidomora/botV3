@@ -3,13 +3,15 @@ import { SHEETS_NAMES } from "src/constants";
 import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
 import { DeleteReservation, GetIndexParams, ReservationOperation, UpdateParams } from "src/lib"
 import { Logger } from "@nestjs/common";
+import { GenerateDatetime } from "../dateTime-build/generate-datetime";
 
 @Injectable()
 export class DeleteReservationUseCase {
   private readonly logger = new Logger(DeleteReservationUseCase.name);
 
   constructor(
-    private readonly googleSheetsService: GoogleSheetsService
+    private readonly googleSheetsService: GoogleSheetsService,
+    private readonly generateDatetime: GenerateDatetime
   ) { }
 
   async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
@@ -57,15 +59,17 @@ export class DeleteReservationUseCase {
     }
   }
 
-  async deleteOldRows(){
+  async deleteOldRows() {
 
     const rowStart = 1;
     const rowEnd = 1;
     const sheetIndex = 0;
 
+    const deleteTillDate = this.generateDatetime.createPastDay(5);
+    console.log(deleteTillDate);
     
     try {
-      await this.googleSheetsService.deleteOldRows(rowStart, rowEnd, sheetIndex);
+      // await this.googleSheetsService.deleteOldRows(rowStart, rowEnd, sheetIndex);
     } catch (error) {
       this.logger.error(`Error al eliminar las filas antiguas`, error);
       throw error;

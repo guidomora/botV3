@@ -43,4 +43,8 @@ export class DatesService {
   async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
     return this.deleteReservationUseCase.deleteReservation(deleteReservation)
   }
+
+  async deleteOldRows() {
+    return this.deleteReservationUseCase.deleteOldRows()
+  }
 }

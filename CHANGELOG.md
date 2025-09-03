@@ -1,13 +1,18 @@
 ### History
 
-#### 31/08/25
-- use-case for delete flow added, less code at dates service
-- refactor at dates service. The date.service file was getting too big, so i divide it into use-cases
+#### 03/09/25
+- delete old rows flow defined 
+- started working at delete old rows flow
+- test cases for use-cases added
+- date.service tests refactored
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module
- - divide delete flow in use-cases maybe
- - fix broken tests at google repository and service
+
+
+#### 31/08/25
+- use-case for delete flow added, less code at dates service
+- refactor at dates service. The date.service file was getting too big, so i divide it into use-cases
 
 #### 30/08/25
 - tests added at google repository

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Delete } from '@nestjs/common';
 import { DatesService } from '../service/dates.service';
 
 @Controller('dates')
@@ -25,5 +25,10 @@ export class DatesController {
   @Post('/x-dates')
   createXDates(@Body('quantity') quantity: number): Promise<string> {
     return this.datesService.createXDates(quantity);
+  }
+
+  @Delete('/delete-old-rows')
+  deleteOldRows(): Promise<void> {
+    return this.datesService.deleteOldRows();
   }
 }

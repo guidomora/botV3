@@ -48,6 +48,24 @@ export class GenerateDatetime {
         return day
     }
 
+    // this and createOneDay could be refactored to use only one method TODO:
+    public createPastDay(daysAgo: number = 0): string {
+        const today = new Date()
+        today.setDate(today.getDate() - daysAgo);
+        const dayName = daysOfWeek[today.getDay()]
+        const dayNumber = String(today.getDate()).padStart(2, '0')
+        const monthName = months[today.getMonth()]
+        const year = today.getFullYear()
+        const dayFormatted = String(today.getDate()).padStart(2, '0');
+        const monthFormatted = String(today.getMonth() + 1).padStart(2, '0');
+
+        const ddmmyy = `${dayFormatted}/${monthFormatted}/${year}`;
+
+
+        const day = `${dayName} ${dayNumber} de ${monthName} ${year} ${ddmmyy}`
+        return day
+    }
+
     public createNextDay(date:Date): string {
         date.setDate(date.getDate() + 1);
         const dayName = daysOfWeek[date.getDay()]
