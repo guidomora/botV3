@@ -210,6 +210,32 @@ export class GoogleSheetsRepository {
     }
   }
 
+  async deleteOldRows(rowStart: number, rowEnd: number, sheetIndex: number) {
+
+    try {
+      const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.sheetId,
+        requestBody: {
+          requests: [
+            {
+              deleteDimension: {
+                range: {
+                  sheetId,
+                  dimension: 'ROWS',
+                  startIndex: rowStart - 1,
+                  endIndex: rowEnd,
+                },
+              },
+            }
+          ]
+        },
+      });
+    } catch (error) {
+      this.failure(error);
+    }
+  }
+
   failure(error: unknown, msg = 'Google Sheets error'): never {
     console.error(error);
     throw new InternalServerErrorException(msg);

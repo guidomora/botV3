@@ -1,49 +1,47 @@
-import { Test } from "@nestjs/testing";
-import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
-import { CreateDayUseCase } from "../application/create-day.use-case";
 import { DatesService } from "./dates.service";
-import { dateTimeMock, dateTimeWithBookingsMock } from "../test/mocks/date.mock";
+import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
+import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from "../application";
+import { createReservationMock } from "../test/mocks/reservation.mock";
+import { DeleteReservation } from "src/lib";
+import { Test } from "@nestjs/testing";
 import { Logger } from "@nestjs/common";
-import { parseDate } from "../utils/parseDate";
-import { CreateReservationRowUseCase } from "../application/create-reservation.use-case";
 
 describe('GIVEN DatesService', () => {
     let datesService: DatesService;
     let googleSheetsService: GoogleSheetsService;
     let createDayUseCase: CreateDayUseCase;
     let createReservationRowUseCase: CreateReservationRowUseCase;
+    let deleteReservationUseCase: DeleteReservationUseCase;
+    let loggerErrorSpy: jest.SpyInstance;
 
-    const date = 'sábado 26 de julio 2025 26/07/2025';
-
-    const quantity = 2;
-
-    let loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
-    let loggerLogSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     beforeEach(async () => {
-
         const module = await Test.createTestingModule({
             providers: [
                 DatesService,
                 {
-                    provide: GoogleSheetsService,
-                    useValue: {
-                        appendRow: jest.fn(),
-                        getLastRowValue: jest.fn(),
-                        checkDate: jest.fn(),
-                    },
-                },
-                {
                     provide: CreateDayUseCase,
                     useValue: {
-                        createDateTime: jest.fn(() => dateTimeMock),
-                        createOneDayWithBookings: jest.fn(() => dateTimeWithBookingsMock),
-                        createNextDay: jest.fn(() => date),
+                        createDate: jest.fn().mockResolvedValue('date created'),
+                        createNextDate: jest.fn().mockResolvedValue('next date created'),
+                        createXDates: jest.fn().mockResolvedValue('dates created'),
                     },
                 },
                 {
                     provide: CreateReservationRowUseCase,
                     useValue: {
-                        createReservationRow: jest.fn(),
+                        createReservation: jest.fn().mockResolvedValue('reservation added'),
+                    },
+                },
+                {
+                    provide: DeleteReservationUseCase,
+                    useValue: {
+                        deleteReservation: jest.fn().mockResolvedValue('reservation deleted'),
+                    },
+                },
+                {
+                    provide: GoogleSheetsService,
+                    useValue: {
+                        checkDate: jest.fn(),
                     },
                 },
             ],
@@ -52,136 +50,79 @@ describe('GIVEN DatesService', () => {
         datesService = module.get<DatesService>(DatesService);
         googleSheetsService = module.get<GoogleSheetsService>(GoogleSheetsService);
         createDayUseCase = module.get<CreateDayUseCase>(CreateDayUseCase);
+        createReservationRowUseCase = module.get<CreateReservationRowUseCase>(CreateReservationRowUseCase);
+        deleteReservationUseCase = module.get<DeleteReservationUseCase>(DeleteReservationUseCase);
         loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
-        loggerLogSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
-    })
+    });
 
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-
     it('SHOULD be defined', () => {
         expect(datesService).toBeDefined();
-    })
+    });
 
     describe('WHEN createDate is called', () => {
-        it('SHOULD create the datetime and bookings', async () => {
+        it('SHOULD return the use case result', async () => {
             const result = await datesService.createDate();
-
-            expect(createDayUseCase.createDateTime()).toEqual(dateTimeMock);
-
-            expect(createDayUseCase.createOneDayWithBookings()).toEqual(dateTimeWithBookingsMock);
-
-            expect(googleSheetsService.appendRow).toHaveBeenCalledTimes(2);
-
-            expect(result).toEqual(`Se agrego el dia ${date}`);
+            expect(createDayUseCase.createDate).toHaveBeenCalled();
+            expect(result).toBe('date created');
         });
-
-        it('SHOULD throw an error and log it', async () => {
-            const errorMock = new Error('Append failed');
-
-            (googleSheetsService.appendRow as jest.Mock).mockImplementationOnce(() => {
-                throw errorMock;
-            });
-
-            await expect(datesService.createDate()).rejects.toThrow('Append failed');
-
-            expect(googleSheetsService.appendRow).toHaveBeenCalledTimes(1);
-            expect(loggerErrorSpy).toHaveBeenCalledWith('Error al agregar el dia', errorMock);
-
-            loggerErrorSpy.mockRestore();
-        });
-    })
+    });
 
     describe('WHEN createNextDate is called', () => {
-
-        const beforeDate = 'viernes 25 de julio 2025 25/07/2025'
-        const parsedDate = parseDate(beforeDate);
-
-
-        it('SHOULD return the matrix of datetime for the next day', async () => {
-            (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
-            (createDayUseCase.createNextDay as jest.Mock).mockReturnValue(date);
-
+        it('SHOULD return the use case result', async () => {
             const result = await datesService.createNextDate();
-
-            expect(createDayUseCase.createNextDay).toHaveBeenCalledWith(parsedDate);
-            expect(createDayUseCase.createDateTime).toHaveBeenCalledWith(date);
-            expect(createDayUseCase.createOneDayWithBookings).toHaveBeenCalledWith(date);
-            expect(googleSheetsService.appendRow).toHaveBeenCalledTimes(2);
-            expect(result).toEqual(`Se agrego el dia sábado 26 de julio 2025 26/07/2025`);
+            expect(createDayUseCase.createNextDate).toHaveBeenCalled();
+            expect(result).toBe('next date created');
         });
-
-        it('SHOULD throw an error and log it', async () => {
-            const errorMock = new Error('Append failed');
-
-            (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
-            (googleSheetsService.appendRow as jest.Mock).mockImplementationOnce(() => {
-                throw errorMock;
-            });
-
-            await expect(datesService.createNextDate()).rejects.toThrow('Append failed');
-
-            expect(googleSheetsService.appendRow).toHaveBeenCalledTimes(1);
-            expect(loggerErrorSpy).toHaveBeenCalledWith('Error al agregar el dia', errorMock);
-        });
-    })
+    });
 
     describe('WHEN createXDates is called', () => {
-        const beforeDate = 'viernes 25 de julio 2025 25/07/2025';
-        const quantity = 3;
-        const parsedDate = parseDate(beforeDate);
-      
-        it('SHOULD create multiple dates and log the result', async () => {
-          (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
-          (createDayUseCase.createNextDay as jest.Mock).mockReturnValue(date);
-          (createDayUseCase.createDateTime as jest.Mock).mockReturnValue(dateTimeMock);
-          (createDayUseCase.createOneDayWithBookings as jest.Mock).mockReturnValue(dateTimeWithBookingsMock);
-      
-          const result = await datesService.createXDates(quantity);
-      
-          expect(googleSheetsService.getLastRowValue).toHaveBeenCalledTimes(quantity);
-          expect(createDayUseCase.createNextDay).toHaveBeenCalledTimes(quantity);
-          expect(createDayUseCase.createNextDay).toHaveBeenNthCalledWith(1, parsedDate); // opcional
-      
-          expect(createDayUseCase.createDateTime).toHaveBeenCalledTimes(quantity);
-          expect(createDayUseCase.createOneDayWithBookings).toHaveBeenCalledTimes(quantity);
-      
-          expect(googleSheetsService.appendRow).toHaveBeenCalledTimes(quantity * 2);
-          expect(loggerLogSpy).toHaveBeenCalledWith(`Se agregaron ${quantity} dias`, 'DatesService');
-          expect(result).toBe(`Se agregaron ${quantity} dias`);
+        it('SHOULD return the use case result', async () => {
+            const quantity = 3;
+            const result = await datesService.createXDates(quantity);
+            expect(createDayUseCase.createXDates).toHaveBeenCalledWith(quantity);
+            expect(result).toBe('dates created');
         });
-      
-        it('SHOULD throw an error and log it', async () => {
-          const errorMock = new Error('Append failed');
-      
-          (googleSheetsService.getLastRowValue as jest.Mock).mockResolvedValue(beforeDate);
-          (googleSheetsService.appendRow as jest.Mock).mockImplementationOnce(() => {
-            throw errorMock;
-          });
-      
-          await expect(datesService.createXDates(quantity)).rejects.toThrow('Append failed');
-      
-          expect(googleSheetsService.appendRow).toHaveBeenCalledTimes(1);
-          expect(loggerErrorSpy).toHaveBeenCalledWith('Error al agregar el dia', errorMock);
+    });
+
+    describe('WHEN createReservation is called', () => {
+        it('SHOULD delegate to the use case', async () => {
+            const result = await datesService.createReservation(createReservationMock);
+            expect(createReservationRowUseCase.createReservation).toHaveBeenCalledWith(createReservationMock);
+            expect(result).toBe('reservation added');
         });
-    })
+    });
 
     describe('WHEN checkDate is called', () => {
         it('SHOULD return true if the date exists', async () => {
-          const date = 'viernes 25 de julio 2025 25/07/2025';
-          (googleSheetsService.checkDate as jest.Mock).mockResolvedValue(true);
-          const result = await datesService.checkDate(date);
-          expect(result).toBe(true);
+            (googleSheetsService.checkDate as jest.Mock).mockResolvedValue(true);
+            const result = await datesService.checkDate('date');
+            expect(result).toBe(true);
         });
 
         it('SHOULD return false if the date does not exist', async () => {
-          const date = 'viernes 26 de julio 2025 25/07/2025';
-          (googleSheetsService.checkDate as jest.Mock).mockResolvedValue(false);
-          const result = await datesService.checkDate(date);
-          expect(result).toBe(false);
+            (googleSheetsService.checkDate as jest.Mock).mockResolvedValue(false);
+            const result = await datesService.checkDate('date');
+            expect(result).toBe(false);
         });
-    })
-})
 
+        it('SHOULD throw an error and log it', async () => {
+            const errorMock = new Error('check failed');
+            (googleSheetsService.checkDate as jest.Mock).mockRejectedValue(errorMock);
+            await expect(datesService.checkDate('date')).rejects.toThrow('check failed');
+            expect(loggerErrorSpy).toHaveBeenCalledWith('Error al obtener el dia', errorMock);
+        });
+    });
+
+    describe('WHEN deleteReservation is called', () => {
+        it('SHOULD delegate to the use case', async () => {
+            const data: DeleteReservation = { phone: '1', date: 'd', time: 't', name: 'n' };
+            const result = await datesService.deleteReservation(data);
+            expect(deleteReservationUseCase.deleteReservation).toHaveBeenCalledWith(data);
+            expect(result).toBe('reservation deleted');
+        });
+    });
+});

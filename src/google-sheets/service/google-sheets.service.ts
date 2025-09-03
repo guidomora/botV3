@@ -201,13 +201,13 @@ export class GoogleSheetsService {
     }
   }
 
-  // async deleteOldRows() {
-  //   try {
-  //     await this.googleSheetsRepository.deleteOldRows();
-  //   } catch (error) {
-  //     this.googleSheetsRepository.failure(error);
-  //   }
-  // }
+  async deleteOldRows(rowStart: number, rowEnd: number, sheetIndex: number) {
+    try {
+      await this.googleSheetsRepository.deleteOldRows(rowStart, rowEnd, sheetIndex);
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
 
   async getReservationsByDate(date: string): Promise<DateTime> {
     try {
