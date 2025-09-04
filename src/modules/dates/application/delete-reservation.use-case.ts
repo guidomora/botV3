@@ -62,14 +62,30 @@ export class DeleteReservationUseCase {
   async deleteOldRows() {
 
     const rowStart = 1;
-    const rowEnd = 1;
-    const sheetIndex = 0;
 
-    const deleteTillDate = this.generateDatetime.createPastDay(5);
-    console.log(deleteTillDate);
-    
     try {
-      // await this.googleSheetsService.deleteOldRows(rowStart, rowEnd, sheetIndex);
+
+      const deleteTillDate = this.generateDatetime.createPastDay(5);
+
+      const rowEndFirstSheet = await this.googleSheetsService.getDateIndexByDate(deleteTillDate, 0);
+
+      if (rowEndFirstSheet === -1) {
+        return 'No se encontro la fecha'
+      }
+
+      await this.googleSheetsService.deleteOldRows(rowStart, rowEndFirstSheet, 0);
+      
+      this.logger.log(`Filas antiguas eliminadas correctamente para la hoja 0`, DeleteReservationUseCase.name)
+
+      const rowEndSecondSheet = await this.googleSheetsService.getDateIndexByDate(deleteTillDate, 1);
+
+      if (rowEndSecondSheet === -1) {
+        return 'No se encontro la fecha'
+      }
+
+      await this.googleSheetsService.deleteOldRows(rowStart, rowEndSecondSheet, 1);
+      
+      this.logger.log(`Filas antiguas eliminadas correctamente para la hoja 1`, DeleteReservationUseCase.name)
     } catch (error) {
       this.logger.error(`Error al eliminar las filas antiguas`, error);
       throw error;

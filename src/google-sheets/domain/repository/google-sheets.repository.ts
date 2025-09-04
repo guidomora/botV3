@@ -46,7 +46,7 @@ export class GoogleSheetsRepository {
   async createReservation(range: string, values: AddDataType) {
     const { customerData } = values;
 
-    let dataToAdd: (string | number)[] //TODO:
+    let dataToAdd: (string | number)[]
 
     if (customerData.date && customerData.time) {
       dataToAdd = [customerData.date, customerData.time, customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]

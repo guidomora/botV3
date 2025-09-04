@@ -77,6 +77,22 @@ export class GoogleSheetsService {
     }
   }
 
+  async getDateIndexByDate(date: string, sheetIndex: number): Promise<number> {
+    try {
+      const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[sheetIndex]}!A:A`);
+
+      const index = data.findIndex(row => row[0] === date) + 1;
+
+      if (index === -1 || index === undefined || index === 0) {
+        return -1
+      }
+
+      return index;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
   async getDatetimeDates(date: string, time: string): Promise<DateTime> {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);

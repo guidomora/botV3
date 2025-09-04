@@ -50,9 +50,7 @@ export class ReservationsService {
   async deleteReservation(deleteMessage:string):Promise<string>{
     const aiResponse = await this.aiService.getCancelData(deleteMessage);
 
-    const { phone, date, time, name } = aiResponse;
-
-    return await this.datesService.deleteReservation({ phone, date, time, name })//TODO: create type
+    return await this.datesService.deleteReservation(aiResponse)
     
   }
 
