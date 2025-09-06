@@ -213,6 +213,7 @@ export class GoogleSheetsRepository {
   async deleteOldRows(rowStart: number, rowEnd: number, sheetIndex: number) {
 
     try {
+      if (rowEnd <= rowStart) return;
       const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
       await this.sheets.spreadsheets.batchUpdate({
         spreadsheetId: this.sheetId,
@@ -224,7 +225,7 @@ export class GoogleSheetsRepository {
                   sheetId,
                   dimension: 'ROWS',
                   startIndex: rowStart - 1,
-                  endIndex: rowEnd,
+                  endIndex: rowEnd - 1,
                 },
               },
             }

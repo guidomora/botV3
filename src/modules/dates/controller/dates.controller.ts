@@ -28,7 +28,7 @@ export class DatesController {
   }
 
   @Delete('/delete-old-rows')
-  deleteOldRows(): Promise<void> {
+  deleteOldRows(): Promise<string | undefined> {
     return this.datesService.deleteOldRows();
   }
 }

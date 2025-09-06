@@ -1,5 +1,11 @@
 ### History
 
+#### 06/09/25
+- delete old rows flow works
+- TODO:
+ - continue checking if ai fails 
+ - add all tests for google module
+
 #### 04/09/25
 - continue working at delete old rows flow, need to test
 - new method at google service added to get the index of a row only by date

@@ -61,14 +61,14 @@ export class DeleteReservationUseCase {
 
   async deleteOldRows() {
 
-    const rowStart = 1;
+    const rowStart = 4;
 
     try {
 
       const deleteTillDate = this.generateDatetime.createPastDay(5);
-
+      
       const rowEndFirstSheet = await this.googleSheetsService.getDateIndexByDate(deleteTillDate, 0);
-
+      
       if (rowEndFirstSheet === -1) {
         return 'No se encontro la fecha'
       }
@@ -78,7 +78,7 @@ export class DeleteReservationUseCase {
       this.logger.log(`Filas antiguas eliminadas correctamente para la hoja 0`, DeleteReservationUseCase.name)
 
       const rowEndSecondSheet = await this.googleSheetsService.getDateIndexByDate(deleteTillDate, 1);
-
+      
       if (rowEndSecondSheet === -1) {
         return 'No se encontro la fecha'
       }
