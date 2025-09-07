@@ -2,6 +2,8 @@
 
 #### 06/09/25
 - delete old rows flow works
+- whatsapp module added
+- integration with twilio started
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module

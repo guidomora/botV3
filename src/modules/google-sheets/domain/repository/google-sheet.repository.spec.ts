@@ -1,8 +1,8 @@
 import { GoogleSheetsRepository } from './google-sheets.repository';
-import { SHEETS_NAMES, ServiceName } from 'src/constants';
-import { parseSpreadSheetId } from 'src/google-sheets/helpers/parse-spreadsheet-id.helper';
-import { dateTimeMock } from 'src/google-sheets/test/datetime.mock';
+import { SHEETS_NAMES, ServiceName } from 'src/constants'
 import { AddDataType } from 'src/lib/types/add-data.type';
+import { parseSpreadSheetId } from '../../helpers/parse-spreadsheet-id.helper';
+import { dateTimeMock } from '../../test/datetime.mock';
 
 jest.mock('src/google-sheets/helpers/parse-spreadsheet-id.helper');
 

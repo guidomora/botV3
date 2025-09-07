@@ -1,10 +1,10 @@
 import { DatesService } from "./dates.service";
-import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from "../application";
 import { createReservationMock } from "../test/mocks/reservation.mock";
 import { DeleteReservation } from "src/lib";
 import { Test } from "@nestjs/testing";
 import { Logger } from "@nestjs/common";
+import { GoogleSheetsService } from "src/modules/google-sheets/service/google-sheets.service";
 
 describe('GIVEN DatesService', () => {
     let datesService: DatesService;

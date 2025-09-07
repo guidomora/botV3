@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GoogleSheetsService } from 'src/google-sheets/service/google-sheets.service';
+import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
 import { DeleteReservation} from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';

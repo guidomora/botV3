@@ -2,9 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UpdateReservationDto } from '../dto/update-reservation.dto';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
-import { GoogleSheetsService } from 'src/google-sheets/service/google-sheets.service';
-import { SHEETS_NAMES } from 'src/constants';
-import { SearchAvailability } from 'src/lib';
+import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 
 @Injectable()
 export class ReservationsService {
