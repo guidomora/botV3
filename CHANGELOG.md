@@ -1,19 +1,19 @@
 ### History
 
-#### 06/09/25
-- delete old rows flow works
-- whatsapp module added
-- integration with twilio started
+#### 07/09/25
+- investigating twilio integration and webhook
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module
 
+#### 06/09/25
+- delete old rows flow works
+- whatsapp module added
+- integration with twilio started
+
 #### 04/09/25
 - continue working at delete old rows flow, need to test
 - new method at google service added to get the index of a row only by date
-- TODO:
- - continue checking if ai fails 
- - add all tests for google module
 
 #### 03/09/25
 - delete old rows flow defined 

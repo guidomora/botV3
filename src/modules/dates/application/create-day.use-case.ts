@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { GenerateDatetime } from "../dateTime-build/generate-datetime";
 import { DateTime } from "src/lib/types/datetime/datetime.type";
 import { SHEETS_NAMES } from "src/constants";
-import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
+import { GoogleSheetsService } from "src/modules/google-sheets/service/google-sheets.service";
 import { parseDate } from "../utils/parseDate";
 
 @Injectable()

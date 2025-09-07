@@ -10,7 +10,12 @@ import { WhatsAppModule } from './modules/whats-app/whats-app.module';
 
 
 @Module({
-  imports: [ReservationsModule, GoogleSheetsModule.forRoot(), ConfigModule.forRoot({ envFilePath: '.env' }), DatesModule, AiModule, WhatsAppModule],
+  imports: [ReservationsModule,
+    GoogleSheetsModule.forRoot(),
+    ConfigModule.forRoot({ envFilePath: '.env' }),
+    DatesModule,
+    AiModule,
+    WhatsAppModule.forRootAsync()],
   controllers: [AppController],
   providers: [AppService],
 })

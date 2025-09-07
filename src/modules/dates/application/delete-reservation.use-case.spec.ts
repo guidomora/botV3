@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { Logger } from "@nestjs/common";
-import { GoogleSheetsService } from "src/google-sheets/service/google-sheets.service";
+import { GoogleSheetsService } from "src/modules/google-sheets/service/google-sheets.service";
 import { DeleteReservationUseCase } from "./delete-reservation.use-case";
 import { DeleteReservation, ReservationOperation } from "src/lib";
 import { SHEETS_NAMES } from "src/constants";

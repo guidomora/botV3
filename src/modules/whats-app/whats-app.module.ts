@@ -8,19 +8,10 @@ import { WhatsAppController } from './controller/whats-app.controller';
 
 @Module({})
 export class WhatsAppModule {
-  static forRoot(): DynamicModule {
-    return {
-      module: WhatsAppModule,
-      controllers: [WhatsAppController],
-      imports: [ConfigModule.forFeature(twilioConfig)],
-      providers: [TwilioClientProvider, WhatsAppService],
-      exports: [WhatsAppService],
-    };
-  }
-
   static forRootAsync(): DynamicModule {
     return {
       module: WhatsAppModule,
+      controllers: [WhatsAppController],
       imports: [ConfigModule.forFeature(twilioConfig)],
       providers: [TwilioClientProvider, WhatsAppService],
       exports: [WhatsAppService],

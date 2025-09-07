@@ -7,7 +7,7 @@ import { AddValue } from 'src/lib/types/add-value.type';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { ServiceName, SHEETS_NAMES } from 'src/constants';
-import { parseSpreadSheetId } from 'src/google-sheets/helpers/parse-spreadsheet-id.helper';
+import { parseSpreadSheetId } from 'src/modules/google-sheets/helpers/parse-spreadsheet-id.helper';
 import { UpdateParamsRepository } from 'src/lib';
 
 interface GoogleSheetsOpts {

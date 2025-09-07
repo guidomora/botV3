@@ -39,6 +39,17 @@ export class WhatsAppService {
     });
   }
 
+  async handleInboundMessage(params: Record<string, string>) {
+    // Twilio envía campos como: From, To, Body, WaId, NumMedia, MessageSid, etc.
+    const from = params.From;         // "whatsapp:+54911..."
+    const waId = params.WaId;         // "54911..."
+    const body = (params.Body || '').trim();
+    const numMedia = Number(params.NumMedia || '0');
+  
+    console.log(params);
+    
+  }
+
   // (Opcional) verificación de firma de webhooks
   verifySignature(url: string, params: Record<string, any>, signatureHeader: string): boolean {
     const validator = (this.twilio as any).validateRequest;
