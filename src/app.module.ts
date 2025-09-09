@@ -6,7 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatesModule } from './modules/dates/dates.module';
 import { GoogleSheetsModule } from './modules/google-sheets/google-sheets.module';
 import { AiModule } from './modules/ai/ai.module';
-import { WhatsAppModule } from './modules/whats-app/whats-app.module';
+import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 
 
 @Module({

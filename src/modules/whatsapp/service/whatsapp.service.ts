@@ -1,7 +1,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TWILIO_CLIENT } from 'src/modules/whats-app/twilio.provider';
+import { TWILIO_CLIENT } from 'src/modules/whatsapp/twilio.provider';
 
 import type { Twilio } from 'twilio';
 
@@ -27,7 +27,6 @@ export class WhatsAppService {
   }
 
   async sendText(toE164: string, body: string) {
-    // `to` debe ser formato WhatsApp: "whatsapp:+54911...."
     const to = toE164.startsWith('whatsapp:') ? toE164 : `whatsapp:${toE164}`;
 
     return this.twilio.messages.create({

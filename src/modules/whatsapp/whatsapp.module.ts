@@ -3,8 +3,8 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import twilioConfig from './twilio.config';
 import { TwilioClientProvider } from './twilio.provider';
-import { WhatsAppService } from './service/whats-app.service';
-import { WhatsAppController } from './controller/whats-app.controller';
+import { WhatsAppService } from './service/whatsapp.service';
+import { WhatsAppController } from './controller/whatsapp.controller';
 
 @Module({})
 export class WhatsAppModule {

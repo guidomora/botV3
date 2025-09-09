@@ -2,9 +2,11 @@
 
 #### 07/09/25
 - investigating twilio integration and webhook
+- new google sheet added for temporal data
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module
+ - all the data that is goint to be saved at google sheets, need to be parsed to lowercase
 
 #### 06/09/25
 - delete old rows flow works

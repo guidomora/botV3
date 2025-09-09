@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Headers, ForbiddenException, Req } from '@nestjs/common';
-import { WhatsAppService } from '../service/whats-app.service';
+import { WhatsAppService } from '../service/whatsapp.service';
 
 @Controller('communication')
 export class WhatsAppController {
