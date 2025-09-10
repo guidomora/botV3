@@ -1,12 +1,17 @@
 ### History
 
-#### 07/09/25
-- investigating twilio integration and webhook
-- new google sheet added for temporal data
+#### 10/09/25
+- started working at the temporal data flow
+- helper function added at google-sheets module
+- think about the implementation of a state to handle the temporal data
 - TODO:
  - continue checking if ai fails 
  - add all tests for google module
  - all the data that is goint to be saved at google sheets, need to be parsed to lowercase
+
+#### 07/09/25
+- investigating twilio integration and webhook
+- new google sheet added for temporal data
 
 #### 06/09/25
 - delete old rows flow works

@@ -8,13 +8,9 @@ import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { ServiceName, SHEETS_NAMES } from 'src/constants';
 import { parseSpreadSheetId } from 'src/modules/google-sheets/helpers/parse-spreadsheet-id.helper';
-import { UpdateParamsRepository } from 'src/lib';
+import { GoogleSheetsOpts, UpdateParamsRepository } from 'src/lib';
 
-interface GoogleSheetsOpts {
-  sheetId: string;
-  clientEmail: string;
-  privateKey: string;
-}
+
 
 @Injectable()
 export class GoogleSheetsRepository {
