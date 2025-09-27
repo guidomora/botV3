@@ -1,4 +1,16 @@
 ### History
+
+#### 27/09/25
+- temporal data flow works
+- create diagram for the temporal data flow at Miro
+- TODO:
+ - Remove comment at whatsapp.service.ts 19 to 22
+ - test temporal data flow, refactor the code
+ - continue checking if ai fails 
+ - add all tests for google module
+ - all the data that is goint to be saved at google sheets, need to be parsed to lowercase
+
+
 #### 11/09/25
 - controller created at google-sheets module to test the temporal data flow
 - .module updated at google-sheets module
@@ -9,11 +21,6 @@
     - retrieve existing data
     - update data with new data received
     - delete data, once the reservation is created at google sheets
-- TODO:
- - create diagram for the temporal data flow at Miro
- - continue checking if ai fails 
- - add all tests for google module
- - all the data that is goint to be saved at google sheets, need to be parsed to lowercase
 
 #### 10/09/25
 - started working at the temporal data flow

@@ -7,6 +7,14 @@ export function customDataSheetHelper(values: TemporalDataType): TemporalDataTyp
         name: values.name ?? " ",
         phone: values.phone ?? " ",
         quantity: values.quantity ?? " ",
+        waId: values.waId ?? " ",
       };
 }
+
+export function a1(sheetName: string, colLetter: string, row: number) {
+  return `${sheetName}!${colLetter}${row}`;
+}
+
+
+
     

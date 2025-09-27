@@ -3,7 +3,9 @@ export interface TemporalDataType {
     time?: string;
     name?: string;
     phone?: string;
+    service?: string;
     quantity?: string;
+    waId?: string;
 }
 
 export enum TemporalStatusEnum {
@@ -11,3 +13,9 @@ export enum TemporalStatusEnum {
     IN_PROGRESS = 'IN_PROGRESS',
     COMPLETED = 'COMPLETED',
 }
+
+export type AddMissingFieldInput = {
+    waId: string;              // clave de sesión
+    values: TemporalDataType;  // lo que llegó en este mensaje (parcial)
+    messageSid?: string;       // opcional: idempotencia
+};
