@@ -7,7 +7,7 @@ export interface TemporalDataType {
 }
 
 export enum TemporalStatusEnum {
-    JUST_STARTED = 'JUST_STARTED',
+    NO_DATA = 'NO_DATA',
     IN_PROGRESS = 'IN_PROGRESS',
     COMPLETED = 'COMPLETED',
 }

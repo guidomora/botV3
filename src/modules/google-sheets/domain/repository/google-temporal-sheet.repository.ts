@@ -26,7 +26,7 @@ export class GoogleTemporalSheetsRepository {
                 spreadsheetId: this.sheetId,
                 range,
                 valueInputOption: 'RAW',
-                requestBody: { values: [values] },
+                requestBody: { values: [[values]] },
             });
         } catch (error) {
             this.failure(error);
