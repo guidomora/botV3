@@ -1,14 +1,17 @@
 ### History
 
-#### 27/09/25
-- temporal data flow works
-- create diagram for the temporal data flow at Miro
+#### 28/09/25
+- refactor the code from temporal data flow
 - TODO:
- - Remove comment at whatsapp.service.ts 19 to 22
- - test temporal data flow, refactor the code
+ - continue testing temporal data flow
  - continue checking if ai fails 
  - add all tests for google module
  - all the data that is goint to be saved at google sheets, need to be parsed to lowercase
+
+
+#### 27/09/25
+- temporal data flow works
+- create diagram for the temporal data flow at Miro
 
 
 #### 11/09/25
