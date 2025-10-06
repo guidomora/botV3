@@ -180,10 +180,10 @@ export class GoogleSheetsRepository {
     }
   }
 
-  async deleteRow(rowIndex: number, sheetIndex: number) {
+  async deleteRow(rowIndex: number, sheetNumber: number) {
 
     try {
-      const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
+      const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetNumber);
       await this.sheets.spreadsheets.batchUpdate({
         spreadsheetId: this.sheetId,
         requestBody: {
