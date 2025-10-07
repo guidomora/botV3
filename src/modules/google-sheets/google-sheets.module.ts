@@ -5,14 +5,14 @@ import { GoogleSheetsRepository } from './domain/repository/google-sheets.reposi
 import { GoogleSheetsController } from './controller/google-sheets.controller';
 import { GoogleTemporalSheetsService } from './service/google-temporal-sheet.service';
 import { GoogleTemporalSheetsRepository } from './domain/repository/google-temporal-sheet.repository';
-
+import { DatesModule } from '../dates/dates.module';
 
 @Module({})
 export class GoogleSheetsModule {
   static forRoot(): DynamicModule {
     return {
       module: GoogleSheetsModule,
-      imports: [ConfigModule],
+      imports: [ConfigModule, DatesModule],
       controllers: [GoogleSheetsController],
       providers: [
         {

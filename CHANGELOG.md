@@ -1,12 +1,15 @@
 ### History
 
-#### 05/10/25
-- transition from temporal data flow to reservation data flow structure
+#### 06/10/25
+- temporal data flow works
 - TODO:
  - continue testing temporal data flow
  - continue checking if ai fails 
  - add all tests for google module
  - all the data that is going to be saved at google sheets, need to be parsed to lowercase
+
+#### 05/10/25
+- transition from temporal data flow to reservation data flow structure
 
 #### 28/09/25
 - refactor the code from temporal data flow
