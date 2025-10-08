@@ -15,7 +15,7 @@ export enum TemporalStatusEnum {
 }
 
 export type AddMissingFieldInput = {
-    waId: string;              // clave de sesión
-    values: TemporalDataType;  // lo que llegó en este mensaje (parcial)
-    messageSid?: string;       // opcional: idempotencia
+    waId: string;
+    values: TemporalDataType;
+    messageSid?: string;       
 };

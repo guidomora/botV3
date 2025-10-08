@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { datePrompt, phonePrompt, searchAvailabilityPrompt } from '../prompts';
+import { datePrompt, interactPrompt, phonePrompt, searchAvailabilityPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate } from 'src/lib';
 
 
@@ -19,14 +19,14 @@ export class AiService {
         messages: [
           { role: 'system', content: datePrompt },
           { role: 'user', content: message }
-      ],
-    });
+        ],
+      });
 
-    const aiResponse = response.choices[0]!.message!.content!
-    
-    const parseResponse = JSON.parse(aiResponse);
-    
-    return parseResponse;
+      const aiResponse = response.choices[0]!.message!.content!
+
+      const parseResponse = JSON.parse(aiResponse);
+
+      return parseResponse;
     } catch (error) {
       this.logger.error(`Error al obtener la fecha`, error);
       throw error;
@@ -42,22 +42,21 @@ export class AiService {
         messages: [
           { role: 'system', content: searchAvailabilityPrompt },
           { role: 'user', content: message }
-      ],
-    });
+        ],
+      });
 
-    const aiResponse = response.choices[0]!.message!.content!
-    console.log(aiResponse);
-    
-    const parseResponse = JSON.parse(aiResponse);
-    
-    return parseResponse;
+      const aiResponse = response.choices[0]!.message!.content!
+
+      const parseResponse = JSON.parse(aiResponse);
+
+      return parseResponse;
     } catch (error) {
       this.logger.error(`Error al obtener la disponibilidad`, error);
       throw error;
     }
   }
 
-  async getCancelData(message:string):Promise<DeleteReservation>{
+  async getCancelData(message: string): Promise<DeleteReservation> {
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
@@ -66,17 +65,40 @@ export class AiService {
         messages: [
           { role: 'system', content: phonePrompt },
           { role: 'user', content: message }
-      ],
-    });
-    
-    const aiResponse = response.choices[0]!.message!.content!
-    
-    const parseResponse = JSON.parse(aiResponse);
-    console.log('parseResponse', parseResponse);
-    
-    return parseResponse;
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!
+
+      const parseResponse = JSON.parse(aiResponse);
+
+      return parseResponse;
     } catch (error) {
       this.logger.error(`Error al obtener el telefono`, error);
+      throw error;
+    }
+  }
+
+  async interactWithAi(message: string) {
+    try {
+      const response = await this.openAi.getClient().chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'json_object' },
+        temperature: 0,
+        messages: [
+          { role: 'system', content: interactPrompt },
+          { role: 'user', content: message }
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!
+
+      const parseResponse = JSON.parse(aiResponse);
+      console.log(parseResponse);
+      
+      return parseResponse;
+    } catch (error) {
+      this.logger.error(`Error al interactuar con el AI`, error);
       throw error;
     }
   }
