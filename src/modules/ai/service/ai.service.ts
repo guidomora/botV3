@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
 import { datePrompt, interactPrompt, phonePrompt, searchAvailabilityPrompt } from '../prompts';
-import { DeleteReservation, SearchAvailability, ResponseDate } from 'src/lib';
+import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse } from 'src/lib';
 
 
 
@@ -79,7 +79,7 @@ export class AiService {
     }
   }
 
-  async interactWithAi(message: string) {
+  async interactWithAi(message: string): Promise<MultipleMessagesResponse> {
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',

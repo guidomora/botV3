@@ -11,6 +11,11 @@ export class ReservationsController {
     return this.reservationsService.createReservation(createReservationDto);
   }
 
+  @Post('/multiple-messages')
+  createReservationWithMultipleMessages(@Body('message') createReservationDto: string) {
+    return this.reservationsService.createReservationWithMultipleMessages(createReservationDto);
+  }
+
   @Get('/availability')
   getAvailability(
     @Body('dateTime') dateTime: string) {

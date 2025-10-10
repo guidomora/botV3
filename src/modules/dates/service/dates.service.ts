@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { DeleteReservation} from 'src/lib';
+import { AddMissingFieldInput, DeleteReservation, TemporalStatusEnum } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
+import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 
 @Injectable()
 export class DatesService {
@@ -12,6 +13,7 @@ export class DatesService {
     private readonly createReservationRowUseCase: CreateReservationRowUseCase,
     private readonly deleteReservationUseCase: DeleteReservationUseCase,
     private readonly googleSheetsService: GoogleSheetsService,
+    private readonly googleSheetsTemporalService: GoogleTemporalSheetsService,
   ) { }
   async createDate(): Promise<string> {
     return this.createDayUseCase.createDate()
@@ -27,6 +29,23 @@ export class DatesService {
 
   async createReservation(createReservation: CreateReservationType) {
     return this.createReservationRowUseCase.createReservation(createReservation)
+  }
+
+  async createReservationWithMultipleMessages(createReservationDto:AddMissingFieldInput) {
+    const reservation = await this.googleSheetsTemporalService.addMissingField(createReservationDto);
+
+    const { date, time, name, phone, quantity } = reservation.snapshot;
+    if (reservation.status === TemporalStatusEnum.COMPLETED) {
+          const customerData = { date: date!.toLowerCase(), time: time!.toLowerCase(), name: name!.toLowerCase(), phone: phone!.toLowerCase(), quantity: Number(quantity!) }
+
+          await this.createReservationRowUseCase.createReservation(customerData);
+          this.logger.log('Reserva trasladada a hoja de reservas');
+
+          await this.googleSheetsService.deleteRow(reservation.rowIndex, 2)
+          this.logger.log('Fila eliminada de la hoja temporal');
+    }
+    console.log('added to temporal sheet');
+    
   }
 
   async checkDate(date: string): Promise<boolean> {

@@ -3,7 +3,7 @@ import { UpdateReservationDto } from '../dto/update-reservation.dto';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
-
+import { AddMissingFieldInput } from 'src/lib';
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
@@ -16,15 +16,15 @@ export class ReservationsService {
 
   async createReservation(createReservationDto: string): Promise<string> {
     const aiResponse = await this.aiService.sendMessage(createReservationDto);
-    
+
     const { date, time, name, quantity } = aiResponse;
 
     this.logger.log(`Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`, ReservationsService.name)
-    
+
     return await this.datesService.createReservation(aiResponse);
   }
 
-  async getAvailability(dateTime: string):Promise<string> {
+  async getAvailability(dateTime: string): Promise<string> {
     const aiResponse = await this.aiService.getAvailabilityData(dateTime);
 
     const { date, time } = aiResponse;
@@ -37,19 +37,31 @@ export class ReservationsService {
     }
 
     const availability = await this.googleSheetsService.getAvailability(date!, time!);
-    
+
     if (!availability.isAvailable) {
       return 'No hay disponibilidad para esa fecha y horario'
     }
-    
+
     return `Disponibilidad para el dia ${date} a las ${time}`
   }
 
-  async deleteReservation(deleteMessage:string):Promise<string>{
+  async deleteReservation(deleteMessage: string): Promise<string> {
     const aiResponse = await this.aiService.getCancelData(deleteMessage);
 
     return await this.datesService.deleteReservation(aiResponse)
-    
+
+  }
+
+  async createReservationWithMultipleMessages(createReservationDto: string) {
+    const aiResponse = await this.aiService.interactWithAi(createReservationDto);
+
+    const mockedData: AddMissingFieldInput = {
+      waId: '123',
+      values: aiResponse,
+      messageSid: '123',
+    }
+
+    return await this.datesService.createReservationWithMultipleMessages(mockedData);
   }
 
   updateReservation(id: number, updateReservationDto: UpdateReservationDto) {

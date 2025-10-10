@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Get, Query, Delete } from '@nestjs/common';
 import { DatesService } from '../service/dates.service';
+import { AddMissingFieldInput } from 'src/lib';
 
 @Controller('dates')
 export class DatesController {
@@ -30,5 +31,10 @@ export class DatesController {
   @Delete('/delete-old-rows')
   deleteOldRows(): Promise<string | undefined> {
     return this.datesService.deleteOldRows();
+  }
+
+  @Post('/multiple-messages')
+  createReservationWithMultipleMessages(@Body() createReservationDto: AddMissingFieldInput) {
+    return this.datesService.createReservationWithMultipleMessages(createReservationDto);
   }
 }

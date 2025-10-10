@@ -6,7 +6,6 @@ import { TemporalStatusEnum } from "src/lib";
 import { computeStatus, objectToRowArray, buildEmptyRow } from "../helpers/temporal-data.helper";
 import { GoogleSheetsRepository } from "../domain/repository/google-sheets.repository";
 import { Logger } from "@nestjs/common";
-import { DatesService } from "src/modules/dates/service/dates.service";
 
 @Injectable()
 export class GoogleTemporalSheetsService {
@@ -14,7 +13,6 @@ export class GoogleTemporalSheetsService {
     constructor(
         private readonly googleTemporalSheetsRepository: GoogleTemporalSheetsRepository,
         private readonly googleSheetsRepository: GoogleSheetsRepository,
-        private readonly datesService: DatesService,
     ) { }
 
 
@@ -76,9 +74,9 @@ export class GoogleTemporalSheetsService {
             fullRow,
         );
 
-        if (status === TemporalStatusEnum.COMPLETED) {
-            await this.moveAndDeleteTemporalData(rowIndex, next);
-        }
+        // if (status === TemporalStatusEnum.COMPLETED) {
+        //     await this.moveAndDeleteTemporalData(rowIndex, next);
+        // }
 
         return {
             status: next.status,
@@ -90,15 +88,15 @@ export class GoogleTemporalSheetsService {
     }
 
 
-    private async moveAndDeleteTemporalData( rowIndex: number, data: CreateReservationTemporalType) {
-        const customerData = { date: data!.date!.toLowerCase(), time: data!.time!.toLowerCase(), name: data!.name!.toLowerCase(), phone: data!.phone!.toLowerCase(), quantity: Number(data!.quantity!) }
+    // private async moveAndDeleteTemporalData(rowIndex: number, data: CreateReservationTemporalType) {
+    //     const customerData = { date: data!.date!.toLowerCase(), time: data!.time!.toLowerCase(), name: data!.name!.toLowerCase(), phone: data!.phone!.toLowerCase(), quantity: Number(data!.quantity!) }
 
-        await this.datesService.createReservation(customerData);
-        this.logger.log('Reserva trasladada a hoja de reservas');
+    //     await this.datesService.createReservation(customerData);
+    //     this.logger.log('Reserva trasladada a hoja de reservas');
 
-        await this.googleSheetsRepository.deleteRow(rowIndex, 2)
-        this.logger.log('Fila eliminada de la hoja temporal');
-    }
+    //     await this.googleSheetsRepository.deleteRow(rowIndex, 2)
+    //     this.logger.log('Fila eliminada de la hoja temporal');
+    // }
 
     private rowArrayToObject(row: string[], waIdFallback: string) {
         const safe = [...row];
