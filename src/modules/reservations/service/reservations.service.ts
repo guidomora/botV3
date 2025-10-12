@@ -3,7 +3,7 @@ import { UpdateReservationDto } from '../dto/update-reservation.dto';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
-import { AddMissingFieldInput } from 'src/lib';
+import { AddMissingFieldInput, TemporalStatusEnum } from 'src/lib';
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
@@ -52,8 +52,8 @@ export class ReservationsService {
 
   }
 
-  async createReservationWithMultipleMessages(createReservationDto: string) {
-    const aiResponse = await this.aiService.interactWithAi(createReservationDto);
+  async createReservationWithMultipleMessages(message: string): Promise<string> {
+    const aiResponse = await this.aiService.interactWithAi(message);
 
     const mockedData: AddMissingFieldInput = {
       waId: '123',
@@ -61,7 +61,18 @@ export class ReservationsService {
       messageSid: '123',
     }
 
-    return await this.datesService.createReservationWithMultipleMessages(mockedData);
+    const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
+
+
+    switch (response.status) {
+      case TemporalStatusEnum.IN_PROGRESS:
+        return await this.aiService.getMissingData(response.missingFields);
+      case TemporalStatusEnum.COMPLETED:
+        return await this.aiService.reservationCompleted(response.reservationData);
+      default:
+        this.logger.warn(`Estado de reserva inesperado: ${response.status}`);
+        return 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.'
+    }
   }
 
   updateReservation(id: number, updateReservationDto: UpdateReservationDto) {

@@ -1,20 +1,21 @@
 ### History
 
-#### 10/10/25
-- moved logic from temporal data flow to dates module (there was a bug)
-- temporal data flow integrated with ai service --> working
+#### 12/10/25
+- reservation completed and in progress prompts works
+- types added
 - TODO:
  - Check types at temporal data flow with ai
  - continue checking if ai fails 
  - add all tests for google module
  - all the data that is going to be saved at google sheets, need to be parsed to lowercase
 
+#### 10/10/25
+- moved logic from temporal data flow to dates module (there was a bug)
+- temporal data flow integrated with ai service --> working
+
+
 #### 07/10/25
 - new method at ai service to start receiving data from whatsapp
-- TODO:
- - continue checking if ai fails 
- - add all tests for google module
- - all the data that is going to be saved at google sheets, need to be parsed to lowercase
 
 #### 06/10/25
 - temporal data flow works

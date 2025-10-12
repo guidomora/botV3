@@ -19,3 +19,9 @@ export type AddMissingFieldInput = {
     values: TemporalDataType;
     messageSid?: string;       
 };
+
+export type AddMissingFieldOutput = {
+    status: TemporalStatusEnum;
+    missingFields: string[];
+    reservationData: TemporalDataType;
+};

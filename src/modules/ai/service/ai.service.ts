@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { datePrompt, interactPrompt, phonePrompt, searchAvailabilityPrompt } from '../prompts';
-import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse } from 'src/lib';
+import { datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
+import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType } from 'src/lib';
 
 
 
@@ -97,6 +97,52 @@ export class AiService {
       console.log(parseResponse);
       
       return parseResponse;
+    } catch (error) {
+      this.logger.error(`Error al interactuar con el AI`, error);
+      throw error;
+    }
+  }
+
+  async getMissingData(missingFields: string[]): Promise<string> {
+    try {
+      const dataPrompt = missingDataPrompt(missingFields)
+      const response = await this.openAi.getClient().chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'text' },
+        temperature: 0,
+        messages: [
+          { role: 'system', content:dataPrompt},
+          { role: 'user', content: 'Generá el mensaje ahora.' }
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!.trim()
+      console.log('AI Response:', aiResponse);
+      
+      return aiResponse;
+    } catch (error) {
+      this.logger.error(`Error al interactuar con el AI`, error);
+      throw error;
+    }
+  }
+
+  async reservationCompleted(reservationData: TemporalDataType): Promise<string> {
+    try {
+      const dataPrompt = reservationCompletedPrompt(reservationData)
+      const response = await this.openAi.getClient().chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'text' },
+        temperature: 0,
+        messages: [
+          { role: 'system', content:dataPrompt},
+          { role: 'user', content: 'Generá el mensaje ahora.' }
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!.trim()
+      console.log('AI Response:', aiResponse);
+      
+      return aiResponse;
     } catch (error) {
       this.logger.error(`Error al interactuar con el AI`, error);
       throw error;

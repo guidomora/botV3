@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, DeleteReservation, TemporalStatusEnum } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, DeleteReservation, TemporalStatusEnum } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 
@@ -31,7 +31,7 @@ export class DatesService {
     return this.createReservationRowUseCase.createReservation(createReservation)
   }
 
-  async createReservationWithMultipleMessages(createReservationDto:AddMissingFieldInput) {
+  async createReservationWithMultipleMessages(createReservationDto:AddMissingFieldInput): Promise<AddMissingFieldOutput> {
     const reservation = await this.googleSheetsTemporalService.addMissingField(createReservationDto);
 
     const { date, time, name, phone, quantity } = reservation.snapshot;
@@ -44,8 +44,11 @@ export class DatesService {
           await this.googleSheetsService.deleteRow(reservation.rowIndex, 2)
           this.logger.log('Fila eliminada de la hoja temporal');
     }
-    console.log('added to temporal sheet');
-    
+    return {
+      status: reservation.status,
+      missingFields: reservation.missingFields,
+      reservationData: reservation.snapshot
+    }
   }
 
   async checkDate(date: string): Promise<boolean> {
