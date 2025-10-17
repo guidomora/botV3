@@ -4,6 +4,7 @@
 - reservation completed and in progress prompts works
 - types added
 - TODO:
+ - Start working from the user intention
  - Check types at temporal data flow with ai
  - continue checking if ai fails 
  - add all tests for google module
