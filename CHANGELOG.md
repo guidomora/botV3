@@ -1,14 +1,17 @@
 ### History
 
+#### 18/10/25
+- Strategy pattern added to control user intentions
+- TODO:
+ - Test the strategy pattern
+ - Check file names and folder structure
+ - Check types at temporal data flow with ai
+ - add all tests for google module
+ - all the data that is going to be saved at google sheets, need to be parsed to lowercase
+
 #### 12/10/25
 - reservation completed and in progress prompts works
 - types added
-- TODO:
- - Start working from the user intention
- - Check types at temporal data flow with ai
- - continue checking if ai fails 
- - add all tests for google module
- - all the data that is going to be saved at google sheets, need to be parsed to lowercase
 
 #### 10/10/25
 - moved logic from temporal data flow to dates module (there was a bug)

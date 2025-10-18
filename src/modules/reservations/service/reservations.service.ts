@@ -4,6 +4,7 @@ import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { AddMissingFieldInput, TemporalStatusEnum } from 'src/lib';
+import { IntentionsRouter } from './strategy-intetion-flow/intention-context';
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
@@ -12,6 +13,7 @@ export class ReservationsService {
     private readonly datesService: DatesService,
     private readonly aiService: AiService,
     private readonly googleSheetsService: GoogleSheetsService,
+    private readonly router: IntentionsRouter
   ) { }
 
   async createReservation(createReservationDto: string): Promise<string> {
@@ -73,6 +75,12 @@ export class ReservationsService {
         this.logger.warn(`Estado de reserva inesperado: ${response.status}`);
         return 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.'
     }
+  }
+
+  async conversationOrchestrator(message: string) {
+    const aiResponse = await this.aiService.interactWithAi(message);
+    const result = await this.router.route(aiResponse);
+    return result.reply;
   }
 
   updateReservation(id: number, updateReservationDto: UpdateReservationDto) {
