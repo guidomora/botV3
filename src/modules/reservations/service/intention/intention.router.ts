@@ -18,6 +18,7 @@ export class IntentionsRouter {
     async route(input: MultipleMessagesResponse): Promise<StrategyResult> {
         const key = (input.intent ?? Intention.OTHER) as Intention;
         const handler = this.registry.get(key) ?? this.registry.get(Intention.OTHER);
+        
         if (!handler) {
             return { reply: 'No entendí tu pedido. ¿Querés reservar, consultar disponibilidad o cancelar?' };
         }

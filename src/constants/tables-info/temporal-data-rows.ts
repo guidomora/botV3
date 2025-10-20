@@ -9,6 +9,7 @@ export const COL_MAP = {
     quantity: 'F',
     waId: 'G',
     status: 'H',
+    intent: 'I',
   } as const;
 
   export type ColumnKey = keyof typeof COL_MAP;
@@ -22,6 +23,7 @@ export const COL_MAP = {
     'quantity',
     'waId',
     'status',
+    'intent',
   ];
 
 
@@ -32,4 +34,5 @@ export const COL_MAP = {
     'phone',
     'service',
     'quantity',
+    'intent',
   ];

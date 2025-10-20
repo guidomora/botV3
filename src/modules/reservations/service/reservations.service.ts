@@ -4,7 +4,7 @@ import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { AddMissingFieldInput, TemporalStatusEnum } from 'src/lib';
-import { IntentionsRouter } from './strategy-intetion-flow/intention-context';
+import { IntentionsRouter } from './intention/intention.router';
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
@@ -59,7 +59,13 @@ export class ReservationsService {
 
     const mockedData: AddMissingFieldInput = {
       waId: '123',
-      values: aiResponse,
+      values: {
+        phone: '1122334455',
+        date: aiResponse.date,
+        time: aiResponse.time,
+        name: aiResponse.name,
+        quantity: aiResponse.quantity,
+      },
       messageSid: '123',
     }
 

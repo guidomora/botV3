@@ -4,8 +4,8 @@ import { ReservationsController } from './controller/reservations.controller';
 import { DatesModule } from 'src/modules/dates/dates.module';
 import { AiModule } from '../ai/ai.module';
 import { GoogleSheetsModule } from 'src/modules/google-sheets/google-sheets.module';
-import { CreateReservationStrategy } from './service/strategy-intetion-flow/create-reservation.strategy';
-import { INTENTION_STRATEGIES, IntentionsRouter } from './service/strategy-intetion-flow/intention-context';
+import { CreateReservationStrategy } from './service/intention/create-reservation.strategy';
+import { INTENTION_STRATEGIES, IntentionsRouter } from './service/intention/intention.router';
 
 @Module({
   imports: [DatesModule, AiModule, GoogleSheetsModule.forRoot()],

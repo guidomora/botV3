@@ -6,6 +6,7 @@ export interface TemporalDataType {
     service?: string;
     quantity?: string;
     waId?: string;
+    intent?: string;
 }
 
 export enum TemporalStatusEnum {

@@ -1,13 +1,14 @@
 ### History
-
-#### 18/10/25
-- Strategy pattern added to control user intentions
+#### 19/10/25
+- Strategy working
+- few updates at create reservation flow
 - TODO:
- - Test the strategy pattern
- - Check file names and folder structure
  - Check types at temporal data flow with ai
  - add all tests for google module
  - all the data that is going to be saved at google sheets, need to be parsed to lowercase
+
+#### 18/10/25
+- Strategy pattern added to control user intentions
 
 #### 12/10/25
 - reservation completed and in progress prompts works

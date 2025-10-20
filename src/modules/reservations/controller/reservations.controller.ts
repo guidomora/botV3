@@ -13,7 +13,7 @@ export class ReservationsController {
 
   @Post('/multiple-messages')
   createReservationWithMultipleMessages(@Body('message') createReservationDto: string) {
-    return this.reservationsService.createReservationWithMultipleMessages(createReservationDto);
+    return this.reservationsService.conversationOrchestrator(createReservationDto);
   }
 
   @Get('/availability')

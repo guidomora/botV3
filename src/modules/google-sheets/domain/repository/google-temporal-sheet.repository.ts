@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { JWT } from "google-auth-library";
 import { sheets_v4, google } from "googleapis";
-import { GoogleSheetsOpts, TemporalDataType } from "src/lib";
+import { GoogleSheetsOpts } from "src/lib";
 import { Logger } from "@nestjs/common";
 
 @Injectable()
@@ -24,7 +24,7 @@ export class GoogleTemporalSheetsRepository {
 
     async findRowIndexByWaId(sheetName: string, waId: string): Promise<number> {
         try {
-            const range = `${sheetName}!G:G`;
+            const range = `${sheetName}!G:I`;
             const res = await this.sheets.spreadsheets.values.get({
                 spreadsheetId: this.sheetId,
                 range,
@@ -44,7 +44,7 @@ export class GoogleTemporalSheetsRepository {
 
     async appendSeedRow(sheetName: string, rowArray: string[]): Promise<number> {
         try {
-            const range = `${sheetName}!G:G`;
+            const range = `${sheetName}!G:I`;
             const res = await this.sheets.spreadsheets.values.append({
                 spreadsheetId: this.sheetId,
                 range,
@@ -61,7 +61,7 @@ export class GoogleTemporalSheetsRepository {
 
     async readRowByIndex(sheetName: string, rowIndex: number): Promise<string[]> {
         try {
-            const range = `${sheetName}!A${rowIndex}:H${rowIndex}`;
+            const range = `${sheetName}!A${rowIndex}:I${rowIndex}`;
             const res = await this.sheets.spreadsheets.values.get({
                 spreadsheetId: this.sheetId,
                 range,
@@ -73,31 +73,15 @@ export class GoogleTemporalSheetsRepository {
         }
     }
 
-    /** Escribe múltiples rangos en una sola llamada (batch) */
-    // async batchUpdateRanges(
-    //     data: { range: string; values: any[][] }[],
-    // ): Promise<void> {
-    //     try {
-    //         await this.sheets.spreadsheets.values.batchUpdate({
-    //             spreadsheetId: this.sheetId,
-    //             requestBody: {
-    //                 valueInputOption: 'RAW',
-    //                 data,
-    //             },
-    //         });
-    //     } catch (err) {
-    //         this.failure(err, 'No se pudo actualizar rangos (batch)');
-    //     }
-    // }
 
     /** Actualiza una fila completa con un array con 9 columnas (A..I) */
     async updateFullRow(
         sheetName: string,
         rowIndex: number,
         rowArray: any[],
-    ): Promise<void> {
+    ): Promise<void> {        
         try {
-            const range = `${sheetName}!A${rowIndex}:H${rowIndex}`;
+            const range = `${sheetName}!A${rowIndex}:I${rowIndex}`;
             await this.sheets.spreadsheets.values.update({
                 spreadsheetId: this.sheetId,
                 range,

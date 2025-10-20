@@ -8,7 +8,7 @@ import { Logger } from "@nestjs/common";
 
 @Injectable()
 export class CreateReservationStrategy implements IntentionStrategyInterface {
-    readonly intent: Intention.CREATE;
+    readonly intent = Intention.CREATE;
     private readonly logger = new Logger(CreateReservationStrategy.name);
     constructor(
         private readonly datesService: DatesService,
@@ -20,7 +20,13 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
 
         const mockedData: AddMissingFieldInput = {
             waId: '123',
-            values: aiResponse,
+            values: { // TODO: remove this mock once we receive the phone number from the user
+                phone:'1122334455',
+                date: aiResponse.date,
+                time: aiResponse.time,
+                name: aiResponse.name,
+                quantity: aiResponse.quantity,
+            },
             messageSid: '123',
         }
         const response = await this.datesService.createReservationWithMultipleMessages(mockedData);

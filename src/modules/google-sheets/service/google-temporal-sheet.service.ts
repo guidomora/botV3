@@ -1,10 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { GoogleTemporalSheetsRepository } from "../domain/repository/google-temporal-sheet.repository";
-import { AddMissingFieldInput, CreateReservationTemporalType, TemporalDataType } from "src/lib";
+import { AddMissingFieldInput, Intention, TemporalDataType } from "src/lib";
 import { SHEETS_NAMES } from "src/constants";
 import { TemporalStatusEnum } from "src/lib";
 import { computeStatus, objectToRowArray, buildEmptyRow } from "../helpers/temporal-data.helper";
-import { GoogleSheetsRepository } from "../domain/repository/google-sheets.repository";
 import { Logger } from "@nestjs/common";
 
 @Injectable()
@@ -12,7 +11,6 @@ export class GoogleTemporalSheetsService {
     logger = new Logger(GoogleTemporalSheetsService.name);
     constructor(
         private readonly googleTemporalSheetsRepository: GoogleTemporalSheetsRepository,
-        private readonly googleSheetsRepository: GoogleSheetsRepository,
     ) { }
 
 
@@ -66,17 +64,12 @@ export class GoogleTemporalSheetsService {
 
         const { status, missingFields } = computeStatus(next);
         next.status = status;
-
         const fullRow = objectToRowArray(next);
         await this.googleTemporalSheetsRepository.updateFullRow(
             sheetName,
             rowIndex,
             fullRow,
         );
-
-        // if (status === TemporalStatusEnum.COMPLETED) {
-        //     await this.moveAndDeleteTemporalData(rowIndex, next);
-        // }
 
         return {
             status: next.status,
@@ -87,20 +80,9 @@ export class GoogleTemporalSheetsService {
         };
     }
 
-
-    // private async moveAndDeleteTemporalData(rowIndex: number, data: CreateReservationTemporalType) {
-    //     const customerData = { date: data!.date!.toLowerCase(), time: data!.time!.toLowerCase(), name: data!.name!.toLowerCase(), phone: data!.phone!.toLowerCase(), quantity: Number(data!.quantity!) }
-
-    //     await this.datesService.createReservation(customerData);
-    //     this.logger.log('Reserva trasladada a hoja de reservas');
-
-    //     await this.googleSheetsRepository.deleteRow(rowIndex, 2)
-    //     this.logger.log('Fila eliminada de la hoja temporal');
-    // }
-
     private rowArrayToObject(row: string[], waIdFallback: string) {
         const safe = [...row];
-        while (safe.length < 9) safe.push(' ');
+        while (safe.length < 10) safe.push(' ');
 
         const [
             date,
@@ -111,8 +93,8 @@ export class GoogleTemporalSheetsService {
             quantity,
             waId,
             status,
+            intent,
         ] = safe;
-
         return {
             date: date || ' ',
             time: time || ' ',
@@ -122,6 +104,7 @@ export class GoogleTemporalSheetsService {
             quantity: quantity || ' ',
             waId: waId || waIdFallback,
             status: (status as TemporalStatusEnum) || TemporalStatusEnum.NO_DATA,
+            intent: intent || 'create'
         };
     }
 }
