@@ -23,13 +23,15 @@ export class DeleteReservationUseCase {
       name: name!,
       phone: phone!
     }
+    console.log(date);
 
     try {
 
       const index = await this.googleSheetsService.getDateIndexByData(getIndexParams)
 
       if (index === -1) {
-        return 'No se encontro la fecha'
+        this.logger.warn('Alguno de los datos no coincide con la reserva')
+        return 'No se encontro la reserva'
       }
 
       const dates = await this.googleSheetsService.getDatetimeDates(date!, time!)
@@ -66,25 +68,27 @@ export class DeleteReservationUseCase {
     try {
 
       const deleteTillDate = this.generateDatetime.createPastDay(5);
-      
+
       const rowEndFirstSheet = await this.googleSheetsService.getDateIndexByDate(deleteTillDate, 0);
-      
+
       if (rowEndFirstSheet === -1) {
+        this.logger.warn('No se encontro la fecha para la hoja 1')
         return 'No se encontro la fecha'
       }
 
       await this.googleSheetsService.deleteOldRows(rowStart, rowEndFirstSheet, 0);
-      
+
       this.logger.log(`Filas antiguas eliminadas correctamente para la hoja 0`, DeleteReservationUseCase.name)
 
       const rowEndSecondSheet = await this.googleSheetsService.getDateIndexByDate(deleteTillDate, 1);
-      
+
       if (rowEndSecondSheet === -1) {
+        this.logger.warn('No se encontro la fecha para la hoja 2')
         return 'No se encontro la fecha'
       }
 
       await this.googleSheetsService.deleteOldRows(rowStart, rowEndSecondSheet, 1);
-      
+
       this.logger.log(`Filas antiguas eliminadas correctamente para la hoja 1`, DeleteReservationUseCase.name)
     } catch (error) {
       this.logger.error(`Error al eliminar las filas antiguas`, error);

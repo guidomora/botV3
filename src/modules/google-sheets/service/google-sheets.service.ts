@@ -65,7 +65,7 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
-      const index = data.findIndex(row => row[0] === date && row[1] === time && row[2] === name && row[3] === phone) + 1;
+      const index = data.findIndex(row => row[0] === date && row[1] === time && row[2] === name?.toLowerCase() && row[3] === phone) + 1;
 
       if (index === -1 || index === undefined || index === 0) {
         return -1

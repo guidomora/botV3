@@ -6,6 +6,7 @@ import { AiModule } from '../ai/ai.module';
 import { GoogleSheetsModule } from 'src/modules/google-sheets/google-sheets.module';
 import { CreateReservationStrategy } from './service/intention/create-reservation.strategy';
 import { INTENTION_STRATEGIES, IntentionsRouter } from './service/intention/intention.router';
+import { DeleteReservationStrategy } from './service/intention/delete-reservation.strategy';
 
 @Module({
   imports: [DatesModule, AiModule, GoogleSheetsModule.forRoot()],
@@ -14,10 +15,11 @@ import { INTENTION_STRATEGIES, IntentionsRouter } from './service/intention/inte
     ReservationsService,
 
     CreateReservationStrategy,
+    DeleteReservationStrategy,
     {
       provide: INTENTION_STRATEGIES,
       useFactory: (...strategies) => strategies,
-      inject: [CreateReservationStrategy],
+      inject: [CreateReservationStrategy, DeleteReservationStrategy],
     },
 
     IntentionsRouter,

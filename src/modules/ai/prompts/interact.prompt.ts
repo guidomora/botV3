@@ -14,7 +14,7 @@ A partir de UN solo mensaje del usuario, extrae lo que puedas para construir/act
 Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
 
 {
-  "intent": "create" | "update" | "cancel" | "info" | "delete" | "other",
+  "intent": "create" | "update" | "cancel" | "info" | "other",
   "date": "sábado 02 de agosto 2025 02/08/2025" | null,
   "time": "HH:mm" | null,
   "name": "Nombre Apellido" | null,

@@ -3,7 +3,6 @@ export enum Intention {
     UPDATE = 'update',
     CANCEL = 'cancel',
     INFO = 'info',
-    DELETE = 'delete',
     OTHER = 'other',
 }
 
