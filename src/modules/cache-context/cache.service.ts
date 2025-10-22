@@ -1,0 +1,21 @@
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+
+@Injectable()
+export class CacheService {
+    constructor(
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    ) {}
+
+    async get(key: string) {
+        return await this.cacheManager.get(key);
+    }
+
+    async set(key: string, value: any) { // TODO: add TTL
+        return await this.cacheManager.set(key, value);
+    }
+
+    async del(key: string) {
+        return await this.cacheManager.del(key);
+    }
+}

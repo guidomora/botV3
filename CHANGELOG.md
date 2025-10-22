@@ -1,14 +1,16 @@
 ### History
 
-#### 20/10/25
-- started working at delete/cancel flow strategy
-- started thinking about the implementation of cache for user messages
+#### 21/10/25
+- started working at cache module
 - TODO:
- - startt implementing cache for user messages
  - finish delete/cancel flow strategy
  - Check types at temporal data flow with ai
  - add all tests for google module
  - all the data that is going to be saved at google sheets, need to be parsed to lowercase
+
+#### 20/10/25
+- started working at delete/cancel flow strategy
+- started thinking about the implementation of cache for user messages
 
 #### 19/10/25
 - Strategy working

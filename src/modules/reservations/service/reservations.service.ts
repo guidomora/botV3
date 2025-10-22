@@ -5,6 +5,7 @@ import { AiService } from 'src/modules/ai/service/ai.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { AddMissingFieldInput, TemporalStatusEnum } from 'src/lib';
 import { IntentionsRouter } from './intention/intention.router';
+import { CacheService } from 'src/modules/cache-context/cache.service';
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
@@ -13,7 +14,8 @@ export class ReservationsService {
     private readonly datesService: DatesService,
     private readonly aiService: AiService,
     private readonly googleSheetsService: GoogleSheetsService,
-    private readonly router: IntentionsRouter
+    private readonly router: IntentionsRouter,
+    private readonly cacheService: CacheService
   ) { }
 
   async createReservation(createReservationDto: string): Promise<string> {
@@ -84,6 +86,9 @@ export class ReservationsService {
   }
 
   async conversationOrchestrator(message: string) {
+    const waId = "0000";
+    const cacheMessage = await this.cacheService.set(waId, message);
+    const cachedContext = await this.cacheService.get(waId);
     const aiResponse = await this.aiService.interactWithAi(message);
     const result = await this.router.route(aiResponse);
     return result.reply;

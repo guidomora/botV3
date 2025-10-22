@@ -7,6 +7,7 @@ import { DatesModule } from './modules/dates/dates.module';
 import { GoogleSheetsModule } from './modules/google-sheets/google-sheets.module';
 import { AiModule } from './modules/ai/ai.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
+import { CacheContextModule } from './modules/cache-context/cache.module';
 
 
 @Module({
@@ -15,7 +16,8 @@ import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
     ConfigModule.forRoot({ envFilePath: '.env' }),
     DatesModule,
     AiModule,
-    WhatsAppModule.forRootAsync()],
+    WhatsAppModule.forRootAsync(),
+    CacheContextModule],
   controllers: [AppController],
   providers: [AppService],
 })
