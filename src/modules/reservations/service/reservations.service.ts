@@ -70,7 +70,7 @@ export class ReservationsService {
       },
       messageSid: '123',
     }
-
+    const cacheMessage = await this.cacheService.set(mockedData.waId, message);
     const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
 
 
