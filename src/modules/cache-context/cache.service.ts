@@ -11,8 +11,9 @@ export class CacheService {
         return await this.cacheManager.get(key);
     }
 
-    async set(key: string, value: any) { // TODO: add TTL
-        return await this.cacheManager.set(key, value);
+    async set(key: string, value: string) { // TODO: add TTL
+        const newValue = {userMessage: value}
+        return await this.cacheManager.set(key, newValue);
     }
 
     async del(key: string) {
