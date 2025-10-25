@@ -70,7 +70,6 @@ export class ReservationsService {
       },
       messageSid: '123',
     }
-    const cacheMessage = await this.cacheService.set(mockedData.waId, message);
     const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
 
 
@@ -87,8 +86,11 @@ export class ReservationsService {
 
   async conversationOrchestrator(message: string) {
     const waId = "0000";
-    const cacheMessage = await this.cacheService.set(waId, message);
     const cachedContext = await this.cacheService.get(waId);
+    if (cachedContext) {
+      await this.cacheService.appendUserMessage(waId, message);
+    }
+    const cacheMessage = await this.cacheService.set(waId, message);
     const aiResponse = await this.aiService.interactWithAi(message);
     const result = await this.router.route(aiResponse);
     return result.reply;

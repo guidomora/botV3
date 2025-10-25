@@ -1,12 +1,15 @@
 ### History
 
-#### 21/10/25
-- started working at cache module
+#### 24/10/25
+- few adds at cache workflow
 - TODO:
  - finish delete/cancel flow strategy
  - Check types at temporal data flow with ai
  - add all tests for google module
  - all the data that is going to be saved at google sheets, need to be parsed to lowercase
+
+#### 21/10/25
+- started working at cache module
 
 #### 20/10/25
 - started working at delete/cancel flow strategy
