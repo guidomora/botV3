@@ -6,34 +6,47 @@ import { ChatMessage, RoleEnum } from 'src/lib/types/cache/cache-types';
 export class CacheService {
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    ) { }
+    ) {}
 
-    async get(key: string) {
-        return await this.cacheManager.get(key);
+    private readonly MAX = 30;         // máx mensajes por hilo
+    private readonly TTL = 60 * 60 * 1000;    // 1 hora
+    private readonly PREFIX = 'thread:';
+
+    private key(waId: string) {
+        return `${this.PREFIX}${waId}`;
     }
 
-    async set(key: string, value: string) { // TODO: add TTL
-        const newValue = { userMessage: value }
-        return await this.cacheManager.set(key, newValue);
+    async getHistory(waId: string): Promise<ChatMessage[]> {
+        const key = this.key(waId);
+        const data = await this.cacheManager.get(key) ?? [];
+        
+        return Array.isArray(data) ? data : [];
     }
 
-    async appendUserMessage(key: string, value: string) {
-        const prev = (await this.cacheManager.get<ChatMessage[]>(key)) || [];
-        const newEntry = { role: RoleEnum.USER, content: value, ts: Date.now() };
-        const updated = [...prev, newEntry];
-
-        await this.cacheManager.set(key, updated);
+    private async setHistory(waId: string, history: ChatMessage[]) {
+        const key = this.key(waId);
+        const trimmed = history.slice(-this.MAX);
+        await this.cacheManager.set(key, trimmed, this.TTL);
+        
+        return trimmed;
     }
 
-    async appendAssistantMessage(key: string, value: string) {
-        const prev = (await this.cacheManager.get<ChatMessage[]>(key)) || [];
-        const newEntry = { role: RoleEnum.ASSISTANT, content: value, ts: Date.now() };
-        const updated = [...prev, newEntry];
-
-        await this.cacheManager.set(key, updated);
+    async appendMessage(waId: string, msg: ChatMessage) {
+        const history = await this.getHistory(waId);
+        history.push(msg);
+        
+        return this.setHistory(waId, history);
+    }
+    async clearHistory(waId: string) {
+        await this.cacheManager.del(this.key(waId));
     }
 
-    async del(key: string) {
+
+    async appendUserMessage(waId: string, content: string) {
+        return this.appendMessage(waId, { role: RoleEnum.USER, content});
+    }
+
+    async deleteData(key: string) {
         return await this.cacheManager.del(key);
     }
 }

@@ -4,7 +4,7 @@ import { CacheController } from './cache.controller';
 import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
-  imports: [CacheModule.register({isGlobal: true})],
+  imports: [CacheModule.register({isGlobal: true, ttl: 0})],
   controllers: [CacheController],
   providers: [CacheService],
   exports: [CacheService]

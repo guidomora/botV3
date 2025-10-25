@@ -5,7 +5,7 @@ import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { Logger } from "@nestjs/common";
-
+import { CacheService } from "src/modules/cache-context/cache.service";
 @Injectable()
 export class CreateReservationStrategy implements IntentionStrategyInterface {
     readonly intent = Intention.CREATE;
@@ -13,13 +13,14 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
     constructor(
         private readonly datesService: DatesService,
         private readonly aiService: AiService,
+        private readonly cacheService: CacheService
     ) { }
 
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
 
 
         const mockedData: AddMissingFieldInput = {
-            waId: '123',
+            waId: '123456789',
             values: { // TODO: remove this mock once we receive the phone number from the user
                 phone:'1122334455',
                 date: aiResponse.date,
@@ -30,12 +31,12 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
             messageSid: '123',
         }
         const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
-        
+        const history = await this.cacheService.getHistory(mockedData.waId);
         switch (response.status) {
             case TemporalStatusEnum.IN_PROGRESS:
-                return {reply: await this.aiService.getMissingData(response.missingFields)};
+                return {reply: await this.aiService.getMissingData(response.missingFields, history)};
             case TemporalStatusEnum.COMPLETED:
-                return {reply: await this.aiService.reservationCompleted(response.reservationData)};
+                return {reply: await this.aiService.reservationCompleted(response.reservationData, history)};
             default:
                 this.logger.warn(`Estado de reserva inesperado: ${response.status}`);
                 return {reply:'Hubo un problema al procesar la reserva, por favor intentá nuevamente.'}

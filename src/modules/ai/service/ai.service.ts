@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
 import { datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
-import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType } from 'src/lib';
+import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage } from 'src/lib';
 
 
 
@@ -79,14 +79,15 @@ export class AiService {
     }
   }
 
-  async interactWithAi(message: string): Promise<MultipleMessagesResponse> {
+  async interactWithAi(message: string, messageHistory:ChatMessage[]): Promise<MultipleMessagesResponse> {
+    const prompt = interactPrompt(messageHistory)
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'json_object' },
         temperature: 0,
         messages: [
-          { role: 'system', content: interactPrompt },
+          { role: 'system', content: prompt },
           { role: 'user', content: message }
         ],
       });
@@ -103,9 +104,9 @@ export class AiService {
     }
   }
 
-  async getMissingData(missingFields: string[]): Promise<string> {
+  async getMissingData(missingFields: string[], messageHistory:ChatMessage[]): Promise<string> {
     try {
-      const dataPrompt = missingDataPrompt(missingFields)
+      const dataPrompt = missingDataPrompt(missingFields, messageHistory)
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'text' },
@@ -126,9 +127,9 @@ export class AiService {
     }
   }
 
-  async reservationCompleted(reservationData: TemporalDataType): Promise<string> {
+  async reservationCompleted(reservationData: TemporalDataType, messageHistory:ChatMessage[]): Promise<string> {
     try {
-      const dataPrompt = reservationCompletedPrompt(reservationData)
+      const dataPrompt = reservationCompletedPrompt(reservationData, messageHistory)
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'text' },

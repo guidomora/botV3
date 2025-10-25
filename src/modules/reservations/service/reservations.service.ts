@@ -56,42 +56,15 @@ export class ReservationsService {
 
   }
 
-  async createReservationWithMultipleMessages(message: string): Promise<string> {
-    const aiResponse = await this.aiService.interactWithAi(message);
-
-    const mockedData: AddMissingFieldInput = {
-      waId: '123',
-      values: {
-        phone: '1122334455',
-        date: aiResponse.date,
-        time: aiResponse.time,
-        name: aiResponse.name,
-        quantity: aiResponse.quantity,
-      },
-      messageSid: '123',
-    }
-    const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
-
-
-    switch (response.status) {
-      case TemporalStatusEnum.IN_PROGRESS:
-        return await this.aiService.getMissingData(response.missingFields);
-      case TemporalStatusEnum.COMPLETED:
-        return await this.aiService.reservationCompleted(response.reservationData);
-      default:
-        this.logger.warn(`Estado de reserva inesperado: ${response.status}`);
-        return 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.'
-    }
-  }
-
   async conversationOrchestrator(message: string) {
-    const waId = "0000";
-    const cachedContext = await this.cacheService.get(waId);
-    if (cachedContext) {
-      await this.cacheService.appendUserMessage(waId, message);
-    }
-    const cacheMessage = await this.cacheService.set(waId, message);
-    const aiResponse = await this.aiService.interactWithAi(message);
+    const waId = "123456789";
+    await this.cacheService.appendUserMessage(waId, message);
+
+    const history = await this.cacheService.getHistory(waId);
+    console.log('[HISTORY]', history);
+
+
+    const aiResponse = await this.aiService.interactWithAi(message, history);
     const result = await this.router.route(aiResponse);
     return result.reply;
   }

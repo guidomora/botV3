@@ -1,8 +1,20 @@
 import { TemporalDataType } from "src/lib";
+import { ChatMessage } from "src/lib";
 
-export const reservationCompletedPrompt = (reservationData: TemporalDataType) => `
+export const reservationCompletedPrompt = (reservationData: TemporalDataType, context: ChatMessage[]) => `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.
 Tu tarea es redactar **UN mensaje corto y amable** para confirmar que la reserva fue registrada con éxito.
+
+[Contexto de la conversación]
+A continuación tienes el CONTEXTO (últimos mensajes del hilo). Úsalo para completar piezas faltantes y mantener coherencia.
+Si hay conflicto entre el CONTEXTO y el mensaje actual, **siempre prioriza lo más reciente** (mensaje actual).
+No repitas saludos si ya ocurrieron. No reinicies la conversación si ya hay datos previos útiles.
+Si el CONTEXTO está vacío, procede solo con el mensaje actual.
+
+=== CONTEXTO (transcripción) ===
+${context || '(sin mensajes previos)'}
+=== FIN CONTEXTO ===
+
 
 [Contexto de la reserva]
 - Nombre: ${reservationData.name ?? 'no especificado'}

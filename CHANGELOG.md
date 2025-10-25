@@ -1,12 +1,16 @@
 ### History
 
-#### 24/10/25
-- few adds at cache workflow
+#### 25/10/25
+- cache module added and working at create reservation with multiple messages
 - TODO:
+ - need to test more the cache module
  - finish delete/cancel flow strategy
  - Check types at temporal data flow with ai
  - add all tests for google module
  - all the data that is going to be saved at google sheets, need to be parsed to lowercase
+
+#### 24/10/25
+- few adds at cache workflow
 
 #### 21/10/25
 - started working at cache module

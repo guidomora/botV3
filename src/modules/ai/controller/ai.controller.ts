@@ -5,10 +5,10 @@ import { AiService } from '../service/ai.service';
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
-  @Post()
-  interactWithAi(@Body('message') message: string) {
-    return this.aiService.interactWithAi(message);
-  }
+  // @Post()
+  // interactWithAi(@Body('message') message: string) {
+  //   return this.aiService.interactWithAi(message);
+  // }
   // @Post()
   // create(@Body() createAiDto: CreateAiDto) {
   //   return this.aiService.create(createAiDto);

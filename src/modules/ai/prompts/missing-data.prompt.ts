@@ -1,7 +1,20 @@
-export const missingDataPrompt = (missingFields: string[]) => {
-    return `
+import { ChatMessage } from "src/lib";
+
+export const missingDataPrompt = (missingFields: string[], context: ChatMessage[]) => {
+  return `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.
 Debes redactar **UN solo mensaje** corto y amable para pedir los datos que faltan de una reserva.
+
+[Contexto de la conversación]
+A continuación tienes el CONTEXTO (últimos mensajes del hilo). Úsalo para completar piezas faltantes y mantener coherencia.
+Si hay conflicto entre el CONTEXTO y el mensaje actual, **siempre prioriza lo más reciente** (mensaje actual).
+No repitas saludos si ya ocurrieron. No reinicies la conversación si ya hay datos previos útiles.
+Si el CONTEXTO está vacío, procede solo con el mensaje actual.
+
+=== CONTEXTO (transcripción) ===
+${context || '(sin mensajes previos)'}
+=== FIN CONTEXTO ===
+
 
 [Contexto]
 - Campos faltantes (array): ${missingFields}

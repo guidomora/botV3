@@ -3,8 +3,7 @@ export enum RoleEnum {
     ASSISTANT = 'assistant'
 }
 export interface ChatMessage {
-  waId: string;
+  // waId: string;
   role: RoleEnum;
   content: string;
-  ts: number;
 }
