@@ -4,6 +4,8 @@ export const missingDataPrompt = (missingFields: string[], context: ChatMessage[
   return `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.
 Debes redactar **UN solo mensaje** corto y amable para pedir los datos que faltan de una reserva.
+Si es el primer mensaje de la conversacion, saludo al usuario antes de seguir con el resto del mensaje por ejemplo: "Hola! como estas?" y seguis con el mensaje
+
 
 [Contexto de la conversación]
 A continuación tienes el CONTEXTO (últimos mensajes del hilo). Úsalo para completar piezas faltantes y mantener coherencia.

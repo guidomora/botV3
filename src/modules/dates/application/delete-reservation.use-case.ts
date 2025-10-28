@@ -20,7 +20,7 @@ export class DeleteReservationUseCase {
     const getIndexParams: GetIndexParams = {
       date: date!,
       time: time!,
-      name: name!,
+      name: name!.toLowerCase(),
       phone: phone!
     }
     console.log(date);

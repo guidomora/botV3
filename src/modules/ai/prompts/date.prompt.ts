@@ -1,4 +1,4 @@
-import { formatedDate } from "../utils/formated-date.util";
+import { formatedDate } from "../utils/formated-date.utils";
 
 
 export const datePrompt =

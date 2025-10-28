@@ -1,4 +1,4 @@
-import { formatedDate } from "../utils/formated-date.util";
+import { formatedDate } from "../utils/formated-date.utils";
 
 export const phonePrompt =
   `Idioma: español (es-AR). Zona horaria: America/Argentina/Buenos_Aires.

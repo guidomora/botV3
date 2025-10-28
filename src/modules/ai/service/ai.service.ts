@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
+import { cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage } from 'src/lib';
+import { inferActiveIntent, serializeContext } from '../utils';
+
 
 
 
@@ -79,8 +81,13 @@ export class AiService {
     }
   }
 
-  async interactWithAi(message: string, messageHistory:ChatMessage[]): Promise<MultipleMessagesResponse> {
-    const prompt = interactPrompt(messageHistory)
+  async interactWithAi(message: string, messageHistory: ChatMessage[]): Promise<MultipleMessagesResponse> {
+    const activeIntent = inferActiveIntent(messageHistory);
+    const history = messageHistory.at(-1)?.role === 'user' && messageHistory.at(-1)?.content === message
+      ? messageHistory.slice(0, -1)
+      : messageHistory;
+
+    const prompt = interactPrompt(history, activeIntent)
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
@@ -96,7 +103,7 @@ export class AiService {
 
       const parseResponse = JSON.parse(aiResponse);
       console.log(parseResponse);
-      
+
       return parseResponse;
     } catch (error) {
       this.logger.error(`Error al interactuar con el AI`, error);
@@ -104,7 +111,7 @@ export class AiService {
     }
   }
 
-  async getMissingData(missingFields: string[], messageHistory:ChatMessage[]): Promise<string> {
+  async getMissingData(missingFields: string[], messageHistory: ChatMessage[]): Promise<string> {
     try {
       const dataPrompt = missingDataPrompt(missingFields, messageHistory)
       const response = await this.openAi.getClient().chat.completions.create({
@@ -112,14 +119,14 @@ export class AiService {
         response_format: { type: 'text' },
         temperature: 0,
         messages: [
-          { role: 'system', content:dataPrompt},
+          { role: 'system', content: dataPrompt },
           { role: 'user', content: 'Generá el mensaje ahora.' }
         ],
       });
 
       const aiResponse = response.choices[0]!.message!.content!.trim()
       console.log('AI Response:', aiResponse);
-      
+
       return aiResponse;
     } catch (error) {
       this.logger.error(`Error al interactuar con el AI`, error);
@@ -127,7 +134,34 @@ export class AiService {
     }
   }
 
-  async reservationCompleted(reservationData: TemporalDataType, messageHistory:ChatMessage[]): Promise<string> {
+  async getMissingDataToCancel(missingFields: string[], messageHistory: ChatMessage[],
+    known: { phone?: string | null; date?: string | null; time?: string | null; name?: string | null }
+  ): Promise<string> {
+    const context = serializeContext(messageHistory);
+    
+    try {
+      const dataPrompt = cancelDataPrompt(missingFields, context, known)
+      const response = await this.openAi.getClient().chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'text' },
+        temperature: 0,
+        messages: [
+          { role: 'system', content: dataPrompt },
+          { role: 'user', content: 'Generá el mensaje ahora.' }
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!.trim()
+      console.log('AI Response:', aiResponse);
+
+      return aiResponse;
+    } catch (error) {
+      this.logger.error(`Error al interactuar con el AI`, error);
+      throw error;
+    }
+  }
+
+  async reservationCompleted(reservationData: TemporalDataType, messageHistory: ChatMessage[]): Promise<string> {
     try {
       const dataPrompt = reservationCompletedPrompt(reservationData, messageHistory)
       const response = await this.openAi.getClient().chat.completions.create({
@@ -135,14 +169,14 @@ export class AiService {
         response_format: { type: 'text' },
         temperature: 0,
         messages: [
-          { role: 'system', content:dataPrompt},
+          { role: 'system', content: dataPrompt },
           { role: 'user', content: 'Generá el mensaje ahora.' }
         ],
       });
 
       const aiResponse = response.choices[0]!.message!.content!.trim()
       console.log('AI Response:', aiResponse);
-      
+
       return aiResponse;
     } catch (error) {
       this.logger.error(`Error al interactuar con el AI`, error);
