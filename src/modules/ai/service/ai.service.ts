@@ -87,7 +87,8 @@ export class AiService {
       ? messageHistory.slice(0, -1)
       : messageHistory;
 
-    const prompt = interactPrompt(history, activeIntent)
+    const context = serializeContext(history);
+    const prompt = interactPrompt(context, activeIntent)
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
@@ -112,8 +113,9 @@ export class AiService {
   }
 
   async getMissingData(missingFields: string[], messageHistory: ChatMessage[]): Promise<string> {
+    const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = missingDataPrompt(missingFields, messageHistory)
+      const dataPrompt = missingDataPrompt(missingFields, context)
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'text' },

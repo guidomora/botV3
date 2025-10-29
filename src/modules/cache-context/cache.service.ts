@@ -1,6 +1,6 @@
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
-import { Intention, ChatMessage, RoleEnum } from 'src/lib';
+import { Intention, ChatMessage, RoleEnum, DeleteReservation } from 'src/lib';
 
 @Injectable()
 export class CacheService {
@@ -11,20 +11,28 @@ export class CacheService {
     private readonly MAX = 30;         // máx mensajes por hilo
     private readonly TTL = 60 * 60 * 1000;    // 1 hora
     private readonly PREFIX = 'thread:';
+    private readonly CANCEL_PREFIX = 'cancel:';
 
-    private key(waId: string) {
-        return `${this.PREFIX}${waId}`;
+    private key(waId: string, prefix: string) {
+        return `${prefix}${waId}`;
     }
 
     async getHistory(waId: string): Promise<ChatMessage[]> {
-        const key = this.key(waId);
+        const key = this.key(waId, this.PREFIX);
         const data = await this.cacheManager.get(key) ?? [];
 
         return Array.isArray(data) ? data : [];
     }
 
+    private async getCancelData(waId: string): Promise<DeleteReservation> {
+        const key = this.key(waId, this.CANCEL_PREFIX);
+        const data = await this.cacheManager.get<DeleteReservation>(key);
+
+        return data ?? { phone: null, date: null, time: null, name: null };
+    }
+
     private async setHistory(waId: string, history: ChatMessage[]) {
-        const key = this.key(waId);
+        const key = this.key(waId, this.PREFIX);
         const trimmed = history.slice(-this.MAX);
         await this.cacheManager.set(key, trimmed, this.TTL);
 
@@ -39,16 +47,28 @@ export class CacheService {
     }
     
     async clearHistory(waId: string) {
-        await this.cacheManager.del(this.key(waId));
+        await this.cacheManager.del(this.key(waId, this.PREFIX));
     }
 
-
-    async appendAssistantMessage(waId: string, content: string, intention?: Intention) {
-        return this.appendMessage(waId, { role: RoleEnum.ASSISTANT, content }, intention);
+    async setCancelState(waId: string, state: DeleteReservation) {
+        const key = this.key(waId, this.CANCEL_PREFIX);
+        await this.cacheManager.set(key, state, this.TTL);
     }
 
-    async appendUserMessage(waId: string, content: string) {
-        return this.appendMessage(waId, { role: RoleEnum.USER, content });
+    async updateCancelState(waId: string, patch: Partial<DeleteReservation>) {
+    const current = await this.getCancelData(waId);
+    const next: DeleteReservation = {
+      phone: patch.phone ?? current.phone,
+      date:  patch.date  ?? current.date,
+      time:  patch.time  ?? current.time,
+      name:  patch.name  ?? current.name,
+    };
+    await this.setCancelState(waId, next);
+    return next;
+  }
+
+    async appendEntityMessage(waId: string, content: string, role: RoleEnum, intention?: Intention) {
+        return this.appendMessage(waId, { role, content }, intention);
     }
 
     async deleteData(key: string) {

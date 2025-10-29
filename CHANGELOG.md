@@ -1,13 +1,17 @@
 ### History
 
-#### 28/10/25
-- cancel flow working for one message with all the data
-- need to fix the cancel flow for multiple messages. It is not reading the context of the conversation and the known data.
+#### 29/10/25
+- cancel flow working for multiple messages
+- prompts updated
 - TODO:
- - finish delete/cancel flow strategy
+ - Test a few more times both flows, check responses from the system and AI
  - Check types at temporal data flow with ai
  - add all tests for google module
  - all the data that is going to be saved at google sheets, need to be parsed to lowercase
+
+#### 28/10/25
+- cancel flow working for one message with all the data
+- need to fix the cancel flow for multiple messages. It is not reading the context of the conversation and the known data.
 
 #### 25/10/25
 - cache module added and working at create reservation with multiple messages

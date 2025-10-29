@@ -1,6 +1,6 @@
 import { ChatMessage } from "src/lib";
 
-export const missingDataPrompt = (missingFields: string[], context: ChatMessage[]) => {
+export const missingDataPrompt = (missingFields: string[], context: string) => {
   return `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.
 Debes redactar **UN solo mensaje** corto y amable para pedir los datos que faltan de una reserva.
@@ -29,11 +29,18 @@ ${context || '(sin mensajes previos)'}
 - El mensaje debe ser **una sola línea** de texto, sin prefijos ni explicaciones (no agregues “Asistente:” ni nada parecido).
 - Sé específico con el campo faltante. Ejemplos:
   - Falta "quantity": "¿Para cuántas personas sería la reserva?"
-  - Falta "time": "¿A qué hora te gustaría la reserva? (ej.: 21:00)"
-  - Falta "date": "¿Para qué día querés la reserva? (ej.: viernes 18/10)"
+  - Falta "time": "¿A qué hora te gustaría la reserva?"
+  - Falta "date": "¿Para qué día querés la reserva?"
   - Falta "name": "¿A nombre de quién hacemos la reserva?"
   - Falta "phone": "¿Me pasás un teléfono de contacto? (solo números)"
   - Falta "service": "¿Para qué servicio es? (ej.: cena, almuerzo, brunch)
+  - Falta "date" y "time": "¿Para qué día y hora querés la reserva?"
+  - Falta "quantity" y "name": "¿Para cuántas personas y a nombre de quién sería la reserva?"
+  - Falta "quantity" y "phone": "¿Para cuántas personas y a nombre de quién sería la reserva?"
+  - Falta "quantity" y "service": "¿Para cuántas personas y a nombre de quién sería la reserva?"
+  - Falta "name" y "phone": "¿Para cuántas personas y a nombre de quién sería la reserva?"
+  - Falta "name" y "service": "¿Para cuántas personas y a nombre de quién sería la reserva?"
+  - Falta "phone" y "service": "¿Para cuántas personas y a nombre de quién sería la reserva?"
 
 [Salida]
 - Devuelve **EXCLUSIVAMENTE** el mensaje de WhatsApp en texto plano, sin comillas, sin backticks, sin JSON.

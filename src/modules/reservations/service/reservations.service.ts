@@ -3,7 +3,7 @@ import { UpdateReservationDto } from '../dto/update-reservation.dto';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
-import { AddMissingFieldInput, TemporalStatusEnum } from 'src/lib';
+import { AddMissingFieldInput, RoleEnum, TemporalStatusEnum } from 'src/lib';
 import { IntentionsRouter } from './intention/intention.router';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 @Injectable()
@@ -58,11 +58,9 @@ export class ReservationsService {
 
   async conversationOrchestrator(message: string) {
     const waId = "123456789";
-    await this.cacheService.appendUserMessage(waId, message);
+    await this.cacheService.appendEntityMessage(waId, message, RoleEnum.USER);
 
     const history = await this.cacheService.getHistory(waId);
-    console.log('[HISTORY]', history);
-
 
     const aiResponse = await this.aiService.interactWithAi(message, history);
     const result = await this.router.route(aiResponse);

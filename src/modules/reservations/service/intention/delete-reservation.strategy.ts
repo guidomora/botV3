@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { DeleteReservation, Intention, MultipleMessagesResponse } from "src/lib";
+import { DeleteReservation, Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
@@ -18,24 +18,24 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
 
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
         const waId = '123456789'
-        const deleteReservation: DeleteReservation = {
-            phone: '1122334455', // TODO: remove mock once we get the phone number from the user
+        const state = await this.cacheService.updateCancelState(waId, {
+            phone: aiResponse.phone ?? null,
             date: aiResponse.date ?? null,
             time: aiResponse.time ?? null,
             name: aiResponse.name ?? null,
-        };
-        const missingFields = getMissingFields(deleteReservation);
-
-        const conversationHistory = await this.cacheService.getHistory(waId);
+        });
+        const missingFields = getMissingFields(state);
 
         if (missingFields.length > 0) {
-            console.log('[MISSING FIELDS]', missingFields);
-            const response = await this.aiService.getMissingDataToCancel(missingFields, conversationHistory, deleteReservation);
-            await this.cacheService.appendAssistantMessage(waId, response, Intention.CANCEL);
+            const history = await this.cacheService.getHistory(waId);
+            console.log('history cancel', state);
+            const response = await this.aiService.getMissingDataToCancel(missingFields, history, state);
+            await this.cacheService.appendEntityMessage(waId, response, RoleEnum.ASSISTANT, Intention.CANCEL);
             return { reply: response };
         }
 
-        const response = await this.datesService.deleteReservation(deleteReservation);
+        const response = await this.datesService.deleteReservation(state);
+        await this.cacheService.clearHistory(waId);
         return { reply: response };
     }
 }

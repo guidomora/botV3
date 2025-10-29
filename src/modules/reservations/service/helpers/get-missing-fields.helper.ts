@@ -1,7 +1,8 @@
 import { DeleteReservation } from "src/lib";
 
-export function getMissingFields(obj: DeleteReservation): string[] {
-    return Object.entries(obj)
-        .filter(([_, value]) => value === null || value === undefined || value === '')
-        .map(([key]) => key);
+export function getMissingFields(state: DeleteReservation): (keyof DeleteReservation)[] {
+    const out: (keyof DeleteReservation)[] = [];
+    (['phone','date','time','name'] as (keyof DeleteReservation)[])
+      .forEach(value => { if (state[value] == null || state[value] === '') out.push(value); });
+    return out;
 }
