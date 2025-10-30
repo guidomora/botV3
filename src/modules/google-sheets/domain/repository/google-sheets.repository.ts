@@ -45,9 +45,9 @@ export class GoogleSheetsRepository {
     let dataToAdd: (string | number)[]
 
     if (customerData.date && customerData.time) {
-      dataToAdd = [customerData.date, customerData.time, customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]
+      dataToAdd = [customerData.date.toLowerCase(), customerData.time, customerData.name.toLowerCase(), customerData.phone, ServiceName.DINNER, customerData.quantity]
     } else {
-      dataToAdd = [customerData.name, customerData.phone, ServiceName.DINNER, customerData.quantity]
+      dataToAdd = [customerData.name.toLowerCase(), customerData.phone, ServiceName.DINNER, customerData.quantity]
     }
 
     await this.sheets.spreadsheets.values.update({

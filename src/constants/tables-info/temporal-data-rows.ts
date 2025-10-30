@@ -1,4 +1,4 @@
-import { TemporalDataType } from "src/lib";
+import { TemporalDataType, TemporalStatusEnum } from "src/lib";
 
 export const COL_MAP = {
     date: 'A',
@@ -36,3 +36,12 @@ export const COL_MAP = {
     'quantity',
     'intent',
   ];
+
+
+  export interface TemporalDataRows {
+    status: TemporalStatusEnum;
+    missingFields: (keyof TemporalDataType)[];
+    rowIndex: number;
+    snapshot: TemporalDataType;
+    changedFields: string[];
+  }

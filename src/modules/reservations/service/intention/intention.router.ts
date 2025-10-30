@@ -1,4 +1,3 @@
-// intentions.router.ts
 import { Inject, Injectable } from '@nestjs/common';
 import { IntentionStrategyInterface, StrategyResult } from './intention-strategy.interface';
 import { Intention, MultipleMessagesResponse } from 'src/lib';

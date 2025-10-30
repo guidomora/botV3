@@ -5,6 +5,7 @@ import { SHEETS_NAMES } from "src/constants";
 import { TemporalStatusEnum } from "src/lib";
 import { computeStatus, objectToRowArray, buildEmptyRow } from "../helpers/temporal-data.helper";
 import { Logger } from "@nestjs/common";
+import { TemporalDataRows } from "src/constants/tables-info/temporal-data-rows";
 
 @Injectable()
 export class GoogleTemporalSheetsService {
@@ -14,7 +15,7 @@ export class GoogleTemporalSheetsService {
     ) { }
 
 
-    async addMissingField(input: AddMissingFieldInput) {
+    async addMissingField(input: AddMissingFieldInput): Promise<TemporalDataRows> {
 
         const sheetName = SHEETS_NAMES[2];
         const { waId, values } = input;
@@ -56,9 +57,9 @@ export class GoogleTemporalSheetsService {
             }
         };
 
-        apply('date', values.date);
+        apply('date', values.date?.toLowerCase());
         apply('time', values.time);
-        apply('name', values.name);
+        apply('name', values.name?.toLowerCase());
         apply('phone', values.phone);
         apply('quantity', values.quantity);
 
