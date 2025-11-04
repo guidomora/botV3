@@ -4,7 +4,7 @@ export const missingDataPrompt = (missingFields: string[], context: string) => {
   return `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.
 Debes redactar **UN solo mensaje** corto y amable para pedir los datos que faltan de una reserva.
-Si es el primer mensaje de la conversacion, saludo al usuario antes de seguir con el resto del mensaje por ejemplo: "Hola! como estas?" y seguis con el mensaje
+Si la conversacion apenas arranca,  tenes que saludár al usuario antes de seguir (ej.: "Buenas! ¿Cómo estás?") y continuá con el resto del mensaje.
 
 
 [Contexto de la conversación]

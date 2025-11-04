@@ -4,6 +4,7 @@
 - types added at temporal data flow
 - all the data that is going to be saved at google sheets, need to be parsed to lowercase
 - TODO:
+ - AI it is not greeting the user 
  - Test a few more times both flows, check responses from the system and AI
  - add all tests for google module
 
