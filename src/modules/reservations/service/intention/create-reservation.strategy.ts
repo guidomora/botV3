@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { Intention, MultipleMessagesResponse, TemporalStatusEnum } from "src/lib";
+import { CacheTypeEnum, Intention, MultipleMessagesResponse, TemporalStatusEnum } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
@@ -36,7 +36,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
             case TemporalStatusEnum.IN_PROGRESS:
                 return {reply: await this.aiService.getMissingData(response.missingFields, history)};
             case TemporalStatusEnum.COMPLETED:
-                await this.cacheService.clearHistory(mockedData.waId);
+                await this.cacheService.clearHistory(mockedData.waId, CacheTypeEnum.DATA);
                 return {reply: await this.aiService.reservationCompleted(response.reservationData, history)};
             default:
                 this.logger.warn(`Estado de reserva inesperado: ${response.status}`);

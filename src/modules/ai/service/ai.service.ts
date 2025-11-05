@@ -13,6 +13,7 @@ export class AiService {
   constructor(private readonly openAi: OpenAiConfig) { }
 
   async sendMessage(message: string): Promise<ResponseDate> {
+    // TODO: check if it can be removed
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
@@ -36,6 +37,7 @@ export class AiService {
   }
 
   async getAvailabilityData(message: string): Promise<SearchAvailability> {
+    // TODO: check if it can be removed
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
@@ -59,6 +61,7 @@ export class AiService {
   }
 
   async getCancelData(message: string): Promise<DeleteReservation> {
+    // TODO: check if it can be removed
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',

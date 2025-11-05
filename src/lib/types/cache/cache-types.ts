@@ -10,3 +10,9 @@ export interface ChatMessage {
   content: string;
   intention?: Intention;
 }
+
+export enum CacheTypeEnum {
+    CANCEL = 'cancel',
+    INFO = 'info',
+    DATA = 'data'
+}

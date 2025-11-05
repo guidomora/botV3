@@ -1,12 +1,16 @@
 ### History
 
+#### 05/11/25
+- info reservation strategy started
+- cache module updated
+- TODO:
+ - AI it is not greeting the user
+ - check the TODOs from aiservice to remove them
+ - add all tests for google module
+
 #### 30/10/25
 - types added at temporal data flow
 - all the data that is going to be saved at google sheets, need to be parsed to lowercase
-- TODO:
- - AI it is not greeting the user 
- - Test a few more times both flows, check responses from the system and AI
- - add all tests for google module
 
 #### 29/10/25
 - cancel flow working for multiple messages
