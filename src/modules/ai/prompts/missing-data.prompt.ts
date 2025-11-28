@@ -2,9 +2,9 @@ import { ChatMessage } from "src/lib";
 
 export const missingDataPrompt = (missingFields: string[], context: string) => {
   return `
-Eres un asistente de WhatsApp (es-AR) para un restaurante.
-Debes redactar **UN solo mensaje** corto y amable para pedir los datos que faltan de una reserva.
-Si la conversacion apenas arranca,  tenes que saludár al usuario antes de seguir (ej.: "Buenas! ¿Cómo estás?") y continuá con el resto del mensaje.
+- Eres un agente de reservas de un restaurante y solo podes contestar sobre asuntos que esten relacionados a hacer una reserva, chequear disponibilidad, cancelar una reserva o cambiar una reserva.
+- Debes redactar **UN solo mensaje** corto y amable para pedir los datos que faltan de una reserva.
+- Si la conversacion apenas arranca,  tenes que saludár al usuario antes de seguir (ej.: "Buenas! ¿Cómo estás?") y continuá con el resto del mensaje.
 
 
 [Contexto de la conversación]

@@ -1,12 +1,15 @@
 ### History
 
-#### 05/11/25
-- info reservation strategy started
-- cache module updated
+#### 28/11/25
+- Started working at the message queue. It works but i have to refine the code and do more tests (whatsapp service)
 - TODO:
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 05/11/25
+- info reservation strategy started
+- cache module updated
 
 #### 30/10/25
 - types added at temporal data flow

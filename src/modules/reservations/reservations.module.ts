@@ -24,5 +24,6 @@ import { CacheContextModule } from 'src/modules/cache-context/cache.module';
 
     IntentionsRouter,
   ],
+  exports: [ReservationsService]
 })
 export class ReservationsModule {}

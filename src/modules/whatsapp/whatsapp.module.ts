@@ -5,6 +5,7 @@ import twilioConfig from './twilio.config';
 import { TwilioClientProvider } from './twilio.provider';
 import { WhatsAppService } from './service/whatsapp.service';
 import { WhatsAppController } from './controller/whatsapp.controller';
+import { ReservationsModule } from '../reservations/reservations.module';
 
 @Module({})
 export class WhatsAppModule {
@@ -12,7 +13,7 @@ export class WhatsAppModule {
     return {
       module: WhatsAppModule,
       controllers: [WhatsAppController],
-      imports: [ConfigModule.forFeature(twilioConfig)],
+      imports: [ConfigModule.forFeature(twilioConfig), ReservationsModule],
       providers: [TwilioClientProvider, WhatsAppService],
       exports: [WhatsAppService],
     };
