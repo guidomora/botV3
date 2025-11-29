@@ -1,15 +1,11 @@
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { BufferEntry } from 'src/lib';
 import { ReservationsService } from 'src/modules/reservations/service/reservations.service';
 import { TWILIO_CLIENT } from 'src/modules/whatsapp/twilio.provider';
-
 import type { Twilio } from 'twilio';
-
-type BufferEntry = {
-  chunks: string[];
-  timer?: NodeJS.Timeout;
-};
+import { setTimeLapse } from '../utils/utils';
 
 @Injectable()
 export class WhatsAppService {
@@ -17,7 +13,6 @@ export class WhatsAppService {
   private readonly messagingServiceSid?: string;
   private readonly logger = new Logger(WhatsAppService.name);
   private buffers = new Map<string, BufferEntry>();
-  private readonly WINDOW_MS = 5000;
 
   constructor(
     @Inject(TWILIO_CLIENT) private readonly twilio: Twilio,
@@ -64,30 +59,32 @@ export class WhatsAppService {
 
 
   async handleMultipleMessages(waId: string, text: string): Promise<void> {
-    const entry = this.buffers.get(waId) ?? { chunks: [] };
-    entry.chunks.push(text.trim());
+    const entry = this.buffers.get(waId) ?? { messages: [] };
+    entry.messages.push(text.trim());
     if (entry.timer) clearTimeout(entry.timer);
+    this.logger.log(`Message received and processed for ${waId}`);
+    console.log();
 
     entry.timer = setTimeout(() => {
-      this.flush(waId).catch(err =>
-        this.logger.error(`Flush failed for ${waId}`, err.stack),
+      this.processBufferedMessages(waId).catch(err =>
+        this.logger.error(`Process failed for ${waId}`, err.stack),
       );
-    }, this.WINDOW_MS);
+
+    }, setTimeLapse(text));
 
     this.buffers.set(waId, entry);
   }
 
-  private async flush(waId: string) {
+  private async processBufferedMessages(waId: string) {
     const entry = this.buffers.get(waId);
     if (!entry) return;
 
-    const combined = entry.chunks.join(' ').replace(/\s+/g, ' ').trim();
+    const joinedMessages = entry.messages.join(' ').replace(/\s+/g, ' ').trim();
     this.buffers.delete(waId);
 
-    if (!combined) return;
-    console.log(combined);
-    
-    // Disparar el orquestador una sola vez con el mensaje unificado
-    // await this.reservationsService.conversationOrchestrator(combined);
+    if (!joinedMessages) return;
+    console.log(joinedMessages);
+    await this.reservationsService.conversationOrchestrator(joinedMessages);
   }
+
 }

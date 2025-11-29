@@ -1,11 +1,15 @@
 ### History
 
-#### 28/11/25
-- Started working at the message queue. It works but i have to refine the code and do more tests (whatsapp service)
+#### 29/11/25
+- Now supports multiple messages with a timelapse. The flow works fine
+- Depending on the length of the message, the timelapse will be longer or shorte
 - TODO:
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 28/11/25
+- Started working at the message queue. It works but i have to refine the code and do more tests (whatsapp service)
 
 #### 05/11/25
 - info reservation strategy started
