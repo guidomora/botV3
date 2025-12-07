@@ -27,19 +27,4 @@ export class ReservationsController {
     @Body('message') deleteMessage: string) {
     return this.reservationsService.deleteReservation(deleteMessage);
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReservationDto) {
-
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-
-  }
 }

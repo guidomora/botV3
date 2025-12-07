@@ -31,7 +31,9 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
             messageSid: '123',
         }
         const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
+
         const history = await this.cacheService.getHistory(mockedData.waId);
+        
         switch (response.status) {
             case TemporalStatusEnum.IN_PROGRESS:
                 return {reply: await this.aiService.getMissingData(response.missingFields, history)};

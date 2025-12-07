@@ -3,6 +3,7 @@ import { OpenAiConfig } from '../config/openai.config';
 import { cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
+import { missingDataPromptForAvailability } from '../prompts/availability-prompt';
 
 
 
@@ -119,6 +120,30 @@ export class AiService {
     const context = serializeContext(messageHistory);
     try {
       const dataPrompt = missingDataPrompt(missingFields, context)
+      const response = await this.openAi.getClient().chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'text' },
+        temperature: 0,
+        messages: [
+          { role: 'system', content: dataPrompt },
+          { role: 'user', content: 'Generá el mensaje ahora.' }
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!.trim()
+      console.log('AI Response:', aiResponse);
+
+      return aiResponse;
+    } catch (error) {
+      this.logger.error(`Error al interactuar con el AI`, error);
+      throw error;
+    }
+  }
+
+    async getMissingDataForAvailbility(missingFields: string[], messageHistory: ChatMessage[]): Promise<string> {
+    const context = serializeContext(messageHistory);
+    try {
+      const dataPrompt = missingDataPromptForAvailability(missingFields, context)
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'text' },

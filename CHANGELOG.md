@@ -1,12 +1,17 @@
 ### History
 
-#### 29/11/25
-- Now supports multiple messages with a timelapse. The flow works fine
-- Depending on the length of the message, the timelapse will be longer or shorte
+#### 7/12/25
+- Continuing with the availability flow
+- new prompt
 - TODO:
+ - Complete prompt for availability
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 29/11/25
+- Now supports multiple messages with a timelapse. The flow works fine
+- Depending on the length of the message, the timelapse will be longer or shorte
 
 #### 28/11/25
 - Started working at the message queue. It works but i have to refine the code and do more tests (whatsapp service)

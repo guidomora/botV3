@@ -63,7 +63,6 @@ export class WhatsAppService {
     entry.messages.push(text.trim());
     if (entry.timer) clearTimeout(entry.timer);
     this.logger.log(`Message received and processed for ${waId}`);
-    console.log();
 
     entry.timer = setTimeout(() => {
       this.processBufferedMessages(waId).catch(err =>
@@ -83,7 +82,6 @@ export class WhatsAppService {
     this.buffers.delete(waId);
 
     if (!joinedMessages) return;
-    console.log(joinedMessages);
     await this.reservationsService.conversationOrchestrator(joinedMessages);
   }
 
