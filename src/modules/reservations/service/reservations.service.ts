@@ -67,11 +67,25 @@ export class ReservationsService {
     return result.reply;
   }
 
-  updateReservation(id: number, updateReservationDto: UpdateReservationDto) {
-    return `This action updates a #${id} reservation`;
-  }
+    async getAvailabilityRange(dateTime: string): Promise<string> {
+    const aiResponse = await this.aiService.getAvailabilityData(dateTime);
 
-  removeReservation(id: number) {
-    return `This action removes a #${id} reservation`;
+    const { date, time } = aiResponse;
+
+    // TODO: new method
+    const index = await this.googleSheetsService.getDate(date, time);
+
+
+    if (index === -1) {
+      return 'No se encontro la fecha'
+    }
+
+    const availability = await this.googleSheetsService.getAvailability(date!, time!);
+
+    if (!availability.isAvailable) {
+      return 'No hay disponibilidad para esa fecha y horario'
+    }
+
+    return `Disponibilidad para el dia ${date} a las ${time}`
   }
 }

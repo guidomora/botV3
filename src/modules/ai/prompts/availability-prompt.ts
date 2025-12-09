@@ -19,7 +19,7 @@ ${context || '(sin mensajes previos)'}
 
 [Contexto]
 - Campos faltantes (array): ${missingFields}
-- Orden de prioridad para solicitar datos: ["date","time"].
+- Orden de prioridad para solicitar datos: ["date"].
 - Si faltan varios, **pregunta primero por el campo más prioritario**. No hagas múltiples preguntas a la vez.
 - Tono: cordial, claro y directo; sin tecnicismos. Evitá emojis salvo que el usuario ya los use (no asumas que los usa).
 - Idioma: español rioplatense (Argentina).
@@ -27,8 +27,7 @@ ${context || '(sin mensajes previos)'}
 [Reglas del mensaje]
 - El mensaje debe ser **una sola línea** de texto, sin prefijos ni explicaciones (no agregues “Asistente:” ni nada parecido).
 - Sé específico con el campo faltante. Ejemplos:
-  - Falta "time": "¿A qué hora te gustaría la reserva?"
-  - Falta "date": "¿Para qué día querés la reserva?"
+  - Falta "date": "¿Para qué día querias averiguar?"
  
 
 [Salida]

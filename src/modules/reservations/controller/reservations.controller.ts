@@ -19,7 +19,7 @@ export class ReservationsController {
   @Get('/availability')
   getAvailability(
     @Body('dateTime') dateTime: string) {
-    return this.reservationsService.getAvailability(dateTime);
+    return this.reservationsService.getAvailabilityRange(dateTime);
   }
 
   @Delete('/delete')

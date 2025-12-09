@@ -6,9 +6,9 @@ import { CacheService } from "src/modules/cache-context/cache.service";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
 
 @Injectable()
-export class InfoReservationStrategy implements IntentionStrategyInterface {
-    readonly intent = Intention.INFO;
-    private readonly logger = new Logger(InfoReservationStrategy.name);
+export class AvailabilityStrategy implements IntentionStrategyInterface {
+    readonly intent = Intention.AVAILABILITY;
+    private readonly logger = new Logger(AvailabilityStrategy.name);
     constructor(
         private readonly datesService: DatesService,
         private readonly aiService: AiService,
@@ -22,8 +22,7 @@ export class InfoReservationStrategy implements IntentionStrategyInterface {
             waId: '123456789',
             values: { // TODO: remove this mock once we receive the phone number from the user
                 phone: '1122334455',
-                date: aiResponse.date,
-                time: aiResponse.time,
+                date: aiResponse.date
             },
             messageSid: '123',
         }
@@ -31,11 +30,11 @@ export class InfoReservationStrategy implements IntentionStrategyInterface {
         const history = await this.cacheService.getHistory(mockedData.waId);
 
 
-        if (aiResponse.date && aiResponse.time) {
+        if (!aiResponse.date) {
+            // ask for date
+        } else if (aiResponse.date) {
             // check exact datetime
             // return if datetime is available or near datetime
-        } else if (!aiResponse.date && !aiResponse.time) {
-            // ask for date and time
         }
         // datetime not available
 
