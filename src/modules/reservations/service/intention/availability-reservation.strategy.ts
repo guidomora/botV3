@@ -29,7 +29,8 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
         const history = await this.cacheService.getHistory(mockedData.waId);
 
-
+        console.log('ai response', aiResponse);
+        
         if (!aiResponse.date) {
             // ask for date
         } else if (aiResponse.date) {

@@ -31,7 +31,7 @@ A partir del contexto de la conversacion, extrae lo que puedas para construir/ac
 Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
 
 {
-  "intent": "create" | "update" | "cancel" | "info" | "other",
+  "intent": "create" | "update" | "cancel" | "availability" | "other",
   "date": "sábado 02 de agosto 2025 02/08/2025" | null,
   "time": "HH:mm" | null,
   "name": "Nombre Apellido" | null,
@@ -78,7 +78,7 @@ Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
 - "create": nueva reserva.
 - "update": cambiar datos de una reserva existente (si menciona “cambio de hora”, “modificar nombre”, etc.).
 - "cancel": anular.
-- "info": consulta de disponibilidad / precios / preguntas.
+- "availability": consulta de disponibilidad / precios / preguntas.
 - "other": no aplicable.
 
 [Ejemplo 1]

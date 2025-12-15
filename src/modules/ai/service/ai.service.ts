@@ -107,7 +107,7 @@ export class AiService {
       const aiResponse = response.choices[0]!.message!.content!
 
       const parseResponse = JSON.parse(aiResponse);
-      console.log(parseResponse);
+      console.log('----', parseResponse);
 
       return parseResponse;
     } catch (error) {
