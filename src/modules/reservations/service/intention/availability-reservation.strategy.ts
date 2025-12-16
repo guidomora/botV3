@@ -1,16 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { AddMissingFieldInput, DeleteReservation, Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
+import { AddMissingFieldInput, Intention, MultipleMessagesResponse } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
-import { DatesService } from "src/modules/dates/service/dates.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
+import { ReservationsService } from "../reservations.service";
 
 @Injectable()
 export class AvailabilityStrategy implements IntentionStrategyInterface {
     readonly intent = Intention.AVAILABILITY;
     private readonly logger = new Logger(AvailabilityStrategy.name);
     constructor(
-        private readonly datesService: DatesService,
+        // private readonly reservationsService: ReservationsService,
         private readonly aiService: AiService,
         private readonly cacheService: CacheService
     ) { }
@@ -36,6 +36,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
         } else if (aiResponse.date) {
             // check exact datetime
             // return if datetime is available or near datetime
+            // const availability = await this.reservationsService.getAvailabilityRange(aiResponse.date);
         }
         // datetime not available
 
