@@ -3,16 +3,16 @@ import { AddMissingFieldInput, Intention, MultipleMessagesResponse } from "src/l
 import { AiService } from "src/modules/ai/service/ai.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { ReservationsService } from "../reservations.service";
+import { DatesService } from "src/modules/dates/service/dates.service";
 
 @Injectable()
 export class AvailabilityStrategy implements IntentionStrategyInterface {
     readonly intent = Intention.AVAILABILITY;
     private readonly logger = new Logger(AvailabilityStrategy.name);
     constructor(
-        // private readonly reservationsService: ReservationsService,
         private readonly aiService: AiService,
-        private readonly cacheService: CacheService
+        private readonly cacheService: CacheService,
+        private readonly dateService: DatesService
     ) { }
 
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
@@ -28,15 +28,17 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
         }
 
         const history = await this.cacheService.getHistory(mockedData.waId);
+        const availability = await this.dateService.getDayAvailability(aiResponse.date!)
+        console.log(availability);
 
-        console.log('ai response', aiResponse);
-        
         if (!aiResponse.date) {
             // ask for date
         } else if (aiResponse.date) {
             // check exact datetime
             // return if datetime is available or near datetime
-            // const availability = await this.reservationsService.getAvailabilityRange(aiResponse.date);
+            // const availability = this.dateService.getDayAvailability(aiResponse.date)
+            // console.log(availability);
+
         }
         // datetime not available
 

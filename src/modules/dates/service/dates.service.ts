@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, DeleteReservation, TemporalStatusEnum } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, TemporalStatusEnum } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
+import { formatAvailabilityResponse } from '../utils/formated-availability.utils';
 
 @Injectable()
 export class DatesService {
@@ -68,5 +69,10 @@ export class DatesService {
 
   async deleteOldRows() {
     return this.deleteReservationUseCase.deleteOldRows()
+  }
+
+  async getDayAvailability(date:string):Promise<AvailabilityResponse>{
+    const dates = await this.googleSheetsService.getDayAvailability(date)
+    return formatAvailabilityResponse(dates)
   }
 }

@@ -1,12 +1,16 @@
 ### History
 
-#### 16/12/25
-- Continuing with the availability flow. Working at getDayAvailability at google-sheets service, for now returns all the rows for the received day.
+#### 17/12/25
+- Continuing with the availability flow.Availability for a day returns the data from google sheets
 - TODO:
- - Complete prompt for availability
+ - Complete prompt for availability and ai method
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 16/12/25
+- Continuing with the availability flow. Working at getDayAvailability at google-sheets service, for now returns all the rows for the received day.
+
 
 #### 8/12/25
 - Continuing with the availability flow
