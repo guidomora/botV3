@@ -155,39 +155,16 @@ export class GoogleSheetsService {
     }
   }
 
-  async getDayAvailability(date: string): Promise<Availability> {
-    console.log('date ->', date);
-
-    const range = `${SHEETS_NAMES[0]}!A:C`
-
-    let isAvailable = false;
-
+  async getDayAvailability(date: string): Promise<string[][]> {
+    const range = `${SHEETS_NAMES[1]}!A:D`
 
     try {
       const data = await this.googleSheetsRepository.getDates(range);
       const allDaysRows = data.filter(row => row[0] !== 'Fecha');
       
-      const requestedDayRows = allDaysRows.filter(r => r[0] === date);
-      console.log(requestedDayRows);
-      
+      const requestedDayRows = allDaysRows.filter(r => r[0] === date && r[3] != '0');      
 
-      // const availabilityData = await this.googleSheetsRepository.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`);
-
-      const reservations = Number(data[0][0])
-
-      const available = Number(data[0][1])
-
-      const maxReservations = Number(TablesInfo.AVAILABLE)
-
-      if (available != null && available > 0 && reservations <= maxReservations) {
-        isAvailable = true;
-      }
-
-      return {
-        isAvailable,
-        reservations,
-        available,
-      };
+      return requestedDayRows
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }
