@@ -1,12 +1,16 @@
 ### History
 
-#### 17/12/25
-- Continuing with the availability flow.Availability for a day returns the data from google sheets
+#### 18/12/25
+- Availability for a day works and supports the creation of a reservation with the consulted date
 - TODO:
- - Complete prompt for availability and ai method
+ - Continue with availability for date and time
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 17/12/25
+- Continuing with the availability flow.Availability for a day returns the data from google sheets
+
 
 #### 16/12/25
 - Continuing with the availability flow. Working at getDayAvailability at google-sheets service, for now returns all the rows for the received day.

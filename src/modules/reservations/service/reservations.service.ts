@@ -67,7 +67,7 @@ export class ReservationsService {
     return result.reply;
   }
 
-    async getAvailabilityRange(dateTime: string): Promise<string> {
+  async getAvailabilityRange(dateTime: string): Promise<string> {
     const aiResponse = await this.aiService.getAvailabilityData(dateTime);
 
     const { date, time } = aiResponse;

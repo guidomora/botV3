@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { AddMissingFieldInput, Intention, MultipleMessagesResponse } from "src/lib";
+import { AddMissingFieldInput, Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
@@ -29,19 +29,17 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
         const history = await this.cacheService.getHistory(mockedData.waId);
         const availability = await this.dateService.getDayAvailability(aiResponse.date!)
-        console.log(availability);
 
         if (!aiResponse.date) {
             // ask for date
         } else if (aiResponse.date) {
             // check exact datetime
             // return if datetime is available or near datetime
-            // const availability = this.dateService.getDayAvailability(aiResponse.date)
-            // console.log(availability);
-
+            const availabilityResponse = await this.aiService.dayAvailabilityAiResponse(availability, history)
+            await this.cacheService.appendEntityMessage(mockedData.waId, availabilityResponse, RoleEnum.ASSISTANT)
+            return { reply: availabilityResponse };
         }
-        // datetime not available
-
-        return { reply: 'response' };
+        // datetime not available TODO:
+        return { reply: 'No hay disponibilidad para esa fecha y horario' };
     }
 }

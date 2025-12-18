@@ -3,7 +3,7 @@ import { OpenAiConfig } from '../config/openai.config';
 import { cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
-import { missingDataPromptForAvailability } from '../prompts/availability-prompt';
+import { availabilityReplyPrompt } from '../prompts/availability-prompt';
 
 
 
@@ -87,11 +87,13 @@ export class AiService {
 
   async interactWithAi(message: string, messageHistory: ChatMessage[]): Promise<MultipleMessagesResponse> {
     const activeIntent = inferActiveIntent(messageHistory);
+    
     const history = messageHistory.at(-1)?.role === 'user' && messageHistory.at(-1)?.content === message
       ? messageHistory.slice(0, -1)
       : messageHistory;
 
     const context = serializeContext(history);
+    
     const prompt = interactPrompt(context, activeIntent)
     try {
       const response = await this.openAi.getClient().chat.completions.create({
@@ -140,29 +142,6 @@ export class AiService {
     }
   }
 
-    async getMissingDataForAvailbility(missingFields: string[], messageHistory: ChatMessage[]): Promise<string> {
-    const context = serializeContext(messageHistory);
-    try {
-      const dataPrompt = missingDataPromptForAvailability(missingFields, context)
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'text' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: dataPrompt },
-          { role: 'user', content: 'Generá el mensaje ahora.' }
-        ],
-      });
-
-      const aiResponse = response.choices[0]!.message!.content!.trim()
-      console.log('AI Response:', aiResponse);
-
-      return aiResponse;
-    } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
-      throw error;
-    }
-  }
 
   async getMissingDataToCancel(missingFields: string[], messageHistory: ChatMessage[],
     known: { phone?: string | null; date?: string | null; time?: string | null; name?: string | null }
@@ -215,8 +194,9 @@ export class AiService {
   }
 
     async dayAvailabilityAiResponse(dayAvailability: AvailabilityResponse, messageHistory: ChatMessage[]): Promise<string> {
-    try {
-      const dataPrompt = 'reservationCompletedPrompt(dayAvailability, messageHistory)'
+        const context = serializeContext(messageHistory); 
+      try {
+      const dataPrompt = availabilityReplyPrompt(dayAvailability, context)
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'text' },
