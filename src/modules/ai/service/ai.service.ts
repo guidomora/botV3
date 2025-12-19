@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
 import { cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
-import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse } from 'src/lib';
+import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
 import { availabilityReplyPrompt } from '../prompts/availability-prompt';
+import { timeAvailabilityReplyPrompt } from '../prompts/time-availability-prompt';
 
 
 
@@ -86,14 +87,31 @@ export class AiService {
   }
 
   async interactWithAi(message: string, messageHistory: ChatMessage[]): Promise<MultipleMessagesResponse> {
+    // const activeIntent = inferActiveIntent(messageHistory);
+    // console.log('Message History', messageHistory);
+
+    // const history = messageHistory.at(-1)?.role === 'user' && messageHistory.at(-1)?.content === message
+    // ? messageHistory.slice(0, -1)
+    // : messageHistory;
+
+    // console.log('History', history);
+    // const context = serializeContext(history);
+    // console.log('Context |', context);
+    // 1) Inferir intención usando el historial completo (incluye el mensaje actual)
+
     const activeIntent = inferActiveIntent(messageHistory);
-    
-    const history = messageHistory.at(-1)?.role === 'user' && messageHistory.at(-1)?.content === message
+
+    const last = messageHistory.at(-1);
+    const shouldRemoveLastFromContext =
+      !!last && last.role === RoleEnum.USER && last.content === message;
+
+    const contextHistory = shouldRemoveLastFromContext
       ? messageHistory.slice(0, -1)
       : messageHistory;
 
-    const context = serializeContext(history);
-    
+    const context = serializeContext(contextHistory);
+
+
     const prompt = interactPrompt(context, activeIntent)
     try {
       const response = await this.openAi.getClient().chat.completions.create({
@@ -147,7 +165,7 @@ export class AiService {
     known: { phone?: string | null; date?: string | null; time?: string | null; name?: string | null }
   ): Promise<string> {
     const context = serializeContext(messageHistory);
-    
+
     try {
       const dataPrompt = cancelDataPrompt(missingFields, context, known)
       const response = await this.openAi.getClient().chat.completions.create({
@@ -193,10 +211,39 @@ export class AiService {
     }
   }
 
-    async dayAvailabilityAiResponse(dayAvailability: AvailabilityResponse, messageHistory: ChatMessage[]): Promise<string> {
-        const context = serializeContext(messageHistory); 
-      try {
+  async dayAvailabilityAiResponse(dayAvailability: AvailabilityResponse, messageHistory: ChatMessage[]): Promise<string> {
+    const context = serializeContext(messageHistory);
+    try {
       const dataPrompt = availabilityReplyPrompt(dayAvailability, context)
+      const response = await this.openAi.getClient().chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'text' },
+        temperature: 0,
+        messages: [
+          { role: 'system', content: dataPrompt },
+          { role: 'user', content: 'Generá el mensaje ahora.' }
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!.trim()
+      console.log('AI Response:', aiResponse);
+
+      return aiResponse;
+    } catch (error) {
+      this.logger.error(`Error al interactuar con el AI`, error);
+      throw error;
+    }
+  }
+
+  async dayAndTimeAvailabilityAiResponse(
+    dayAvailability: AvailabilityResponse,
+    messageHistory: ChatMessage[],
+    requestedTime?: string | null,
+  ): Promise<string> {
+    const context = serializeContext(messageHistory);
+
+    try {
+      const dataPrompt = timeAvailabilityReplyPrompt(dayAvailability, context, requestedTime)
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'text' },

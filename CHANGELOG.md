@@ -2,8 +2,10 @@
 
 #### 18/12/25
 - Availability for a day works and supports the creation of a reservation with the consulted date
+- Availability for date and time works
 - TODO:
- - Continue with availability for date and time
+ - Test availability flow a few more times
+ - Add to availability flow if a user does not send the date
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module

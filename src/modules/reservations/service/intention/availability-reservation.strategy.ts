@@ -18,25 +18,23 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
         const waId = '123456789'
 
-        const mockedData: AddMissingFieldInput = {
-            waId: '123456789',
-            values: { // TODO: remove this mock once we receive the phone number from the user
-                phone: '1122334455',
-                date: aiResponse.date
-            },
-            messageSid: '123',
-        }
-
-        const history = await this.cacheService.getHistory(mockedData.waId);
-        const availability = await this.dateService.getDayAvailability(aiResponse.date!)
+        const history = await this.cacheService.getHistory(waId);
 
         if (!aiResponse.date) {
             // ask for date
-        } else if (aiResponse.date) {
+        } else if (aiResponse.date && !aiResponse.time) {
             // check exact datetime
             // return if datetime is available or near datetime
+            const availability = await this.dateService.getDayAvailability(aiResponse.date!)
+
             const availabilityResponse = await this.aiService.dayAvailabilityAiResponse(availability, history)
-            await this.cacheService.appendEntityMessage(mockedData.waId, availabilityResponse, RoleEnum.ASSISTANT)
+            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+            return { reply: availabilityResponse };
+        } else if (aiResponse.date && aiResponse.time) {
+            const availability = await this.dateService.getDayAndTimeAvailability(aiResponse.date!, aiResponse.time!)
+
+            const availabilityResponse = await this.aiService.dayAndTimeAvailabilityAiResponse(availability, history, aiResponse.time)
+            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
             return { reply: availabilityResponse };
         }
         // datetime not available TODO:

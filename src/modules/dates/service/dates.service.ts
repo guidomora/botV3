@@ -4,7 +4,7 @@ import { CreateReservationType } from 'src/lib/types/reservation/create-reservat
 import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, TemporalStatusEnum } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
-import { formatAvailabilityResponse } from '../utils/formated-availability.utils';
+import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
 
 @Injectable()
 export class DatesService {
@@ -74,5 +74,11 @@ export class DatesService {
   async getDayAvailability(date:string):Promise<AvailabilityResponse>{
     const dates = await this.googleSheetsService.getDayAvailability(date)
     return formatAvailabilityResponse(dates)
+  }
+
+  async getDayAndTimeAvailability(date:string, time:string):Promise<AvailabilityResponse>{
+    const dates = await this.googleSheetsService.getDayAvailability(date)
+    const formatedDayAvailability = formatAvailabilityResponse(dates)
+    return pickAvailabilityForTime(formatedDayAvailability, time)
   }
 }
