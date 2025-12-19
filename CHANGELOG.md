@@ -4,6 +4,7 @@
 - Availability for a day works and supports the creation of a reservation with the consulted date
 - Availability for date and time works
 - TODO:
+ - Check pickAvailabilityForTime method
  - Test availability flow a few more times
  - Add to availability flow if a user does not send the date
  - AI it is not greeting the user
