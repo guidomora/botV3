@@ -5,20 +5,16 @@ const timeToMinutes = (t: string): number => {
   return (Number.isFinite(hh) ? hh : 0) * 60 + (Number.isFinite(mm) ? mm : 0);
 };
 
-export const pickAvailabilityForTime = (
-  day: AvailabilityResponse,
-  requestedTime: string,
-  options?: { neighborCount?: number } // por defecto 2 cercanos
-): AvailabilityResponse => {
+export const pickAvailabilityForTime = (day: AvailabilityResponse, requestedTime: string, options?: { neighborCount?: number }): AvailabilityResponse => {
   const neighborCount = options?.neighborCount ?? 2;
 
   // Normalizar/ordenar
   const slots = [...(day.slots ?? [])].sort(
-    (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time),
+    (slotA, slotB) => timeToMinutes(slotA.time) - timeToMinutes(slotB.time),
   );
 
   // 1) Match exacto
-  const exact = slots.find(s => s.time === requestedTime);
+  const exact = slots.find(slot => slot.time === requestedTime);
   if (exact) {
     return {
       ...day,
@@ -35,7 +31,7 @@ export const pickAvailabilityForTime = (
   const reqMin = timeToMinutes(requestedTime);
 
   // Encontrar índice de inserción (primer slot >= requested)
-  let idx = slots.findIndex(s => timeToMinutes(s.time) >= reqMin);
+  let idx = slots.findIndex(slot => timeToMinutes(slot.time) >= reqMin);
   if (idx === -1) idx = slots.length; // requested es más tarde que todo
 
   const suggestions: AvailabilitySlot[] = [];
@@ -51,7 +47,7 @@ export const pickAvailabilityForTime = (
   }
 
   // Ordenar sugerencias para que salgan cronológicas
-  suggestions.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  suggestions.sort((slotA, slotB) => timeToMinutes(slotA.time) - timeToMinutes(slotB.time));
 
   return {
     ...day,

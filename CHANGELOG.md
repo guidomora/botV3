@@ -1,15 +1,17 @@
 ### History
 
-#### 18/12/25
-- Availability for a day works and supports the creation of a reservation with the consulted date
-- Availability for date and time works
+#### 19/12/25
+- Availability flow at 100% working
 - TODO:
  - Check pickAvailabilityForTime method
- - Test availability flow a few more times
- - Add to availability flow if a user does not send the date
+ - Start working on a factory method for ai service
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 18/12/25
+- Availability for a day works and supports the creation of a reservation with the consulted date
+- Availability for date and time works
 
 #### 17/12/25
 - Continuing with the availability flow.Availability for a day returns the data from google sheets

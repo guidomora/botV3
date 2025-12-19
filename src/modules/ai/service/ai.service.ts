@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt } from '../prompts';
+import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
-import { availabilityReplyPrompt } from '../prompts/availability-prompt';
-import { timeAvailabilityReplyPrompt } from '../prompts/time-availability-prompt';
 
 
 
@@ -244,6 +242,32 @@ export class AiService {
 
     try {
       const dataPrompt = timeAvailabilityReplyPrompt(dayAvailability, context, requestedTime)
+      const response = await this.openAi.getClient().chat.completions.create({
+        model: 'gpt-4o',
+        response_format: { type: 'text' },
+        temperature: 0,
+        messages: [
+          { role: 'system', content: dataPrompt },
+          { role: 'user', content: 'Generá el mensaje ahora.' }
+        ],
+      });
+
+      const aiResponse = response.choices[0]!.message!.content!.trim()
+      console.log('AI Response:', aiResponse);
+
+      return aiResponse;
+    } catch (error) {
+      this.logger.error(`Error al interactuar con el AI`, error);
+      throw error;
+    }
+  }
+
+  async askDateForAvailabilityAi(messageHistory: ChatMessage[]): Promise<string> {
+
+    const context = serializeContext(messageHistory);
+
+    try {
+      const dataPrompt = askDateAvailabilityPrompt(context)
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'text' },

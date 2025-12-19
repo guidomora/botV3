@@ -5,4 +5,6 @@ export * from './interact.prompt';
 export * from './missing-data.prompt';
 export * from './reservation-completed.prompt';
 export * from './cancel-prompt';
-
+export * from './ask-date-availability-prompt';
+export * from './time-availability-prompt';
+export * from './availability-prompt';

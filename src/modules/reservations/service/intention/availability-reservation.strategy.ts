@@ -22,19 +22,29 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
         if (!aiResponse.date) {
             // ask for date
+            const availabilityResponse = await this.aiService.askDateForAvailabilityAi(history)
+
+            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+            
+            return { reply: availabilityResponse };
+            
         } else if (aiResponse.date && !aiResponse.time) {
-            // check exact datetime
-            // return if datetime is available or near datetime
             const availability = await this.dateService.getDayAvailability(aiResponse.date!)
 
             const availabilityResponse = await this.aiService.dayAvailabilityAiResponse(availability, history)
+
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+
             return { reply: availabilityResponse };
+
         } else if (aiResponse.date && aiResponse.time) {
+
             const availability = await this.dateService.getDayAndTimeAvailability(aiResponse.date!, aiResponse.time!)
 
             const availabilityResponse = await this.aiService.dayAndTimeAvailabilityAiResponse(availability, history, aiResponse.time)
+            
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+            
             return { reply: availabilityResponse };
         }
         // datetime not available TODO:
