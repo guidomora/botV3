@@ -1,13 +1,17 @@
 ### History
 
-#### 19/12/25
-- Availability flow at 100% working
+#### 20/12/25
+- Factory method added at ai service
 - TODO:
+ - The delete reservation flow is not returning the confirmation when the reservation is deleted
  - Check pickAvailabilityForTime method
- - Start working on a factory method for ai service
  - AI it is not greeting the user
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 19/12/25
+- Availability flow at 100% working
+
 
 #### 18/12/25
 - Availability for a day works and supports the creation of a reservation with the consulted date

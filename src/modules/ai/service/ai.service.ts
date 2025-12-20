@@ -15,17 +15,7 @@ export class AiService {
   async sendMessage(message: string): Promise<ResponseDate> {
     // TODO: check if it can be removed
     try {
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'json_object' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: datePrompt },
-          { role: 'user', content: message }
-        ],
-      });
-
-      const aiResponse = response.choices[0]!.message!.content!
+      const aiResponse = await this.openAiFactory(datePrompt, message, true)
 
       const parseResponse = JSON.parse(aiResponse);
 
@@ -39,19 +29,9 @@ export class AiService {
   async getAvailabilityData(message: string): Promise<SearchAvailability> {
     // TODO: check if it can be removed
     try {
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'json_object' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: searchAvailabilityPrompt },
-          { role: 'user', content: message }
-        ],
-      });
+      const aiResponse = await this.openAiFactory(searchAvailabilityPrompt, message, true)
 
-      const aiResponse = response.choices[0]!.message!.content!
-
-      const parseResponse = JSON.parse(aiResponse);
+      const parseResponse: SearchAvailability = JSON.parse(aiResponse);
 
       return parseResponse;
     } catch (error) {
@@ -63,19 +43,9 @@ export class AiService {
   async getCancelData(message: string): Promise<DeleteReservation> {
     // TODO: check if it can be removed
     try {
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'json_object' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: phonePrompt },
-          { role: 'user', content: message }
-        ],
-      });
+      const aiResponse = await this.openAiFactory(phonePrompt, message, true)
 
-      const aiResponse = response.choices[0]!.message!.content!
-
-      const parseResponse = JSON.parse(aiResponse);
+      const parseResponse: DeleteReservation = JSON.parse(aiResponse);
 
       return parseResponse;
     } catch (error) {
@@ -85,17 +55,6 @@ export class AiService {
   }
 
   async interactWithAi(message: string, messageHistory: ChatMessage[]): Promise<MultipleMessagesResponse> {
-    // const activeIntent = inferActiveIntent(messageHistory);
-    // console.log('Message History', messageHistory);
-
-    // const history = messageHistory.at(-1)?.role === 'user' && messageHistory.at(-1)?.content === message
-    // ? messageHistory.slice(0, -1)
-    // : messageHistory;
-
-    // console.log('History', history);
-    // const context = serializeContext(history);
-    // console.log('Context |', context);
-    // 1) Inferir intención usando el historial completo (incluye el mensaje actual)
 
     const activeIntent = inferActiveIntent(messageHistory);
 
@@ -112,24 +71,13 @@ export class AiService {
 
     const prompt = interactPrompt(context, activeIntent)
     try {
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'json_object' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: prompt },
-          { role: 'user', content: message }
-        ],
-      });
+      const aiResponse = await this.openAiFactory(prompt, message, true)
 
-      const aiResponse = response.choices[0]!.message!.content!
-
-      const parseResponse = JSON.parse(aiResponse);
+      const parseResponse: MultipleMessagesResponse = JSON.parse(aiResponse);
       console.log('----', parseResponse);
 
       return parseResponse;
     } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
       throw error;
     }
   }
@@ -138,22 +86,11 @@ export class AiService {
     const context = serializeContext(messageHistory);
     try {
       const dataPrompt = missingDataPrompt(missingFields, context)
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'text' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: dataPrompt },
-          { role: 'user', content: 'Generá el mensaje ahora.' }
-        ],
-      });
 
-      const aiResponse = response.choices[0]!.message!.content!.trim()
-      console.log('AI Response:', aiResponse);
+      const aiResponse = await this.openAiFactory(dataPrompt)
 
       return aiResponse;
     } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
       throw error;
     }
   }
@@ -166,22 +103,11 @@ export class AiService {
 
     try {
       const dataPrompt = cancelDataPrompt(missingFields, context, known)
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'text' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: dataPrompt },
-          { role: 'user', content: 'Generá el mensaje ahora.' }
-        ],
-      });
 
-      const aiResponse = response.choices[0]!.message!.content!.trim()
-      console.log('AI Response:', aiResponse);
+      const aiResponse = await this.openAiFactory(dataPrompt)
 
       return aiResponse;
     } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
       throw error;
     }
   }
@@ -189,22 +115,11 @@ export class AiService {
   async reservationCompleted(reservationData: TemporalDataType, messageHistory: ChatMessage[]): Promise<string> {
     try {
       const dataPrompt = reservationCompletedPrompt(reservationData, messageHistory)
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'text' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: dataPrompt },
-          { role: 'user', content: 'Generá el mensaje ahora.' }
-        ],
-      });
 
-      const aiResponse = response.choices[0]!.message!.content!.trim()
-      console.log('AI Response:', aiResponse);
+      const aiResponse = await this.openAiFactory(dataPrompt)
 
       return aiResponse;
     } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
       throw error;
     }
   }
@@ -213,51 +128,26 @@ export class AiService {
     const context = serializeContext(messageHistory);
     try {
       const dataPrompt = availabilityReplyPrompt(dayAvailability, context)
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'text' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: dataPrompt },
-          { role: 'user', content: 'Generá el mensaje ahora.' }
-        ],
-      });
 
-      const aiResponse = response.choices[0]!.message!.content!.trim()
-      console.log('AI Response:', aiResponse);
+      const aiResponse = await this.openAiFactory(dataPrompt)
 
       return aiResponse;
     } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
       throw error;
     }
   }
 
-  async dayAndTimeAvailabilityAiResponse(
-    dayAvailability: AvailabilityResponse,
-    messageHistory: ChatMessage[],
-    requestedTime?: string | null,
+  async dayAndTimeAvailabilityAiResponse(dayAvailability: AvailabilityResponse, messageHistory: ChatMessage[], requestedTime?: string | null,
   ): Promise<string> {
     const context = serializeContext(messageHistory);
 
     try {
       const dataPrompt = timeAvailabilityReplyPrompt(dayAvailability, context, requestedTime)
-      const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
-        response_format: { type: 'text' },
-        temperature: 0,
-        messages: [
-          { role: 'system', content: dataPrompt },
-          { role: 'user', content: 'Generá el mensaje ahora.' }
-        ],
-      });
 
-      const aiResponse = response.choices[0]!.message!.content!.trim()
-      console.log('AI Response:', aiResponse);
+      const aiResponse = await this.openAiFactory(dataPrompt)
 
       return aiResponse;
     } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
       throw error;
     }
   }
@@ -268,13 +158,24 @@ export class AiService {
 
     try {
       const dataPrompt = askDateAvailabilityPrompt(context)
+
+      const aiResponse = await this.openAiFactory(dataPrompt)
+
+      return aiResponse;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async openAiFactory(prompt: string, userMessage?: string, json?:boolean): Promise<string> {
+    try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
-        response_format: { type: 'text' },
+        response_format: { type: json ? 'json_object' : 'text' },
         temperature: 0,
         messages: [
-          { role: 'system', content: dataPrompt },
-          { role: 'user', content: 'Generá el mensaje ahora.' }
+          { role: 'system', content: prompt },
+          { role: 'user', content: userMessage || 'Generá el mensaje ahora.' }
         ],
       });
 
@@ -283,7 +184,7 @@ export class AiService {
 
       return aiResponse;
     } catch (error) {
-      this.logger.error(`Error al interactuar con el AI`, error);
+      this.logger.error(`Error al interactuar con AI`, error);
       throw error;
     }
   }

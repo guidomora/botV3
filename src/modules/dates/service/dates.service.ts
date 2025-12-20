@@ -73,12 +73,14 @@ export class DatesService {
 
   async getDayAvailability(date:string):Promise<AvailabilityResponse>{
     const dates = await this.googleSheetsService.getDayAvailability(date)
+    this.logger.log('Day availability checked')
     return formatAvailabilityResponse(dates)
   }
 
   async getDayAndTimeAvailability(date:string, time:string):Promise<AvailabilityResponse>{
     const dates = await this.googleSheetsService.getDayAvailability(date)
     const formatedDayAvailability = formatAvailabilityResponse(dates)
+    this.logger.log('Day and time availability checked')
     return pickAvailabilityForTime(formatedDayAvailability, time)
   }
 }
