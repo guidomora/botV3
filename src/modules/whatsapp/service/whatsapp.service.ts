@@ -82,7 +82,7 @@ export class WhatsAppService {
     this.buffers.delete(waId);
 
     if (!joinedMessages) return;
-    await this.reservationsService.conversationOrchestrator(joinedMessages);
+    return await this.reservationsService.conversationOrchestrator(joinedMessages);
   }
 
 }

@@ -40,7 +40,6 @@ export class WhatsAppController {
     const waId = '11223344'
     await this.whatsappService.handleMultipleMessages(waId, body);
 
-    // 4) Respondé 200 OK sin cuerpo (Twilio queda conforme)
-    return { ok: true };
+    return {ok: 'ok'};
   }
 }

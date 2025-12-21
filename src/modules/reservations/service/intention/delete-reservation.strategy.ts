@@ -35,8 +35,11 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
         }
 
         const response = await this.datesService.deleteReservation(state);
+        
         await this.cacheService.clearHistory(waId, CacheTypeEnum.CANCEL);
+
         await this.cacheService.clearHistory(waId, CacheTypeEnum.DATA);
+        
         return { reply: response };
     }
 }
