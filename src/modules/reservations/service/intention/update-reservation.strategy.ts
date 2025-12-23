@@ -18,9 +18,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
 
-        // 1) update the datetime to requested one by the user and keep the same data?
-        // 2) update the datetime to requested one by the user and ask if he wants to update the data?
-        // 3) delete the actual reservation and create a new one?
+        // 1) update the date or date and time requested one by the user and ask if he wants to update the data?
         const mockedData: AddMissingFieldInput = {
             waId: '123456789',
             values: { // TODO: remove this mock once we receive the phone number from the user

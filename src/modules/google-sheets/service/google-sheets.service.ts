@@ -59,6 +59,24 @@ export class GoogleSheetsService {
     }
   }
 
+  async getDateData(date: string, time: string, range: string = `${SHEETS_NAMES[0]}!A:C`): Promise<string[] | null> {
+    try {
+      const data = await this.googleSheetsRepository.getDates(range);
+
+      const index = data.findIndex(row => row[0] === date && row[1] === time) + 1;
+
+      if (index === -1 || index === undefined || index === 0) {
+        return null
+      }
+
+      const dateData = data[index - 1];
+
+      return dateData;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
   async getDateIndexByData(getIndexParams: GetIndexParams): Promise<number> {
     const { date, time, name, phone } = getIndexParams;
 
@@ -161,8 +179,8 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(range);
       const allDaysRows = data.filter(row => row[0] !== 'Fecha');
-      
-      const requestedDayRows = allDaysRows.filter(r => r[0] === date && r[3] != '0');      
+
+      const requestedDayRows = allDaysRows.filter(r => r[0] === date && r[3] != '0');
 
       return requestedDayRows
     } catch (error) {
@@ -196,6 +214,19 @@ export class GoogleSheetsService {
       }
 
       await this.googleSheetsRepository.updateAvailabilitySheet(`${SHEETS_NAMES[1]}!C${index}:D${index}`, updateParams);
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  async updateReservationByDate(oldDate: string, newDate: string, oldTime: string, newTime?: string) {
+    // Get the data of the old reservation <- (here)
+    // check if the new date is available
+    // update the reservation
+    // delete the old reservation
+    try {
+      const oldDateData = await this.getDateData(oldDate, oldTime, `${SHEETS_NAMES[0]}!A:A`);
+
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }
