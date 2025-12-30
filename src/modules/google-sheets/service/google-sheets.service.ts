@@ -150,6 +150,14 @@ export class GoogleSheetsService {
 
     const index = await this.getDate(date, time, `${SHEETS_NAMES[1]}!A:C`)
 
+    if (index === -1) {
+      return {
+        isAvailable: false,
+        reservations: 0,
+        available: 0
+      };
+    }
+
     try {
       const data = await this.googleSheetsRepository.getAvailability(`${SHEETS_NAMES[1]}!C${index}:D${index}`);
 
@@ -220,13 +228,26 @@ export class GoogleSheetsService {
   }
 
   async updateReservationByDate(oldDate: string, newDate: string, oldTime: string, newTime?: string) {
-    // Get the data of the old reservation <- (here)
-    // check if the new date is available
+    // Get the data of the old reservation 
+    // check if the new date is available, date and time or onlye date? <- (here)
     // update the reservation
     // delete the old reservation
+    // maybe create some kind of response for errors? (reservation not found, etc)
     try {
-      const oldDateData = await this.getDateData(oldDate, oldTime, `${SHEETS_NAMES[0]}!A:A`);
+      const oldDateData = await this.getDateData(oldDate, oldTime, `${SHEETS_NAMES[0]}!A:F`);
+      console.log(oldDateData);
+      
+      if (oldDateData === null) {
+        return 'No se encontro la reserva'
+      }
 
+      const checkAvailability = await this.getAvailability(newDate, newTime!);
+
+      if (!checkAvailability.isAvailable) {
+        return 'La nueva fecha y hora no están disponibles';
+      }
+      
+      
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }

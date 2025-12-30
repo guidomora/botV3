@@ -1,13 +1,15 @@
 ### History
 
-#### 22/12/25
-- started working at update reservation flow
+#### 29/12/25
+- Working on update reservation flow
 - TODO:
- - Start working at UPDATE strategy
  - AI it is not greeting the user
  - add the OFFTOPIC strategy
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 22/12/25
+- started working at update reservation flow
 
 #### 21/12/25
 - little updates

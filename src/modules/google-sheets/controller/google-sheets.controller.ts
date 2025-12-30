@@ -19,4 +19,11 @@ export class GoogleSheetsController {
   getDayAvailability(@Body('date') body:string) {
     return this.googleSheetsService.getDayAvailability(body);
   }
+
+  @Get('/test')
+  updateReservation() {
+    return this.googleSheetsService.updateReservationByDate(
+      'lunes 29 de diciembre 2025 29/12/2025', 'martes 30 de diciembre 2025 30/12/2025',
+    '21:00', '21:00');
+  }
 }
