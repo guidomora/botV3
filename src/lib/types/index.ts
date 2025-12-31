@@ -11,3 +11,5 @@ export * from './google-sheet';
 export * from './cache';
 
 export * from './messages';
+
+export * from './reservation/update-reservation.type';

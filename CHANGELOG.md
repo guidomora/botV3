@@ -1,12 +1,16 @@
 ### History
 
-#### 29/12/25
-- Working on update reservation flow
+#### 31/12/25
+- Working on update reservation flow, little advance thanks to Codex
 - TODO:
+ - The cache must save the user's context for update intention
  - AI it is not greeting the user
  - add the OFFTOPIC strategy
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 29/12/25
+- Working on update reservation flow
 
 #### 22/12/25
 - started working at update reservation flow

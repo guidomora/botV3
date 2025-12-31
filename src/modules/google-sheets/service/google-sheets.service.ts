@@ -229,7 +229,8 @@ export class GoogleSheetsService {
 
   async updateReservationByDate(oldDate: string, newDate: string, oldTime: string, newTime?: string) {
     // Get the data of the old reservation 
-    // check if the new date is available, date and time or onlye date? <- (here)
+    // check if the new date is available <- (here)
+    // create use-cases for date change and date-time change
     // update the reservation
     // delete the old reservation
     // maybe create some kind of response for errors? (reservation not found, etc)

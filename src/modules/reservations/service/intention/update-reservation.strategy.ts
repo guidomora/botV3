@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { CacheTypeEnum, Intention, MultipleMessagesResponse, TemporalStatusEnum } from "src/lib";
+import { CacheTypeEnum, Intention, MultipleMessagesResponse, TemporalStatusEnum, UpdateReservationType } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
@@ -16,13 +16,29 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
         private readonly cacheService: CacheService
     ) { }
 
+    // the state must come from the conversation context (cache)
+    private mapAiResponseToUpdateReservation(aiResponse: MultipleMessagesResponse, updateState:UpdateReservationType): Partial<UpdateReservationType>{
+        const updateData: Partial<UpdateReservationType> = {};
+
+        if (updateState.stage === 'identify') {
+            if (aiResponse.name) updateData.name = aiResponse.name;
+            if (aiResponse.phone) updateData.phone = aiResponse.phone;
+            if (aiResponse.date) updateData.currentDate = aiResponse.date;
+            if (aiResponse.time) updateData.currentTime = aiResponse.time;
+        } else {
+            if (aiResponse.date) updateData.newDate = aiResponse.date;
+            if (aiResponse.time) updateData.newTime = aiResponse.time;
+        }
+
+        return updateData;
+    }
+
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
 
-        // 1) update the date or date and time requested one by the user and ask if he wants to update the data?
         const mockedData: AddMissingFieldInput = {
             waId: '123456789',
             values: { // TODO: remove this mock once we receive the phone number from the user
-                phone:'1122334455',
+                phone: '1122334455',
                 date: aiResponse.date,
                 time: aiResponse.time,
                 name: aiResponse.name,
@@ -33,16 +49,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
         const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
 
         const history = await this.cacheService.getHistory(mockedData.waId);
-        
-        switch (response.status) {
-            case TemporalStatusEnum.IN_PROGRESS:
-                return {reply: await this.aiService.getMissingData(response.missingFields, history)};
-            case TemporalStatusEnum.COMPLETED:
-                await this.cacheService.clearHistory(mockedData.waId, CacheTypeEnum.DATA);
-                return {reply: await this.aiService.reservationCompleted(response.reservationData, history)};
-            default:
-                this.logger.warn(`Estado de reserva inesperado: ${response.status}`);
-                return {reply:'Hubo un problema al procesar la reserva, por favor intentá nuevamente.'}
-        }
+
+        return { reply: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.' }
     }
 }
