@@ -1,6 +1,6 @@
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
-import { Intention, ChatMessage, RoleEnum, DeleteReservation, CacheTypeEnum } from 'src/lib';
+import { Intention, ChatMessage, RoleEnum, DeleteReservation, CacheTypeEnum, UpdateReservationType } from 'src/lib';
 
 @Injectable()
 export class CacheService {
@@ -29,6 +29,21 @@ export class CacheService {
         return data ?? { phone: null, date: null, time: null, name: null };
     }
 
+    private async getUpdateData(waId: string): Promise<UpdateReservationType> {
+        const key = this.key(waId, CacheTypeEnum.UPDATE);
+        const data = await this.cacheManager.get<UpdateReservationType>(key);
+
+        return data ?? {
+            name: null,
+            phone: null,
+            currentDate: null,
+            currentTime: null,
+            newDate: null,
+            newTime: null,
+            stage: 'identify'
+        };
+    }
+
     private async setHistory(waId: string, history: ChatMessage[]) {
         const key = this.key(waId, CacheTypeEnum.DATA);
         const trimmed = history.slice(-this.MAX);
@@ -44,6 +59,10 @@ export class CacheService {
         return this.setHistory(waId, history);
     }
 
+    async getUpdateState(waId: string) {
+        return this.getUpdateData(waId);
+    }
+
     async clearHistory(waId: string, type: CacheTypeEnum) {
         await this.cacheManager.del(this.key(waId, type));
     }
@@ -57,6 +76,15 @@ export class CacheService {
         await this.cacheManager.set(key, state, this.TTL);
     }
 
+    async clearUpdateState(waId: string) {
+        await this.cacheManager.del(this.key(waId, CacheTypeEnum.UPDATE));
+    }
+
+    async setUpdateState(waId: string, state: UpdateReservationType) {
+        const key = this.key(waId, CacheTypeEnum.UPDATE);
+        await this.cacheManager.set(key, state, this.TTL);
+    }
+
     async updateCancelState(waId: string, patch: Partial<DeleteReservation>) {
         const current = await this.getCancelData(waId);
         const next: DeleteReservation = {
@@ -66,6 +94,22 @@ export class CacheService {
             name: patch.name ?? current.name,
         };
         await this.setCancelState(waId, next);
+        return next;
+    }
+
+    async updateUpdateState(waId: string, patch: Partial<UpdateReservationType>) {
+        const current = await this.getUpdateData(waId);
+        const next: UpdateReservationType = {
+            name: patch.name ?? current.name,
+            phone: patch.phone ?? current.phone,
+            currentDate: patch.currentDate ?? current.currentDate,
+            currentTime: patch.currentTime ?? current.currentTime,
+            newDate: patch.newDate ?? current.newDate,
+            newTime: patch.newTime ?? current.newTime,
+            stage: patch.stage ?? current.stage ?? 'identify'
+        };
+
+        await this.setUpdateState(waId, next);
         return next;
     }
 

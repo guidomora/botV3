@@ -14,5 +14,6 @@ export interface ChatMessage {
 export enum CacheTypeEnum {
     CANCEL = 'cancel',
     AVAILABILITY = 'availability',
+    UPDATE = 'update',
     DATA = 'data'
 }
