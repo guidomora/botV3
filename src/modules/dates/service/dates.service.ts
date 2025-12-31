@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, TemporalStatusEnum } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
@@ -82,5 +82,18 @@ export class DatesService {
     const formatedDayAvailability = formatAvailabilityResponse(dates)
     this.logger.log('Day and time availability checked')
     return pickAvailabilityForTime(formatedDayAvailability, time)
+  }
+
+  async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
+    const { currentDate, currentTime, newDate, newTime, name } = updateReservation;
+
+    if (!currentDate || !currentTime || !name) {
+      throw new Error('Faltan datos de la reserva original');
+    }
+
+    const targetDate = newDate ?? currentDate;
+    const targetTime = newTime ?? currentTime;
+
+    return `Tu reserva a nombre de ${name} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime}.`;
   }
 }
