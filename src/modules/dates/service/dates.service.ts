@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, TemporalStatusEnum } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
@@ -32,18 +32,18 @@ export class DatesService {
     return this.createReservationRowUseCase.createReservation(createReservation)
   }
 
-  async createReservationWithMultipleMessages(createReservationDto:AddMissingFieldInput): Promise<AddMissingFieldOutput> {
+  async createReservationWithMultipleMessages(createReservationDto: AddMissingFieldInput): Promise<AddMissingFieldOutput> {
     const reservation = await this.googleSheetsTemporalService.addMissingField(createReservationDto);
 
     const { date, time, name, phone, quantity } = reservation.snapshot;
     if (reservation.status === TemporalStatusEnum.COMPLETED) {
-          const customerData = { date: date!.toLowerCase(), time: time!.toLowerCase(), name: name!.toLowerCase(), phone: phone!.toLowerCase(), quantity: Number(quantity!) }
+      const customerData = { date: date!.toLowerCase(), time: time!.toLowerCase(), name: name!.toLowerCase(), phone: phone!.toLowerCase(), quantity: Number(quantity!) }
 
-          await this.createReservationRowUseCase.createReservation(customerData);
-          this.logger.log('Reserva trasladada a hoja de reservas');
+      await this.createReservationRowUseCase.createReservation(customerData);
+      this.logger.log('Reserva trasladada a hoja de reservas');
 
-          await this.googleSheetsService.deleteRow(reservation.rowIndex, 2)
-          this.logger.log('Fila eliminada de la hoja temporal');
+      await this.googleSheetsService.deleteRow(reservation.rowIndex, 2)
+      this.logger.log('Fila eliminada de la hoja temporal');
     }
     return {
       status: reservation.status,
@@ -71,16 +71,29 @@ export class DatesService {
     return this.deleteReservationUseCase.deleteOldRows()
   }
 
-  async getDayAvailability(date:string):Promise<AvailabilityResponse>{
+  async getDayAvailability(date: string): Promise<AvailabilityResponse> {
     const dates = await this.googleSheetsService.getDayAvailability(date)
     this.logger.log('Day availability checked')
     return formatAvailabilityResponse(dates)
   }
 
-  async getDayAndTimeAvailability(date:string, time:string):Promise<AvailabilityResponse>{
+  async getDayAndTimeAvailability(date: string, time: string): Promise<AvailabilityResponse> {
     const dates = await this.googleSheetsService.getDayAvailability(date)
     const formatedDayAvailability = formatAvailabilityResponse(dates)
     this.logger.log('Day and time availability checked')
     return pickAvailabilityForTime(formatedDayAvailability, time)
+  }
+
+  async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
+    const { currentDate, currentTime, newDate, newTime, name } = updateReservation;
+
+    if (!currentDate || !currentTime || !name) {
+      throw new Error('Faltan datos de la reserva original');
+    }
+
+    const targetDate = newDate ?? currentDate;
+    const targetTime = newTime ?? currentTime;
+
+    return `Tu reserva a nombre de ${name} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime}.`;
   }
 }

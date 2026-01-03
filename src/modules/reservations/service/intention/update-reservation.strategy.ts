@@ -1,11 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { CacheTypeEnum, Intention, MultipleMessagesResponse, TemporalStatusEnum, UpdateReservationType } from "src/lib";
+import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum, TemporalStatusEnum, UpdateReservationType } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { Logger } from "@nestjs/common";
 import { CacheService } from "src/modules/cache-context/cache.service";
+import { getMissingUpdateFields } from "../helpers/get-missing-update-fields.helper";
 @Injectable()
 export class UpdateReservationStrategy implements IntentionStrategyInterface {
     readonly intent = Intention.UPDATE;
@@ -17,7 +18,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     ) { }
 
     // the state must come from the conversation context (cache)
-    private mapAiResponseToUpdateReservation(aiResponse: MultipleMessagesResponse, updateState:UpdateReservationType): Partial<UpdateReservationType>{
+    private mapAiResponseToUpdateReservation(aiResponse: MultipleMessagesResponse, updateState: UpdateReservationType): Partial<UpdateReservationType> {
         const updateData: Partial<UpdateReservationType> = {};
 
         if (updateState.stage === 'identify') {
@@ -35,21 +36,42 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
 
-        const mockedData: AddMissingFieldInput = {
-            waId: '123456789',
-            values: { // TODO: remove this mock once we receive the phone number from the user
-                phone: '1122334455',
-                date: aiResponse.date,
-                time: aiResponse.time,
-                name: aiResponse.name,
-                quantity: aiResponse.quantity,
-            },
-            messageSid: '123',
+        const waId = '123456789';
+        const currentState = await this.cacheService.getUpdateState(waId);
+
+        const mappedState = this.mapAiResponseToUpdateReservation(aiResponse, currentState);
+        let nextState = await this.cacheService.updateUpdateState(waId, mappedState);
+
+        if (
+            nextState.stage === 'identify'
+            && nextState.name && nextState.phone && nextState.currentDate && nextState.currentTime
+        ) {
+            nextState = await this.cacheService.updateUpdateState(waId, { stage: 'reschedule' });
         }
-        const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
 
-        const history = await this.cacheService.getHistory(mockedData.waId);
+        const { current, target } = getMissingUpdateFields(nextState);
+        const history = await this.cacheService.getHistory(waId);
 
-        return { reply: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.' }
+        if (current.length > 0) {
+            const response = await this.aiService.askUpdateReservationData(current, history, nextState);
+            await this.cacheService.appendEntityMessage(waId, response, RoleEnum.ASSISTANT, Intention.UPDATE);
+            return { reply: response };
+        }
+
+        if (target.length > 0) {
+            const response = await this.aiService.askUpdateReservationData(target, history, nextState);
+            await this.cacheService.appendEntityMessage(waId, response, RoleEnum.ASSISTANT, Intention.UPDATE);
+            return { reply: response };
+        }
+
+        try {
+            const reply = await this.datesService.updateReservation(nextState);
+            await this.cacheService.clearUpdateState(waId);
+            await this.cacheService.clearHistory(waId, CacheTypeEnum.DATA);
+            return { reply };
+        } catch (error) {
+            this.logger.error('Error al actualizar la reserva', error as Error);
+            return { reply: 'No pudimos actualizar la reserva en este momento. Por favor intentá de nuevo más tarde.' };
+        }
     }
 }
