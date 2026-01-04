@@ -21,14 +21,22 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     private mapAiResponseToUpdateReservation(aiResponse: MultipleMessagesResponse, updateState: UpdateReservationType): Partial<UpdateReservationType> {
         const updateData: Partial<UpdateReservationType> = {};
 
+        if (aiResponse.name) updateData.name = aiResponse.name;
+        if (aiResponse.phone) updateData.phone = aiResponse.phone;
+
         if (updateState.stage === 'identify') {
-            if (aiResponse.name) updateData.name = aiResponse.name;
-            if (aiResponse.phone) updateData.phone = aiResponse.phone;
             if (aiResponse.date) updateData.currentDate = aiResponse.date;
             if (aiResponse.time) updateData.currentTime = aiResponse.time;
-        } else {
-            if (aiResponse.date) updateData.newDate = aiResponse.date;
-            if (aiResponse.time) updateData.newTime = aiResponse.time;
+
+            // allow capturing target date/time in the same interaction when the
+            // original reservation is already identified
+            if (updateState.currentDate && updateState.currentTime) {
+                if (aiResponse.date) updateData.newDate = aiResponse.date;
+                if (aiResponse.time) updateData.newTime = aiResponse.time;
+            } else {
+                if (aiResponse.date) updateData.newDate = aiResponse.date;
+                if (aiResponse.time) updateData.newTime = aiResponse.time;
+            }
         }
 
         return updateData;
@@ -51,6 +59,10 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
         const { current, target } = getMissingUpdateFields(nextState);
         const history = await this.cacheService.getHistory(waId);
+        console.log('mappedState', mappedState);
+        console.log('current', current);
+        console.log('target', target);
+        
 
         if (current.length > 0) {
             const response = await this.aiService.askUpdateReservationData(current, history, nextState);
