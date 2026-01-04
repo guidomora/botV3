@@ -28,15 +28,11 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
             if (aiResponse.date) updateData.currentDate = aiResponse.date;
             if (aiResponse.time) updateData.currentTime = aiResponse.time;
 
-            // allow capturing target date/time in the same interaction when the
-            // original reservation is already identified
-            if (updateState.currentDate && updateState.currentTime) {
-                if (aiResponse.date) updateData.newDate = aiResponse.date;
-                if (aiResponse.time) updateData.newTime = aiResponse.time;
-            } else {
-                if (aiResponse.date) updateData.newDate = aiResponse.date;
-                if (aiResponse.time) updateData.newTime = aiResponse.time;
-            }
+        }
+
+        if (updateState.stage === 'reschedule') {
+            if (aiResponse.date) updateData.newDate = aiResponse.date;
+            if (aiResponse.time) updateData.newTime = aiResponse.time;
         }
 
         return updateData;
@@ -62,7 +58,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
         console.log('mappedState', mappedState);
         console.log('current', current);
         console.log('target', target);
-        
+
 
         if (current.length > 0) {
             const response = await this.aiService.askUpdateReservationData(current, history, nextState);
