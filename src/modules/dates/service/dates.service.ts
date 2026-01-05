@@ -5,6 +5,7 @@ import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, Dele
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
+import { SHEETS_NAMES } from 'src/constants';
 
 @Injectable()
 export class DatesService {
@@ -85,14 +86,55 @@ export class DatesService {
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
-    const { currentDate, currentTime, newDate, newTime, name } = updateReservation;
+    const { currentDate, currentTime, newDate, newTime, name, phone } = updateReservation;
 
-    if (!currentDate || !currentTime || !name) {
+    if (!currentDate || !currentTime || !name || !phone) {
       throw new Error('Faltan datos de la reserva original');
     }
 
     const targetDate = newDate ?? currentDate;
     const targetTime = newTime ?? currentTime;
+
+        const currentReservationIndex = await this.googleSheetsService.getDateIndexByData({
+      date: currentDate,
+      time: currentTime,
+      name: name.toLowerCase(),
+      phone
+    });
+
+    if (currentReservationIndex === -1) {
+      return 'No se encontró la reserva con los datos proporcionados.';
+    }
+
+    const availability = await this.googleSheetsService.getAvailability(targetDate, targetTime);
+
+    if (!availability.isAvailable) {
+      return 'No hay disponibilidad para la nueva fecha y horario solicitados.';
+    }
+
+    const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`);
+
+    const parseValue = (value: unknown) => Array.isArray(value) ? value[0] : value;
+    const quantity = Number(parseValue(currentRow?.[5])) || 1;
+
+    const creationResult = await this.createReservationRowUseCase.createReservation({
+      date: targetDate.toLowerCase(),
+      time: targetTime,
+      name: name.toLowerCase(),
+      phone,
+      quantity
+    });
+
+    if (typeof creationResult === 'string' && creationResult.startsWith('No ')) {
+      return creationResult;
+    }
+
+    await this.deleteReservationUseCase.deleteReservation({
+      date: currentDate,
+      time: currentTime,
+      name,
+      phone
+    });
 
     return `Tu reserva a nombre de ${name} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime}.`;
   }

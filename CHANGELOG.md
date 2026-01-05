@@ -1,13 +1,16 @@
 ### History
 
-#### 02/01/26
-- Working on update reservation flow, something is done, but one part is not working
+#### 04/01/26
+- Update reservation flow works , but need to test other cases and it is not answering the last message to the user
+- date update tested
 - TODO:
- - The cache must save the user's context for update intention
  - AI it is not greeting the user
  - add the OFFTOPIC strategy
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 02/01/26
+- Working on update reservation flow, something is done, but one part is not working
 
 #### 31/12/25
 - Working on update reservation flow, little advance thanks to Codex
