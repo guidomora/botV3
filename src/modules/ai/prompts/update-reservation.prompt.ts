@@ -34,6 +34,4 @@ ${context && context.length ? context : '(sin mensajes previos)'}
 
 [Reglas del mensaje]
 - Respondé en **una sola línea de texto**, sin prefijos ni explicaciones adicionales.
-- Tono cordial y directo; sin tecnicismos ni emojis salvo que el usuario ya los use.
-- Si ya tenés todo lo necesario, pedí una confirmación breve del cambio indicando fecha y horario resultantes.
-`;
+- Tono cordial y directo; sin tecnicismos ni emojis salvo que el usuario ya los use.`;
