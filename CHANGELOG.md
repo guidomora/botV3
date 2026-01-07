@@ -5,6 +5,7 @@
 - few logs added to debug the update reservation flow
 - Need to work on the other fields update, as quantity and name
 - TODO:
+ - Test unhappy paths on ALL flows
  - AI it is not greeting the user
  - add the OFFTOPIC strategy
  - check the TODOs from aiservice to remove them

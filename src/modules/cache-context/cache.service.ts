@@ -42,10 +42,13 @@ export class CacheService {
         const data = await this.cacheManager.get<UpdateReservationType>(key);
 
         return data ?? {
-            name: null,
+            currentName: null,
             phone: null,
             currentDate: null,
             currentTime: null,
+            currentQuantity: null,
+            newName: null,
+            newQuantity: null,
             newDate: null,
             newTime: null,
             stage: 'identify'
@@ -68,10 +71,13 @@ export class CacheService {
     async updateUpdateState(waId: string, patch: Partial<UpdateReservationType>) {
         const current = await this.getUpdateData(waId);
         const next: UpdateReservationType = {
-            name: patch.name ?? current.name,
+            currentName: patch.currentName ?? current.currentName,
             phone: patch.phone ?? current.phone,
             currentDate: patch.currentDate ?? current.currentDate,
             currentTime: patch.currentTime ?? current.currentTime,
+            currentQuantity: patch.currentQuantity ?? current.currentQuantity,
+            newName: patch.newName ?? current.newName,
+            newQuantity: patch.newQuantity ?? current.newQuantity,
             newDate: patch.newDate ?? current.newDate,
             newTime: patch.newTime ?? current.newTime,
             stage: patch.stage ?? current.stage ?? 'identify'

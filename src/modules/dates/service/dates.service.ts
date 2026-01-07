@@ -88,30 +88,53 @@ export class DatesService {
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
     this.logger.log('Updating reservation', DatesService.name);
-    const { currentDate, currentTime, newDate, newTime, name, phone } = updateReservation;
+    const { currentDate, currentTime, newDate, newTime, currentName, phone, currentQuantity, newQuantity, newName } = updateReservation;
 
-    if (!currentDate || !currentTime || !name || !phone) {
+    if (!currentDate || !currentTime || !currentName || !phone) {
       return 'Faltan datos de la reserva original';
     }
 
     const targetDate = newDate ?? currentDate;
     const targetTime = newTime ?? currentTime;
+    const targetName = newName ?? currentName;
 
-    console.log(currentDate, currentTime, name, phone);
-    
-    
+    console.log(currentDate, currentTime, currentName, phone);
+
+
     const currentReservationIndex = await this.googleSheetsService.getDateIndexByData({
       date: currentDate,
       time: currentTime,
-      name: name.toLowerCase(),
+      name: currentName.toLowerCase(),
       phone
     });
 
     console.log('currentReservationIndex: ', currentReservationIndex);
-    
+
 
     if (currentReservationIndex === -1) {
       return 'No se encontró la reserva con los datos proporcionados.';
+    }
+
+    const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`);
+
+    const parseValue = (value: unknown) => Array.isArray(value) ? value[0] : value;
+    const quantity = Number(parseValue(currentRow?.[5])) || 1;
+    const resolvedQuantity = newQuantity && !Number.isNaN(Number(newQuantity)) ? Number(newQuantity) : quantity;
+
+    if (targetDate === currentDate && targetTime === currentTime) {
+      await this.googleSheetsService.createReservation(
+        `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`,
+        {
+          customerData: {
+            name: targetName.toLowerCase(),
+            phone,
+            quantity: resolvedQuantity,
+          },
+        },
+      );
+
+      this.logger.log('Reservation updated', DatesService.name);
+      return `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.`;
     }
 
     const availability = await this.googleSheetsService.getAvailability(targetDate, targetTime);
@@ -120,17 +143,12 @@ export class DatesService {
       return 'No hay disponibilidad para la nueva fecha y horario solicitados.';
     }
 
-    const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`);
-
-    const parseValue = (value: unknown) => Array.isArray(value) ? value[0] : value;
-    const quantity = Number(parseValue(currentRow?.[5])) || 1;
-
     const creationResult = await this.createReservationRowUseCase.createReservation({
       date: targetDate.toLowerCase(),
       time: targetTime,
-      name: name.toLowerCase(),
+      name: targetName.toLowerCase(),
       phone,
-      quantity
+      quantity: resolvedQuantity
     });
 
     if (typeof creationResult === 'string' && creationResult.startsWith('No ')) {
@@ -140,11 +158,10 @@ export class DatesService {
     await this.deleteReservationUseCase.deleteReservation({
       date: currentDate,
       time: currentTime,
-      name,
+      name: currentName,
       phone
     });
 
-    this.logger.log('Reservation updated', DatesService.name);
-    return `Tu reserva a nombre de ${name} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime}.`;
+    return `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.`;
   }
 }

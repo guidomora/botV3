@@ -20,7 +20,17 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     private mapAiResponseToUpdateReservation(aiResponse: MultipleMessagesResponse, updateState: UpdateReservationType): Partial<UpdateReservationType> {
         const updateData: Partial<UpdateReservationType> = {};
 
-        if (aiResponse.name) updateData.name = aiResponse.name;
+        if (aiResponse.name) {
+            if (
+                updateState.stage === 'reschedule'
+                || (updateState.currentName && updateState.phone && updateState.currentDate && updateState.currentTime)
+            ) {
+                updateData.newName = aiResponse.name;
+            } else if (!updateState.currentName) {
+                updateData.currentName = aiResponse.name;
+            }
+        }
+
         if (aiResponse.phone) updateData.phone = aiResponse.phone;
 
         if (updateState.stage === 'identify') {
@@ -37,6 +47,19 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
         if (updateState.stage === 'reschedule') {
             if (aiResponse.date) updateData.newDate = aiResponse.date;
             if (aiResponse.time) updateData.newTime = aiResponse.time;
+            if (aiResponse.name) updateData.newName = aiResponse.name;
+            if (aiResponse.quantity) updateData.newQuantity = aiResponse.quantity;
+        }
+
+        if (
+            updateState.stage === 'identify'
+            && aiResponse.quantity
+            && updateState.currentName
+            && updateState.phone
+            && updateState.currentDate
+            && updateState.currentTime
+        ) {
+            updateData.newQuantity = aiResponse.quantity;
         }
 
         return updateData;
@@ -52,7 +75,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
         if (
             nextState.stage === 'identify'
-            && nextState.name && nextState.phone && nextState.currentDate && nextState.currentTime
+            && nextState.currentName && nextState.phone && nextState.currentDate && nextState.currentTime
         ) {
             nextState = await this.cacheService.updateUpdateState(waId, { stage: 'reschedule' });
         }
