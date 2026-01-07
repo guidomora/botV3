@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, GetIndexParams, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
@@ -87,8 +87,10 @@ export class DatesService {
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
+    
     this.logger.log('Updating reservation', DatesService.name);
-    const { currentDate, currentTime, newDate, newTime, currentName, phone, currentQuantity, newQuantity, newName } = updateReservation;
+    
+    const { currentDate, currentTime, newDate, newTime, currentName, phone, newQuantity, newName } = updateReservation;
 
     if (!currentDate || !currentTime || !currentName || !phone) {
       return 'Faltan datos de la reserva original';
@@ -100,13 +102,14 @@ export class DatesService {
 
     console.log(currentDate, currentTime, currentName, phone);
 
-
-    const currentReservationIndex = await this.googleSheetsService.getDateIndexByData({
+    const searchIndexObject:GetIndexParams = {
       date: currentDate,
       time: currentTime,
       name: currentName.toLowerCase(),
       phone
-    });
+    }
+
+    const currentReservationIndex = await this.googleSheetsService.getDateIndexByData(searchIndexObject);
 
     console.log('currentReservationIndex: ', currentReservationIndex);
 
@@ -118,12 +121,16 @@ export class DatesService {
     const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`);
 
     const parseValue = (value: unknown) => Array.isArray(value) ? value[0] : value;
+    
     const quantity = Number(parseValue(currentRow?.[5])) || 1;
+    
     const resolvedQuantity = newQuantity && !Number.isNaN(Number(newQuantity)) ? Number(newQuantity) : quantity;
+
+    const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`
 
     if (targetDate === currentDate && targetTime === currentTime) {
       await this.googleSheetsService.createReservation(
-        `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`,
+        createRange,
         {
           customerData: {
             name: targetName.toLowerCase(),
@@ -143,24 +150,28 @@ export class DatesService {
       return 'No hay disponibilidad para la nueva fecha y horario solicitados.';
     }
 
-    const creationResult = await this.createReservationRowUseCase.createReservation({
+    const createObject:CreateReservationType = {
       date: targetDate.toLowerCase(),
       time: targetTime,
       name: targetName.toLowerCase(),
       phone,
       quantity: resolvedQuantity
-    });
+    }
+
+    const creationResult = await this.createReservationRowUseCase.createReservation(createObject);
 
     if (typeof creationResult === 'string' && creationResult.startsWith('No ')) {
       return creationResult;
     }
 
-    await this.deleteReservationUseCase.deleteReservation({
+    const deleteObject:DeleteReservation = {
       date: currentDate,
       time: currentTime,
       name: currentName,
       phone
-    });
+    }
+
+    await this.deleteReservationUseCase.deleteReservation(deleteObject);
 
     return `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.`;
   }

@@ -38,4 +38,5 @@ ${context && context.length ? context : '(sin mensajes previos)'}
 
 [Reglas del mensaje]
 - Respondé en **una sola línea de texto**, sin prefijos ni explicaciones adicionales.
+- Español rioplatense (Argentina).
 - Tono cordial y directo; sin tecnicismos ni emojis salvo que el usuario ya los use.`;

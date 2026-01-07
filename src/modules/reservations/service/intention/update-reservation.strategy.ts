@@ -20,6 +20,13 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     private mapAiResponseToUpdateReservation(aiResponse: MultipleMessagesResponse, updateState: UpdateReservationType): Partial<UpdateReservationType> {
         const updateData: Partial<UpdateReservationType> = {};
 
+        const hasCurrentReservationData = Boolean(
+            (updateState.currentDate ?? (updateState.stage === 'identify' ? aiResponse.date : null))
+            && (updateState.currentTime ?? (updateState.stage === 'identify' ? aiResponse.time : null))
+            && (updateState.currentName ?? (updateState.stage === 'identify' ? aiResponse.name : null))
+            && (updateState.phone ?? aiResponse.phone)
+        );
+
         if (aiResponse.name) {
             if (
                 updateState.stage === 'reschedule'
@@ -48,17 +55,9 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
             if (aiResponse.date) updateData.newDate = aiResponse.date;
             if (aiResponse.time) updateData.newTime = aiResponse.time;
             if (aiResponse.name) updateData.newName = aiResponse.name;
-            if (aiResponse.quantity) updateData.newQuantity = aiResponse.quantity;
         }
 
-        if (
-            updateState.stage === 'identify'
-            && aiResponse.quantity
-            && updateState.currentName
-            && updateState.phone
-            && updateState.currentDate
-            && updateState.currentTime
-        ) {
+        if (aiResponse.quantity && (updateState.stage === 'reschedule' || hasCurrentReservationData)) {
             updateData.newQuantity = aiResponse.quantity;
         }
 

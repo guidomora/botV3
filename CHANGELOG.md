@@ -1,15 +1,20 @@
 ### History
 
-#### 06/01/26
-- Re worked on update reservation flow: Date works - Time works - Date and time works
-- few logs added to debug the update reservation flow
-- Need to work on the other fields update, as quantity and name
+#### 07/01/26
+- Re worked on update reservation flow: Date works - Time works - Date and time - quantity - all cases works
+- name update at aiService for open AI config
 - TODO:
  - Test unhappy paths on ALL flows
  - AI it is not greeting the user
  - add the OFFTOPIC strategy
- - check the TODOs from aiservice to remove them
+ - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
+ - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 06/01/26
+- Re worked on update reservation flow: Date works - Time works - Date and time works
+- few logs added to debug the update reservation flow
+- Need to work on the other fields update, as quantity and name
 
 #### 05/01/26
 - Testing update reservation flow: Date works - Time works - Date and time works

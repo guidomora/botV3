@@ -15,7 +15,7 @@ export class AiService {
   async sendMessage(message: string): Promise<ResponseDate> {
     // TODO: check if it can be removed
     try {
-      const aiResponse = await this.openAiFactory(datePrompt, message, true)
+      const aiResponse = await this.openAiConfig(datePrompt, message, true)
 
       const parseResponse = JSON.parse(aiResponse);
 
@@ -29,7 +29,7 @@ export class AiService {
   async getAvailabilityData(message: string): Promise<SearchAvailability> {
     // TODO: check if it can be removed
     try {
-      const aiResponse = await this.openAiFactory(searchAvailabilityPrompt, message, true)
+      const aiResponse = await this.openAiConfig(searchAvailabilityPrompt, message, true)
 
       const parseResponse: SearchAvailability = JSON.parse(aiResponse);
 
@@ -43,7 +43,7 @@ export class AiService {
   async getCancelData(message: string): Promise<DeleteReservation> {
     // TODO: check if it can be removed
     try {
-      const aiResponse = await this.openAiFactory(phonePrompt, message, true)
+      const aiResponse = await this.openAiConfig(phonePrompt, message, true)
 
       const parseResponse: DeleteReservation = JSON.parse(aiResponse);
 
@@ -71,7 +71,7 @@ export class AiService {
 
     const prompt = interactPrompt(context, activeIntent)
     try {
-      const aiResponse = await this.openAiFactory(prompt, message, true)
+      const aiResponse = await this.openAiConfig(prompt, message, true)
 
       const parseResponse: MultipleMessagesResponse = JSON.parse(aiResponse);
       console.log('----', parseResponse);
@@ -87,7 +87,7 @@ export class AiService {
     try {
       const dataPrompt = missingDataPrompt(missingFields, context)
 
-      const aiResponse = await this.openAiFactory(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt)
 
       return aiResponse;
     } catch (error) {
@@ -104,7 +104,7 @@ export class AiService {
     try {
       const dataPrompt = cancelDataPrompt(missingFields, context, known)
 
-      const aiResponse = await this.openAiFactory(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt)
 
       return aiResponse;
     } catch (error) {
@@ -116,7 +116,7 @@ export class AiService {
     try {
       const dataPrompt = reservationCompletedPrompt(reservationData, messageHistory)
 
-      const aiResponse = await this.openAiFactory(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt)
 
       return aiResponse;
     } catch (error) {
@@ -129,7 +129,7 @@ export class AiService {
     try {
       const dataPrompt = availabilityReplyPrompt(dayAvailability, context)
 
-      const aiResponse = await this.openAiFactory(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt)
 
       return aiResponse;
     } catch (error) {
@@ -144,7 +144,7 @@ export class AiService {
     try {
       const dataPrompt = timeAvailabilityReplyPrompt(dayAvailability, context, requestedTime)
 
-      const aiResponse = await this.openAiFactory(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt)
 
       return aiResponse;
     } catch (error) {
@@ -158,7 +158,7 @@ async askUpdateReservationData(missingFields: string[], messageHistory: ChatMess
     try {
       const dataPrompt = updateReservationPrompt(missingFields, context, known);
 
-      const aiResponse = await this.openAiFactory(dataPrompt);
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -173,7 +173,7 @@ async askUpdateReservationData(missingFields: string[], messageHistory: ChatMess
     try {
       const dataPrompt = askDateAvailabilityPrompt(context)
 
-      const aiResponse = await this.openAiFactory(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt)
 
       return aiResponse;
     } catch (error) {
@@ -181,7 +181,7 @@ async askUpdateReservationData(missingFields: string[], messageHistory: ChatMess
     }
   }
 
-  async openAiFactory(prompt: string, userMessage?: string, json?:boolean): Promise<string> {
+  async openAiConfig(prompt: string, userMessage?: string, json?:boolean): Promise<string> {
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
