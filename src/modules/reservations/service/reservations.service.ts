@@ -58,6 +58,7 @@ export class ReservationsService {
 
   async conversationOrchestrator(message: string): Promise<string> {
     const waId = "123456789";
+    console.log(`Mensaje recibido: ${message}`);
     await this.cacheService.appendEntityMessage(waId, message, RoleEnum.USER);
 
     const history = await this.cacheService.getHistory(waId);
