@@ -1,13 +1,18 @@
 ### History
 
-#### 05/01/26
-- Testing update reservation flow: Date works - Time works - Date and time works
+#### 06/01/26
+- Re worked on update reservation flow: Date works - Time works - Date and time works
+- few logs added to debug the update reservation flow
 - Need to work on the other fields update, as quantity and name
 - TODO:
  - AI it is not greeting the user
  - add the OFFTOPIC strategy
  - check the TODOs from aiservice to remove them
  - add all tests for google module
+
+#### 05/01/26
+- Testing update reservation flow: Date works - Time works - Date and time works
+- Need to work on the other fields update, as quantity and name
 
 #### 04/01/26
 - Update reservation flow works , but need to test other cases and it is not answering the last message to the user

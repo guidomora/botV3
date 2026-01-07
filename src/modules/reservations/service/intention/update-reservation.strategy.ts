@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
 import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum, TemporalStatusEnum, UpdateReservationType } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
-import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { Logger } from "@nestjs/common";
 import { CacheService } from "src/modules/cache-context/cache.service";
@@ -25,8 +24,13 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
         if (aiResponse.phone) updateData.phone = aiResponse.phone;
 
         if (updateState.stage === 'identify') {
-            if (aiResponse.date) updateData.currentDate = aiResponse.date;
-            if (aiResponse.time) updateData.currentTime = aiResponse.time;
+            if (!updateState.currentDate && aiResponse.date) updateData.currentDate = aiResponse.date;
+            if (!updateState.currentTime && aiResponse.time) updateData.currentTime = aiResponse.time;
+
+            if (updateState.currentDate && updateState.currentTime) {
+                if (aiResponse.date) updateData.newDate = aiResponse.date;
+                if (aiResponse.time) updateData.newTime = aiResponse.time;
+            }
 
         }
 
@@ -39,7 +43,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     }
 
     async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
-
+        this.logger.log('Executing update reservation strategy', UpdateReservationStrategy.name);
         const waId = '123456789';
         const currentState = await this.cacheService.getUpdateState(waId);
 
@@ -77,6 +81,9 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
             await this.cacheService.appendEntityMessage(waId, reply, RoleEnum.ASSISTANT, Intention.UPDATE);
             await this.cacheService.clearUpdateState(waId);
             await this.cacheService.clearHistory(waId, CacheTypeEnum.DATA);
+
+            // TODO: work on something when user enters bad data
+            console.log('strategyReply', reply)
             return { reply };
         } catch (error) {
             this.logger.error('Error al actualizar la reserva', error as Error);

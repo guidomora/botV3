@@ -6,6 +6,7 @@ import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
 import { SHEETS_NAMES } from 'src/constants';
+import { log } from 'console';
 
 @Injectable()
 export class DatesService {
@@ -86,21 +87,28 @@ export class DatesService {
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
+    this.logger.log('Updating reservation', DatesService.name);
     const { currentDate, currentTime, newDate, newTime, name, phone } = updateReservation;
 
     if (!currentDate || !currentTime || !name || !phone) {
-      throw new Error('Faltan datos de la reserva original');
+      return 'Faltan datos de la reserva original';
     }
 
     const targetDate = newDate ?? currentDate;
     const targetTime = newTime ?? currentTime;
 
-        const currentReservationIndex = await this.googleSheetsService.getDateIndexByData({
+    console.log(currentDate, currentTime, name, phone);
+    
+    
+    const currentReservationIndex = await this.googleSheetsService.getDateIndexByData({
       date: currentDate,
       time: currentTime,
       name: name.toLowerCase(),
       phone
     });
+
+    console.log('currentReservationIndex: ', currentReservationIndex);
+    
 
     if (currentReservationIndex === -1) {
       return 'No se encontró la reserva con los datos proporcionados.';
@@ -136,6 +144,7 @@ export class DatesService {
       phone
     });
 
+    this.logger.log('Reservation updated', DatesService.name);
     return `Tu reserva a nombre de ${name} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime}.`;
   }
 }
