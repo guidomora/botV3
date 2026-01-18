@@ -1,0 +1,32 @@
+import { Injectable, Logger } from "@nestjs/common";
+import { Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
+import { AiService } from "src/modules/ai/service/ai.service";
+import { CacheService } from "src/modules/cache-context/cache.service";
+import { DatesService } from "src/modules/dates/service/dates.service";
+import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
+
+@Injectable()
+export class OtherStrategy implements IntentionStrategyInterface {
+    readonly intent = Intention.OTHER;
+    private readonly logger = new Logger(OtherStrategy.name);
+    constructor(
+        private readonly datesService: DatesService,
+        private readonly aiService: AiService,
+        private readonly cacheService: CacheService
+    ) { }
+
+    async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
+
+        const waId = '123456789'
+
+        const history = await this.cacheService.getHistory(waId);
+        
+        const aiOtherResponse = await this.aiService.otherIntentionAi(history);
+
+        await this.cacheService.appendEntityMessage(waId, aiOtherResponse, RoleEnum.ASSISTANT, Intention.OTHER);
+
+        this.logger.log(`Other strategy executed`);
+        
+        return { reply: aiOtherResponse };
+    }
+}

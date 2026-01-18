@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPrompt } from '../prompts';
+import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, datePrompt, interactPrompt, missingDataPrompt, otherPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum, UpdateReservationType } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
 
@@ -172,6 +172,21 @@ async askUpdateReservationData(missingFields: string[], messageHistory: ChatMess
 
     try {
       const dataPrompt = askDateAvailabilityPrompt(context)
+
+      const aiResponse = await this.openAiConfig(dataPrompt)
+
+      return aiResponse;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+    async otherIntentionAi(messageHistory: ChatMessage[], ): Promise<string> {
+
+    const context = serializeContext(messageHistory);
+
+    try {
+      const dataPrompt = otherPrompt(context)
 
       const aiResponse = await this.openAiConfig(dataPrompt)
 

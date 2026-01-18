@@ -8,4 +8,6 @@ export * from './cancel-prompt';
 export * from './ask-date-availability-prompt';
 export * from './time-availability-prompt';
 export * from './availability-prompt';
-export * from './update-reservation.prompt'
+export * from './update-reservation.prompt';
+export * from './other.prompt';
+

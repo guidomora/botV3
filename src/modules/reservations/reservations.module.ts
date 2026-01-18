@@ -10,6 +10,7 @@ import { DeleteReservationStrategy } from './service/intention/delete-reservatio
 import { CacheContextModule } from 'src/modules/cache-context/cache.module';
 import { AvailabilityStrategy } from './service/intention/availability-reservation.strategy';
 import { UpdateReservationStrategy } from './service/intention/update-reservation.strategy';
+import { OtherStrategy } from './service/intention/other.strategy';
 
 @Module({
   imports: [DatesModule, AiModule, GoogleSheetsModule.forRoot(), CacheContextModule],
@@ -20,10 +21,11 @@ import { UpdateReservationStrategy } from './service/intention/update-reservatio
     DeleteReservationStrategy,
     AvailabilityStrategy,
     UpdateReservationStrategy,
+    OtherStrategy,
     {
       provide: INTENTION_STRATEGIES,
       useFactory: (...strategies) => strategies,
-      inject: [CreateReservationStrategy, DeleteReservationStrategy, AvailabilityStrategy, UpdateReservationStrategy]
+      inject: [CreateReservationStrategy, DeleteReservationStrategy, AvailabilityStrategy, UpdateReservationStrategy, OtherStrategy]
     },
 
     IntentionsRouter,
