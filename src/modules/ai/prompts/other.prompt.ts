@@ -1,4 +1,3 @@
-import { UpdateReservationType } from "src/lib";
 import { formatedDate } from "../utils";
 
 export const otherPrompt = (

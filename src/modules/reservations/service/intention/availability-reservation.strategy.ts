@@ -47,6 +47,9 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
             
             return { reply: availabilityResponse };
         }
+
+        this.logger.log(`Availability strategy executed`);
+
         // datetime not available TODO:
         return { reply: 'No hay disponibilidad para esa fecha y horario' };
     }

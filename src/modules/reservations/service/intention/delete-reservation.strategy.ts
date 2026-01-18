@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { CacheTypeEnum, DeleteReservation, Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
+import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
@@ -39,6 +39,8 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
         await this.cacheService.clearHistory(waId, CacheTypeEnum.CANCEL);
 
         await this.cacheService.clearHistory(waId, CacheTypeEnum.DATA);
+        
+        this.logger.log(`Delete reservation strategy executed`);
         
         return { reply: response };
     }
