@@ -1,14 +1,18 @@
 ### History
 
-#### 08/01/26
-- Other strategy added
-- Continued adding some logs
+#### 20/01/26
+- Availability flow tested un/happy paths
+- Tests documentation at Miro
 - TODO:
  - Test unhappy paths on ALL flows
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 18/01/26
+- Other strategy added
+- Continued adding some logs
 
 #### 07/01/26
 - Re worked on update reservation flow: Date works - Time works - Date and time - quantity - all cases works
