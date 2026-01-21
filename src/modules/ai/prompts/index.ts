@@ -10,4 +10,4 @@ export * from './time-availability-prompt';
 export * from './availability-prompt';
 export * from './update-reservation.prompt';
 export * from './other.prompt';
-
+export * from './cancel-reservation-result.prompt';

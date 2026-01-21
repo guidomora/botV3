@@ -35,6 +35,10 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
         }
 
         const response = await this.datesService.deleteReservation(state);
+
+        const history = await this.cacheService.getHistory(waId);
+
+        const cancelResponse = await this.aiService.cancelReservationResult(response, history, state);
         
         await this.cacheService.clearHistory(waId, CacheTypeEnum.CANCEL);
 
@@ -42,6 +46,6 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
         
         this.logger.log(`Delete reservation strategy executed`);
         
-        return { reply: response };
+        return { reply: cancelResponse };
     }
 }

@@ -1,9 +1,11 @@
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Intention, ChatMessage, RoleEnum, DeleteReservation, CacheTypeEnum, UpdateReservationType } from 'src/lib';
 
 @Injectable()
 export class CacheService {
+    private readonly logger = new Logger(CacheService.name);
+
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) { }
@@ -18,14 +20,14 @@ export class CacheService {
     async getHistory(waId: string): Promise<ChatMessage[]> {
         const key = this.key(waId, CacheTypeEnum.DATA);
         const data = await this.cacheManager.get(key) ?? [];
-
+        this.logger.log(`Cache history for ${waId}`, CacheService.name);
         return Array.isArray(data) ? data : [];
     }
 
     private async getCancelData(waId: string): Promise<DeleteReservation> {
         const key = this.key(waId, CacheTypeEnum.CANCEL);
         const data = await this.cacheManager.get<DeleteReservation>(key);
-
+        this.logger.log(`Cache cancel data for ${waId}`, CacheService.name);
         return data ?? { phone: null, date: null, time: null, name: null };
     }
 
@@ -40,7 +42,7 @@ export class CacheService {
     private async getUpdateData(waId: string): Promise<UpdateReservationType> {
         const key = this.key(waId, CacheTypeEnum.UPDATE);
         const data = await this.cacheManager.get<UpdateReservationType>(key);
-
+        this.logger.log(`Cache update data for ${waId}`, CacheService.name);
         return data ?? {
             currentName: null,
             phone: null,
@@ -82,7 +84,7 @@ export class CacheService {
             newTime: patch.newTime ?? current.newTime,
             stage: patch.stage ?? current.stage ?? 'identify'
         };
-
+        this.logger.log(`Cache update update state for ${waId}`, CacheService.name);
         await this.setUpdateState(waId, next);
         return next;
     }
@@ -91,20 +93,24 @@ export class CacheService {
         const history = await this.getHistory(waId);
         const entry = intention ? { ...msg, intention } : msg;
         history.push(entry);
+        this.logger.log(`Cache append message for ${waId}`, CacheService.name);
         return this.setHistory(waId, history);
     }
 
     async clearHistory(waId: string, type: CacheTypeEnum) {
         await this.cacheManager.del(this.key(waId, type));
+        this.logger.log(`Cache clear history for ${waId}`, CacheService.name);
     }
 
     async clearCancelState(waId: string) {
         await this.cacheManager.del(this.key(waId, CacheTypeEnum.CANCEL));
+        this.logger.log(`Cache clear cancel state for ${waId}`, CacheService.name);
     }
 
     async setCancelState(waId: string, state: DeleteReservation) {
         const key = this.key(waId, CacheTypeEnum.CANCEL);
         await this.cacheManager.set(key, state, this.TTL);
+        this.logger.log(`Cache set cancel state for ${waId}`, CacheService.name);
     }
 
     async updateCancelState(waId: string, patch: Partial<DeleteReservation>) {
@@ -116,6 +122,7 @@ export class CacheService {
             name: patch.name ?? current.name,
         };
         await this.setCancelState(waId, next);
+        this.logger.log(`Cache update cancel state for ${waId}`, CacheService.name);
         return next;
     }
 

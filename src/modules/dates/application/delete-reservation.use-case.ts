@@ -31,7 +31,7 @@ export class DeleteReservationUseCase {
 
       if (index === -1) {
         this.logger.warn('Alguno de los datos no coincide con la reserva')
-        return 'No se encontro la reserva'
+        return 'Algunos de los datos ingresados no coinciden con la reserva.'
       }
 
       const dates = await this.googleSheetsService.getDatetimeDates(date!, time!)
@@ -54,7 +54,7 @@ export class DeleteReservationUseCase {
       await this.googleSheetsService.updateAvailability(ReservationOperation.SUBTRACT, updateParams)
       this.logger.log(`Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`, DeleteReservationUseCase.name)
 
-      return 'Reserva eliminada correctamente'
+      return 'Su reserva ha sido cancelada correctamente.'
     } catch (error) {
       this.logger.error(`Error al eliminar la reserva`, error);
       throw error;

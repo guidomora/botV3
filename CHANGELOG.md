@@ -1,14 +1,19 @@
 ### History
 
-#### 20/01/26
-- Availability flow tested un/happy paths
-- Tests documentation at Miro
+#### 21/01/26
+- Testing cancel reservation flow un/happy paths
+- Added cancel reservation result prompt so the AI can answer the user
+- More logs added
 - TODO:
  - Test unhappy paths on ALL flows
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 20/01/26
+- Availability flow tested un/happy paths
+- Tests documentation at Mir
 
 #### 18/01/26
 - Other strategy added
