@@ -3,6 +3,7 @@
 #### 21/01/26
 - Testing cancel reservation flow un/happy paths
 - Added cancel reservation result prompt so the AI can answer the user
+- New method at google sheets service to get correct availability numbers from reservations
 - More logs added
 - TODO:
  - Test unhappy paths on ALL flows

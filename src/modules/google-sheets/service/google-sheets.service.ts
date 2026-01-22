@@ -6,11 +6,12 @@ import { AddDataType } from "src/lib/types/add-data.type";
 import { TablesInfo } from "src/constants/tables-info/tables-info";
 import { Availability, GetIndexParams, ReservationOperation, UpdateParams, UpdateParamsRepository } from "src/lib";
 import { SheetsName } from "src/constants";
-
+import { Logger } from "@nestjs/common";
 
 
 @Injectable()
 export class GoogleSheetsService {
+  private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(
     private readonly googleSheetsRepository: GoogleSheetsRepository
   ) { }
@@ -181,6 +182,22 @@ export class GoogleSheetsService {
     }
   }
 
+  async getAvailabilityFromReservations(date: string, time: string): Promise<Availability> {
+    const reservationsData = await this.getDatetimeDates(date, time);
+    const validReservations = reservationsData.filter(row => row[2] && row[3]);
+    console.log('validReservations', validReservations);
+    const reservations = validReservations.length;
+    console.log('reservations', reservations);
+    const maxReservations = Number(TablesInfo.AVAILABLE);
+    const available = Math.max(maxReservations - reservations, 0);
+    console.log('available', available);
+    return {
+      isAvailable: available > 0,
+      reservations,
+      available,
+    };
+  }
+
   async getDayAvailability(date: string): Promise<string[][]> {
     const range = `${SHEETS_NAMES[1]}!A:D`
 
@@ -196,6 +213,31 @@ export class GoogleSheetsService {
     }
   }
 
+  async updateAvailabilityFromReservations(updateParams: UpdateParams) {
+
+    let { reservations, available, date, time } = updateParams;
+
+    const index = await this.getDate(date, time, `${SHEETS_NAMES[1]}!A:C`)
+
+    try {
+
+      if (available === 0) {
+        this.logger.warn('No hay disponibilidad para esa fecha y horario.');
+        return 'No hay disponibilidad para esa fecha y horario.';
+      }
+
+      const updateParams: UpdateParamsRepository = {
+        reservations,
+        available,
+      }
+
+      await this.googleSheetsRepository.updateAvailabilitySheet(`${SHEETS_NAMES[1]}!C${index}:D${index}`, updateParams);
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  // TODO: check if it can be deleted
   async updateAvailability(operation: ReservationOperation, updateParams: UpdateParams) {
 
     let { reservations, available, date, time } = updateParams;
@@ -237,7 +279,7 @@ export class GoogleSheetsService {
     try {
       const oldDateData = await this.getDateData(oldDate, oldTime, `${SHEETS_NAMES[0]}!A:F`);
       console.log(oldDateData);
-      
+
       if (oldDateData === null) {
         return 'No se encontro la reserva'
       }
@@ -247,8 +289,8 @@ export class GoogleSheetsService {
       if (!checkAvailability.isAvailable) {
         return 'La nueva fecha y hora no están disponibles';
       }
-      
-      
+
+
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }
@@ -302,3 +344,4 @@ export class GoogleSheetsService {
     }
   }
 }
+

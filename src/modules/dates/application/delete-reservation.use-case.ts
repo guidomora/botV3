@@ -23,8 +23,7 @@ export class DeleteReservationUseCase {
       name: name!.toLowerCase(),
       phone: phone!
     }
-    console.log(date);
-
+    
     try {
 
       const index = await this.googleSheetsService.getDateIndexByData(getIndexParams)
@@ -42,16 +41,17 @@ export class DeleteReservationUseCase {
         await this.googleSheetsService.deleteRow(index, 0)
       }
 
-      const availability = await this.googleSheetsService.getAvailability(date!, time!)
+      const availabilityFromReservations = await this.googleSheetsService.getAvailabilityFromReservations(date!, time!)
+      console.log('availabilityFromReservations', availabilityFromReservations);
 
       const updateParams: UpdateParams = {
-        reservations: availability.reservations,
-        available: availability.available,
+        reservations: availabilityFromReservations.reservations,
+        available: availabilityFromReservations.available,
         date: date!,
         time: time!
       }
 
-      await this.googleSheetsService.updateAvailability(ReservationOperation.SUBTRACT, updateParams)
+      await this.googleSheetsService.updateAvailabilityFromReservations(updateParams)
       this.logger.log(`Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`, DeleteReservationUseCase.name)
 
       return 'Su reserva ha sido cancelada correctamente.'
