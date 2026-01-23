@@ -11,3 +11,4 @@ export * from './availability-prompt';
 export * from './update-reservation.prompt';
 export * from './other.prompt';
 export * from './cancel-reservation-result.prompt';
+export * from './reservation-creation-failed.prompt';

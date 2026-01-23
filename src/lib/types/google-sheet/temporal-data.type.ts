@@ -13,6 +13,7 @@ export enum TemporalStatusEnum {
     NO_DATA = 'NO_DATA',
     IN_PROGRESS = 'IN_PROGRESS',
     COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED'
 }
 
 export type AddMissingFieldInput = {
@@ -25,4 +26,5 @@ export type AddMissingFieldOutput = {
     status: TemporalStatusEnum;
     missingFields: string[];
     reservationData: TemporalDataType;
+    message?: string;
 };

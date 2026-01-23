@@ -25,7 +25,9 @@ export class ReservationsService {
 
     this.logger.log(`Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`, ReservationsService.name)
 
-    return await this.datesService.createReservation(aiResponse);
+    const result = await this.datesService.createReservation(aiResponse);
+
+    return result.message
   }
 
   async getAvailability(dateTime: string): Promise<string> {

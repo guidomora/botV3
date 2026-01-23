@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, cancelReservationResultPrompt, datePrompt, interactPrompt, missingDataPrompt, otherPrompt, phonePrompt, reservationCompletedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPrompt } from '../prompts';
+import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, cancelReservationResultPrompt, datePrompt, interactPrompt, missingDataPrompt, otherPrompt, phonePrompt, reservationCompletedPrompt, reservationCreationFailedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum, UpdateReservationType } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
 
@@ -124,6 +124,18 @@ export class AiService {
     }
   }
 
+  async createReservationFailed(reservationData: TemporalDataType, messageHistory: ChatMessage[], errorMessage: string): Promise<string> {
+    try {
+      const dataPrompt = reservationCreationFailedPrompt(reservationData, messageHistory, errorMessage)
+
+      const aiResponse = await this.openAiConfig(dataPrompt)
+
+      return aiResponse;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async dayAvailabilityAiResponse(dayAvailability: AvailabilityResponse, messageHistory: ChatMessage[]): Promise<string> {
     const context = serializeContext(messageHistory);
     try {
@@ -152,7 +164,7 @@ export class AiService {
     }
   }
 
-async askUpdateReservationData(missingFields: string[], messageHistory: ChatMessage[], known: UpdateReservationType) {
+  async askUpdateReservationData(missingFields: string[], messageHistory: ChatMessage[], known: UpdateReservationType) {
     const context = serializeContext(messageHistory);
 
     try {
@@ -181,7 +193,7 @@ async askUpdateReservationData(missingFields: string[], messageHistory: ChatMess
     }
   }
 
-    async otherIntentionAi(messageHistory: ChatMessage[], ): Promise<string> {
+  async otherIntentionAi(messageHistory: ChatMessage[],): Promise<string> {
 
     const context = serializeContext(messageHistory);
 
@@ -213,7 +225,7 @@ async askUpdateReservationData(missingFields: string[], messageHistory: ChatMess
     }
   }
 
-  async openAiConfig(prompt: string, userMessage?: string, json?:boolean): Promise<string> {
+  async openAiConfig(prompt: string, userMessage?: string, json?: boolean): Promise<string> {
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',

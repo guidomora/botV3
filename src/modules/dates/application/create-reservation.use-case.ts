@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { SHEETS_NAMES } from "src/constants";
 import { GoogleSheetsService } from "src/modules/google-sheets/service/google-sheets.service";
-import { CreateReservationType, ReservationOperation, UpdateParams } from "src/lib";
+import { CreateReservationType, ReservationOperation, ServiceResponse, StatusEnum, UpdateParams } from "src/lib";
 import { Logger } from "@nestjs/common";
 
 @Injectable()
@@ -11,20 +11,30 @@ export class CreateReservationRowUseCase {
         private readonly googleSheetsService: GoogleSheetsService,
     ) { }
 
-    async createReservation(createReservation: CreateReservationType) {
+    async createReservation(createReservation: CreateReservationType):Promise<ServiceResponse> {
         const { date, time, name, phone, quantity } = createReservation;
     
         try {
           const index = await this.googleSheetsService.getDate(date!, time!)
     
           if (index === -1) {
-            return 'No se encontro la fecha'
+            this.logger.warn('No se encontro la fecha')
+            return {
+              error: true,
+              message: 'La fecha u horario seleccionado no esta disponible. Por lo tanto la reserva no se pudo realizar.',
+              status: StatusEnum.NO_DATE_FOUND
+            }
           }
     
           const availability = await this.googleSheetsService.getAvailability(date!, time!)
     
           if (!availability.isAvailable) {
-            return 'No hay disponibilidad para esa fecha y horario'
+            this.logger.warn('No hay disponibilidad para esa fecha y horario')
+            return {
+              error: true,
+              message: 'No hay disponibilidad para esa fecha y horario. Por lo tanto la reserva no se pudo realizar.',
+              status: StatusEnum.NO_AVAILABILITY
+            }
           }
     
           const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${index}:F${index}`)
@@ -54,7 +64,11 @@ export class CreateReservationRowUseCase {
     
           await this.googleSheetsService.updateAvailability(ReservationOperation.ADD, updateParams)
     
-          return `Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`
+          return {
+            error: false,
+            message: `Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`,
+            status: StatusEnum.SUCCESS
+          }
         } catch (error) {
           this.logger.error(`Error al agregar la reserva`, error);
           throw error;

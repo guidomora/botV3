@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, GetIndexParams, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, GetIndexParams, ServiceResponse, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
@@ -30,7 +30,7 @@ export class DatesService {
     return this.createDayUseCase.createXDates(quantity)
   }
 
-  async createReservation(createReservation: CreateReservationType) {
+  async createReservation(createReservation: CreateReservationType): Promise<ServiceResponse> {
     return this.createReservationRowUseCase.createReservation(createReservation)
   }
 
@@ -39,12 +39,27 @@ export class DatesService {
 
     const { date, time, name, phone, quantity } = reservation.snapshot;
     if (reservation.status === TemporalStatusEnum.COMPLETED) {
-      const customerData = { date: date!.toLowerCase(), time: time!.toLowerCase(), name: name!.toLowerCase(), phone: phone!.toLowerCase(), quantity: Number(quantity!) }
+      const customerData = {
+        date: date!.toLowerCase(),
+        time: time!.toLowerCase(),
+        name: name!.toLowerCase(),
+        phone: phone!.toLowerCase(),
+        quantity: Number(quantity!)
+      }
 
-      await this.createReservationRowUseCase.createReservation(customerData);
+      const createResponse = await this.createReservationRowUseCase.createReservation(customerData);
+      if (createResponse.error) {
+        return {
+          status: TemporalStatusEnum.FAILED,
+          missingFields: reservation.missingFields,
+          reservationData: reservation.snapshot,
+          message: createResponse.message
+        }
+      }
       this.logger.log('Reserva trasladada a hoja de reservas');
 
-      await this.googleSheetsService.deleteRow(reservation.rowIndex, 2)
+      await this.googleSheetsService.deleteRow(reservation.rowIndex, 2);
+
       this.logger.log('Fila eliminada de la hoja temporal');
     }
     return {
@@ -87,9 +102,9 @@ export class DatesService {
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
-    
+
     this.logger.log('Updating reservation', DatesService.name);
-    
+
     const { currentDate, currentTime, newDate, newTime, currentName, phone, newQuantity, newName } = updateReservation;
 
     if (!currentDate || !currentTime || !currentName || !phone) {
@@ -102,7 +117,7 @@ export class DatesService {
 
     console.log(currentDate, currentTime, currentName, phone);
 
-    const searchIndexObject:GetIndexParams = {
+    const searchIndexObject: GetIndexParams = {
       date: currentDate,
       time: currentTime,
       name: currentName.toLowerCase(),
@@ -121,9 +136,9 @@ export class DatesService {
     const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`);
 
     const parseValue = (value: unknown) => Array.isArray(value) ? value[0] : value;
-    
+
     const quantity = Number(parseValue(currentRow?.[5])) || 1;
-    
+
     const resolvedQuantity = newQuantity && !Number.isNaN(Number(newQuantity)) ? Number(newQuantity) : quantity;
 
     const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`
@@ -150,7 +165,7 @@ export class DatesService {
       return 'No hay disponibilidad para la nueva fecha y horario solicitados.';
     }
 
-    const createObject:CreateReservationType = {
+    const createObject: CreateReservationType = {
       date: targetDate.toLowerCase(),
       time: targetTime,
       name: targetName.toLowerCase(),
@@ -158,13 +173,13 @@ export class DatesService {
       quantity: resolvedQuantity
     }
 
-    const creationResult = await this.createReservationRowUseCase.createReservation(createObject);
+    const creationResult: ServiceResponse = await this.createReservationRowUseCase.createReservation(createObject);
 
-    if (typeof creationResult === 'string' && creationResult.startsWith('No ')) {
-      return creationResult;
+    if (creationResult.error) {
+      return creationResult.message;
     }
 
-    const deleteObject:DeleteReservation = {
+    const deleteObject: DeleteReservation = {
       date: currentDate,
       time: currentTime,
       name: currentName,
