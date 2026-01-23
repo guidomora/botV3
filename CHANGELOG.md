@@ -1,17 +1,19 @@
 ### History
 
-#### 22/01/26
-- Fixed create reservation flow when the date and time are not available.
-- Started working on a stardard response for methods
-- New ai method and prompt for when the creation fails
-- updateAvailability from google sheets service replaced by updateAvailabilityFromReservations
-
+#### 23/01/26
+- Availability bug fixed. When we had 1 table left, it was not showing the correct availability and it kept adding reservations.
 - TODO:
  - Test unhappy paths on ALL flows
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 22/01/26
+- Fixed create reservation flow when the date and time are not available.
+- Started working on a stardard response for methods
+- New ai method and prompt for when the creation fails
+- updateAvailability from google sheets service replaced by updateAvailabilityFromReservations
 
 #### 21/01/26
 - Testing cancel reservation flow un/happy paths

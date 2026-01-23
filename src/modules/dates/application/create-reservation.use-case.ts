@@ -57,7 +57,7 @@ export class CreateReservationRowUseCase {
     
           const updateParams: UpdateParams = {
             reservations: availability.reservations + 1,
-            available: availability.available,
+            available: Math.max(availability.available - 1, 0),
             date: date!,
             time: time!
           }

@@ -226,9 +226,10 @@ export class GoogleSheetsService {
 
     try {
 
-      if (available === 0) {
-        this.logger.warn('No hay disponibilidad para esa fecha y horario.');
-        return 'No hay disponibilidad para esa fecha y horario.';
+      const TOTAL = Number(TablesInfo.AVAILABLE);
+      if (available < 0 || reservations < 0 || reservations > TOTAL || available > TOTAL) {
+        this.logger.warn(`Estado inválido: reservations=${reservations}, available=${available}`);
+        return 'Estado inválido de disponibilidad.';
       }
 
       const updateParams: UpdateParamsRepository = {
