@@ -26,7 +26,7 @@ export class CreateReservationRowUseCase {
             }
           }
     
-          const availability = await this.googleSheetsService.getAvailability(date!, time!)
+          const availability = await this.googleSheetsService.getAvailabilityFromReservations(date!, time!)
     
           if (!availability.isAvailable) {
             this.logger.warn('No hay disponibilidad para esa fecha y horario')
@@ -56,13 +56,13 @@ export class CreateReservationRowUseCase {
           }
     
           const updateParams: UpdateParams = {
-            reservations: availability.reservations,
+            reservations: availability.reservations + 1,
             available: availability.available,
             date: date!,
             time: time!
           }
     
-          await this.googleSheetsService.updateAvailability(ReservationOperation.ADD, updateParams)
+          await this.googleSheetsService.updateAvailabilityFromReservations(updateParams)
     
           return {
             error: false,

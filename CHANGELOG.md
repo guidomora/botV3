@@ -2,10 +2,12 @@
 
 #### 22/01/26
 - Fixed create reservation flow when the date and time are not available.
+- Started working on a stardard response for methods
 - New ai method and prompt for when the creation fails
+- updateAvailability from google sheets service replaced by updateAvailabilityFromReservations
+
 - TODO:
  - Test unhappy paths on ALL flows
- - check if we can delete updateAvailability from google sheets service, since we have the updateAvailabilityFromReservations method (better one)
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done

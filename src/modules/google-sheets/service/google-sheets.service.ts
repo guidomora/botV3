@@ -184,12 +184,17 @@ export class GoogleSheetsService {
 
   async getAvailabilityFromReservations(date: string, time: string): Promise<Availability> {
     const reservationsData = await this.getDatetimeDates(date, time);
+
     const validReservations = reservationsData.filter(row => row[2] && row[3]);
-    console.log('validReservations', validReservations);
+
     const reservations = validReservations.length;
+
     console.log('reservations', reservations);
+
     const maxReservations = Number(TablesInfo.AVAILABLE);
+
     const available = Math.max(maxReservations - reservations, 0);
+
     console.log('available', available);
     return {
       isAvailable: available > 0,
@@ -237,37 +242,6 @@ export class GoogleSheetsService {
     }
   }
 
-  // TODO: check if it can be deleted
-  async updateAvailability(operation: ReservationOperation, updateParams: UpdateParams) {
-
-    let { reservations, available, date, time } = updateParams;
-
-    const index = await this.getDate(date, time, `${SHEETS_NAMES[1]}!A:C`)
-
-    try {
-
-      if (available === 0 && operation === ReservationOperation.ADD) {
-        throw new Error('No hay disponibilidad para esa fecha y horario. Error en la cantidad de reservas')
-      }
-
-      if (operation === ReservationOperation.ADD) {
-        reservations += 1;
-        available -= 1;
-      } else {
-        reservations -= 1;
-        available += 1;
-      }
-
-      const updateParams: UpdateParamsRepository = {
-        reservations,
-        available,
-      }
-
-      await this.googleSheetsRepository.updateAvailabilitySheet(`${SHEETS_NAMES[1]}!C${index}:D${index}`, updateParams);
-    } catch (error) {
-      this.googleSheetsRepository.failure(error);
-    }
-  }
 
   async updateReservationByDate(oldDate: string, newDate: string, oldTime: string, newTime?: string) {
     // Get the data of the old reservation 
