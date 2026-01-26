@@ -37,7 +37,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
         switch (response.status) {
             case TemporalStatusEnum.IN_PROGRESS:
                 this.logger.log(`Create reservation strategy in progress`);
-                return {reply: await this.aiService.getMissingData(response.missingFields, history)};
+                return {reply: await this.aiService.getMissingData(response.missingFields, history, response.message)};
             
             case TemporalStatusEnum.COMPLETED:
                 this.logger.log(`Create reservation strategy completed`);

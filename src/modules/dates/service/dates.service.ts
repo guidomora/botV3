@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, GetIndexParams, ServiceResponse, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, GetIndexParams, ServiceResponse, StatusEnum, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
@@ -49,6 +49,14 @@ export class DatesService {
 
       const createResponse = await this.createReservationRowUseCase.createReservation(customerData);
       if (createResponse.error) {
+        if (createResponse.status === StatusEnum.DATE_ALREADY_PASSED) {
+          return {
+            status: TemporalStatusEnum.IN_PROGRESS,
+            missingFields: ['date', 'time'],
+            reservationData: reservation.snapshot,
+            message: createResponse.message
+          }
+        }
         return {
           status: TemporalStatusEnum.FAILED,
           missingFields: reservation.missingFields,

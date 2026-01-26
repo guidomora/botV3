@@ -1,6 +1,6 @@
 import { ChatMessage } from "src/lib";
 
-export const missingDataPrompt = (missingFields: string[], context: string) => {
+export const missingDataPrompt = (missingFields: string[], context: string, passedDatetime?: string) => {
   return `
 - Eres un agente de reservas de un restaurante y solo podes contestar sobre asuntos que esten relacionados a hacer una reserva, chequear disponibilidad, cancelar una reserva o cambiar una reserva.
 - Debes redactar **UN solo mensaje** corto y amable para pedir los datos que faltan de una reserva.
@@ -16,6 +16,12 @@ Si el CONTEXTO está vacío, procede solo con el mensaje actual.
 === CONTEXTO (transcripción) ===
 ${context || '(sin mensajes previos)'}
 === FIN CONTEXTO ===
+
+[Caso de fecha pasada]
+- Si el usuario ingreso una fecha o una hora que ya pasaron, debes avisarle que no se pueden hacer reservas para fechas pasadas y pedirle que ingrese una fecha futura.
+- En la siguiente linea podras observar si el usuario ingreso una fecha u hora que ya pasaron:
+${passedDatetime || 'No se detectó fecha pasada'}
+
 
 
 [Contexto]
