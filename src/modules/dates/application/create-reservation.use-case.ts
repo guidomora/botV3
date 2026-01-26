@@ -3,6 +3,7 @@ import { SHEETS_NAMES } from "src/constants";
 import { GoogleSheetsService } from "src/modules/google-sheets/service/google-sheets.service";
 import { CreateReservationType, ReservationOperation, ServiceResponse, StatusEnum, UpdateParams } from "src/lib";
 import { Logger } from "@nestjs/common";
+import { parseDateTime } from "../utils/parseDate";
 
 @Injectable()
 export class CreateReservationRowUseCase {
@@ -15,6 +16,14 @@ export class CreateReservationRowUseCase {
         const { date, time, name, phone, quantity } = createReservation;
     
         try {
+          const reservationDateTime = parseDateTime(date!, time);
+          if (reservationDateTime.getTime() < Date.now()) {
+            return {
+              error: true,
+              message: 'La fecha y horario seleccionado ya pasó. Por favor elegí otra fecha u horario.',
+              status: StatusEnum.DATE_ALREADY_PASSED
+            }
+          }
           const index = await this.googleSheetsService.getDate(date!, time!)
     
           if (index === -1) {
