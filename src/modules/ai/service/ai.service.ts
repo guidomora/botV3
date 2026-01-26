@@ -82,10 +82,10 @@ export class AiService {
     }
   }
 
-  async getMissingData(missingFields: string[], messageHistory: ChatMessage[]): Promise<string> {
+  async getMissingData(missingFields: string[], messageHistory: ChatMessage[], message?: string): Promise<string> {
     const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = missingDataPrompt(missingFields, context)
+      const dataPrompt = missingDataPrompt(missingFields, context, message)
 
       const aiResponse = await this.openAiConfig(dataPrompt)
 

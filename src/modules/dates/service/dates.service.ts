@@ -53,7 +53,8 @@ export class DatesService {
           return {
             status: TemporalStatusEnum.IN_PROGRESS,
             missingFields: ['date', 'time'],
-            reservationData: reservation.snapshot
+            reservationData: reservation.snapshot,
+            message: createResponse.message
           }
         }
         return {
