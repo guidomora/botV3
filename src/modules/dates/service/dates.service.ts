@@ -6,7 +6,7 @@ import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
 import { SHEETS_NAMES } from 'src/constants';
-import { log } from 'console';
+import { parseDateTime } from '../utils/parseDate';
 
 @Injectable()
 export class DatesService {
@@ -123,6 +123,18 @@ export class DatesService {
     const targetTime = newTime ?? currentTime;
     const targetName = newName ?? currentName;
 
+    const currentReservationDateTime = parseDateTime(currentDate, currentTime);
+    if (currentReservationDateTime.getTime() < Date.now()) {
+      this.logger.warn('La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada.');
+      return 'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada. Se puede crear una reserva con los datos solicitados';
+    }
+
+    const targetReservationDateTime = parseDateTime(targetDate, targetTime);
+    if (targetReservationDateTime.getTime() < Date.now()) {
+      this.logger.warn('La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.');
+      return 'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.';
+    }
+
     console.log(currentDate, currentTime, currentName, phone);
 
     const searchIndexObject: GetIndexParams = {
@@ -167,7 +179,7 @@ export class DatesService {
       return `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.`;
     }
 
-    const availability = await this.googleSheetsService.getAvailability(targetDate, targetTime);
+    const availability = await this.googleSheetsService.getAvailabilityFromReservations(targetDate, targetTime);
 
     if (!availability.isAvailable) {
       return 'No hay disponibilidad para la nueva fecha y horario solicitados.';
