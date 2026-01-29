@@ -4,4 +4,5 @@ export enum StatusEnum {
   DATE_ALREADY_PASSED = 'La fecha y horario seleccionado ya pasó',
   RESERVATION_ERROR = 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.',
   SUCCESS = 'Reserva creada correctamente',
+  MISSING_DATA_UPDATE = 'Faltan datos de la reserva original'
 }

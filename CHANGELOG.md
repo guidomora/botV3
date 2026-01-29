@@ -1,14 +1,17 @@
 ### History
 
-#### 26/01/26
-- Added getAvailabilityFromReservations to the updateReservation method
-- Response updated when a user wants to update a reservation with a passed date or time
+#### 28/01/26
+- Added ServiceResponse type to the updateReservation method at date service
+- now the update strategy clears the cache if the update is successful
 - TODO:
  - Test unhappy paths on ALL flows
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+#### 26/01/26
+- Added getAvailabilityFromReservations to the updateReservation method
+- Response updated when a user wants to update a reservation with a passed date or time
 
 #### 25/01/26
 - reservations with passed dates solved. Now the bot will not allow reservations with passed dates.

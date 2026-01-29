@@ -109,14 +109,18 @@ export class DatesService {
     return pickAvailabilityForTime(formatedDayAvailability, time)
   }
 
-  async updateReservation(updateReservation: UpdateReservationType): Promise<string> {
+  async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {
 
     this.logger.log('Updating reservation', DatesService.name);
 
     const { currentDate, currentTime, newDate, newTime, currentName, phone, newQuantity, newName } = updateReservation;
 
     if (!currentDate || !currentTime || !currentName || !phone) {
-      return 'Faltan datos de la reserva original';
+      return {
+        status: StatusEnum.MISSING_DATA_UPDATE,
+        message: 'Faltan datos de la reserva original',
+        error: true
+      };
     }
 
     const targetDate = newDate ?? currentDate;
@@ -126,13 +130,21 @@ export class DatesService {
     const currentReservationDateTime = parseDateTime(currentDate, currentTime);
     if (currentReservationDateTime.getTime() < Date.now()) {
       this.logger.warn('La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada.');
-      return 'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada. Se puede crear una reserva con los datos solicitados';
+      return {
+        status: StatusEnum.DATE_ALREADY_PASSED,
+        message: 'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada. Se puede crear una reserva con los datos solicitados',
+        error: true
+      };
     }
 
     const targetReservationDateTime = parseDateTime(targetDate, targetTime);
     if (targetReservationDateTime.getTime() < Date.now()) {
       this.logger.warn('La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.');
-      return 'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.';
+      return {
+        status: StatusEnum.DATE_ALREADY_PASSED,
+        message: 'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.',
+        error: true
+      };
     }
 
     console.log(currentDate, currentTime, currentName, phone);
@@ -150,7 +162,11 @@ export class DatesService {
 
 
     if (currentReservationIndex === -1) {
-      return 'No se encontró la reserva con los datos proporcionados.';
+      return {
+        status: StatusEnum.NO_DATE_FOUND,
+        message: 'No se encontró la reserva con los datos proporcionados.',
+        error: true
+      };
     }
 
     const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`);
@@ -176,13 +192,21 @@ export class DatesService {
       );
 
       this.logger.log('Reservation updated', DatesService.name);
-      return `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.`;
+      return {
+        status: StatusEnum.SUCCESS,
+        message: `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.`,
+        error: false
+      };
     }
 
     const availability = await this.googleSheetsService.getAvailabilityFromReservations(targetDate, targetTime);
 
     if (!availability.isAvailable) {
-      return 'No hay disponibilidad para la nueva fecha y horario solicitados.';
+      return {
+        status: StatusEnum.NO_AVAILABILITY,
+        message: 'No hay disponibilidad para la nueva fecha y horario solicitados.',
+        error: true
+      };
     }
 
     const createObject: CreateReservationType = {
@@ -196,7 +220,11 @@ export class DatesService {
     const creationResult: ServiceResponse = await this.createReservationRowUseCase.createReservation(createObject);
 
     if (creationResult.error) {
-      return creationResult.message;
+      return {
+        status: StatusEnum.RESERVATION_ERROR,
+        message: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.',
+        error: true
+      };
     }
 
     const deleteObject: DeleteReservation = {
@@ -208,6 +236,10 @@ export class DatesService {
 
     await this.deleteReservationUseCase.deleteReservation(deleteObject);
 
-    return `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.`;
+    return {
+      status: StatusEnum.SUCCESS,
+      message: `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.`,
+      error: false
+    };
   }
 }

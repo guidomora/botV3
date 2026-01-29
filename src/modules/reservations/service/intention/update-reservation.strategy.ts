@@ -100,13 +100,18 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
         try {
             const reply = await this.datesService.updateReservation(nextState);
-            await this.cacheService.appendEntityMessage(waId, reply, RoleEnum.ASSISTANT, Intention.UPDATE);
+            await this.cacheService.appendEntityMessage(waId, reply.message, RoleEnum.ASSISTANT, Intention.UPDATE);
+
+            if (reply.error) {
+                console.log('strategyReply', reply.message)
+                return { reply: reply.message };
+            }
             await this.cacheService.clearUpdateState(waId);
             await this.cacheService.clearHistory(waId, CacheTypeEnum.DATA);
 
             // TODO: work on something when user enters bad data
-            console.log('strategyReply', reply)
-            return { reply };
+            console.log('strategyReply', reply.message)
+            return { reply: reply.message };
         } catch (error) {
             this.logger.error('Error al actualizar la reserva', error as Error);
             return { reply: 'No pudimos actualizar la reserva en este momento. Por favor intentá de nuevo más tarde.' };
