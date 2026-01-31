@@ -3,6 +3,7 @@
 #### 31/01/26
 - Now the the update flow checks if the datetime has availability before continuing with the update flow
 - few responses strings updated
+- More logic added to the update flow to handle phone number requests
 - TODO:
  - Test unhappy paths on ALL flows
  - AI it is not greeting the user
