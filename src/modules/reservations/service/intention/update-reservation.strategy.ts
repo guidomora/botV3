@@ -92,6 +92,26 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
             return { reply: response };
         }
 
+        if (
+            nextState.currentName
+            && nextState.phone
+            && nextState.currentDate
+            && nextState.currentTime
+        ) {
+            const currentReservationIndex = await this.datesService.getReservationIndexByData(
+                nextState.currentDate,
+                nextState.currentTime,
+                nextState.currentName,
+                nextState.phone,
+            );
+
+            if (currentReservationIndex === -1) {
+                const message = 'No se encontró la reserva con los datos proporcionados.';
+                await this.cacheService.appendEntityMessage(waId, message, RoleEnum.ASSISTANT, Intention.UPDATE);
+                return { reply: message };
+            }
+        }
+
         if (target.length > 0) {
             const response = await this.aiService.askUpdateReservationData(target, history, nextState);
             await this.cacheService.appendEntityMessage(waId, response, RoleEnum.ASSISTANT, Intention.UPDATE);

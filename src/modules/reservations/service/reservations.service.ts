@@ -45,7 +45,7 @@ export class ReservationsService {
     const availability = await this.googleSheetsService.getAvailability(date!, time!);
 
     if (!availability.isAvailable) {
-      return 'No hay disponibilidad para esa fecha y horario'
+      return 'No hay disponibilidad para esa fecha y horario. Si queres, podes reservar en otro horario u otro dia'
     }
 
     return `Disponibilidad para el dia ${date} a las ${time}`

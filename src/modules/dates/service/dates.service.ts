@@ -104,9 +104,24 @@ export class DatesService {
 
   async getDayAndTimeAvailability(date: string, time: string): Promise<AvailabilityResponse> {
     const dates = await this.googleSheetsService.getDayAvailability(date)
+
     const formatedDayAvailability = formatAvailabilityResponse(dates)
+
     this.logger.log('Day and time availability checked')
+
     return pickAvailabilityForTime(formatedDayAvailability, time)
+  }
+
+  async getReservationIndexByData(currentDate: string, currentTime: string, currentName: string, phone: string): Promise<number> {
+
+    const searchIndexObject: GetIndexParams = {
+      date: currentDate,
+      time: currentTime,
+      name: currentName.toLowerCase(),
+      phone
+    }
+
+    return this.googleSheetsService.getDateIndexByData(searchIndexObject);
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {
@@ -194,7 +209,8 @@ export class DatesService {
       this.logger.log('Reservation updated', DatesService.name);
       return {
         status: StatusEnum.SUCCESS,
-        message: `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.`,
+        message: `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.
+        Muchas gracias!`,
         error: false
       };
     }
@@ -238,7 +254,8 @@ export class DatesService {
 
     return {
       status: StatusEnum.SUCCESS,
-      message: `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.`,
+      message: `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.
+      Muchas gracias!`,
       error: false
     };
   }
