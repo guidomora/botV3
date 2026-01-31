@@ -87,7 +87,10 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
 
         if (current.length > 0) {
-            const response = await this.aiService.askUpdateReservationData(current, history, nextState);
+            const shouldAskOnlyPhone = current.length === 1 && current[0] === 'phone';
+            const response = shouldAskOnlyPhone
+                ? await this.aiService.askUpdateReservationPhone(history, nextState)
+                : await this.aiService.askUpdateReservationData(current, history, nextState);
             await this.cacheService.appendEntityMessage(waId, response, RoleEnum.ASSISTANT, Intention.UPDATE);
             return { reply: response };
         }

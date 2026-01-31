@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, cancelReservationResultPrompt, datePrompt, interactPrompt, missingDataPrompt, otherPrompt, phonePrompt, reservationCompletedPrompt, reservationCreationFailedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPrompt } from '../prompts';
+import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, cancelReservationResultPrompt, datePrompt, interactPrompt, missingDataPrompt, otherPrompt, phonePrompt, reservationCompletedPrompt, reservationCreationFailedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPhonePrompt, updateReservationPrompt } from '../prompts';
 import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum, UpdateReservationType } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
 
@@ -169,6 +169,20 @@ export class AiService {
 
     try {
       const dataPrompt = updateReservationPrompt(missingFields, context, known);
+
+      const aiResponse = await this.openAiConfig(dataPrompt);
+
+      return aiResponse;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async askUpdateReservationPhone(messageHistory: ChatMessage[], known: UpdateReservationType) {
+    const context = serializeContext(messageHistory);
+
+    try {
+      const dataPrompt = updateReservationPhonePrompt(context, known);
 
       const aiResponse = await this.openAiConfig(dataPrompt);
 

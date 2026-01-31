@@ -9,6 +9,7 @@ export * from './ask-date-availability-prompt';
 export * from './time-availability-prompt';
 export * from './availability-prompt';
 export * from './update-reservation.prompt';
+export * from './update-reservation-phone.prompt';
 export * from './other.prompt';
 export * from './cancel-reservation-result.prompt';
 export * from './reservation-creation-failed.prompt';
