@@ -92,6 +92,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
                 ? await this.aiService.askUpdateReservationPhone(history, nextState)
                 : await this.aiService.askUpdateReservationData(current, history, nextState);
             await this.cacheService.appendEntityMessage(waId, response, RoleEnum.ASSISTANT, Intention.UPDATE);
+            console.log('response', response);
             return { reply: response };
         }
 
