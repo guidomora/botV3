@@ -33,17 +33,6 @@ export class GoogleSheetsService {
     }
   }
 
-  async checkDate(date: string): Promise<boolean> {
-    try {
-      const data = await this.googleSheetsRepository.getDates();
-
-      const dateExists = data.some(row => row[0] === date);
-      return dateExists;
-    } catch (error) {
-      this.googleSheetsRepository.failure(error);
-    }
-  }
-
   async getDate(date: string, time: string, range: string = `${SHEETS_NAMES[0]}!A:C`): Promise<number> {
     try {
       const data = await this.googleSheetsRepository.getDates(range);
@@ -305,15 +294,6 @@ export class GoogleSheetsService {
   async deleteOldRows(rowStart: number, rowEnd: number, sheetIndex: number) {
     try {
       await this.googleSheetsRepository.deleteOldRows(rowStart, rowEnd, sheetIndex);
-    } catch (error) {
-      this.googleSheetsRepository.failure(error);
-    }
-  }
-
-  async getReservationsByDate(date: string): Promise<DateTime> {
-    try {
-      const data = await this.googleSheetsRepository.getReservationsByDate(date);
-      return data;
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }

@@ -12,48 +12,6 @@ export class AiService {
   private readonly logger = new Logger(AiService.name);
   constructor(private readonly openAi: OpenAiConfig) { }
 
-  async sendMessage(message: string): Promise<ResponseDate> {
-    // TODO: check if it can be removed
-    try {
-      const aiResponse = await this.openAiConfig(datePrompt, message, true)
-
-      const parseResponse = JSON.parse(aiResponse);
-
-      return parseResponse;
-    } catch (error) {
-      this.logger.error(`Error al obtener la fecha`, error);
-      throw error;
-    }
-  }
-
-  async getAvailabilityData(message: string): Promise<SearchAvailability> {
-    // TODO: check if it can be removed
-    try {
-      const aiResponse = await this.openAiConfig(searchAvailabilityPrompt, message, true)
-
-      const parseResponse: SearchAvailability = JSON.parse(aiResponse);
-
-      return parseResponse;
-    } catch (error) {
-      this.logger.error(`Error al obtener la disponibilidad`, error);
-      throw error;
-    }
-  }
-
-  async getCancelData(message: string): Promise<DeleteReservation> {
-    // TODO: check if it can be removed
-    try {
-      const aiResponse = await this.openAiConfig(phonePrompt, message, true)
-
-      const parseResponse: DeleteReservation = JSON.parse(aiResponse);
-
-      return parseResponse;
-    } catch (error) {
-      this.logger.error(`Error al obtener el telefono`, error);
-      throw error;
-    }
-  }
-
   async interactWithAi(message: string, messageHistory: ChatMessage[]): Promise<MultipleMessagesResponse> {
 
     const activeIntent = inferActiveIntent(messageHistory);

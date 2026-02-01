@@ -1,15 +1,18 @@
 ### History
 
-#### 31/01/26
-- Now the the update flow checks if the datetime has availability before continuing with the update flow
-- few responses strings updated
-- More logic added to the update flow to handle phone number requests
+#### 01/02/26
+- Unused logic from different files removed
 - TODO:
  - Test unhappy paths on ALL flows
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 31/01/26
+- Now the the update flow checks if the datetime has availability before continuing with the update flow
+- few responses strings updated
+- More logic added to the update flow to handle phone number requests
 
 #### 28/01/26
 - Added ServiceResponse type to the updateReservation method at date service

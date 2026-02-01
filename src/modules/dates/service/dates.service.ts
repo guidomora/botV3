@@ -30,10 +30,6 @@ export class DatesService {
     return this.createDayUseCase.createXDates(quantity)
   }
 
-  async createReservation(createReservation: CreateReservationType): Promise<ServiceResponse> {
-    return this.createReservationRowUseCase.createReservation(createReservation)
-  }
-
   async createReservationWithMultipleMessages(createReservationDto: AddMissingFieldInput): Promise<AddMissingFieldOutput> {
     const reservation = await this.googleSheetsTemporalService.addMissingField(createReservationDto);
 
@@ -74,17 +70,6 @@ export class DatesService {
       status: reservation.status,
       missingFields: reservation.missingFields,
       reservationData: reservation.snapshot
-    }
-  }
-
-  async checkDate(date: string): Promise<boolean> {
-    try {
-      const dateExists = await this.googleSheetsService.checkDate(date)
-
-      return dateExists;
-    } catch (error) {
-      this.logger.error(`Error al obtener el dia`, error);
-      throw error;
     }
   }
 

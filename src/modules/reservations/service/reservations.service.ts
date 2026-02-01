@@ -18,77 +18,20 @@ export class ReservationsService {
     private readonly cacheService: CacheService
   ) { }
 
-  async createReservation(createReservationDto: string): Promise<string> {
-    const aiResponse = await this.aiService.sendMessage(createReservationDto);
-
-    const { date, time, name, quantity } = aiResponse;
-
-    this.logger.log(`Reserva creada correctamente para el dia ${date} a las ${time} para ${name} y ${quantity} personas`, ReservationsService.name)
-
-    const result = await this.datesService.createReservation(aiResponse);
-
-    return result.message
-  }
-
-  async getAvailability(dateTime: string): Promise<string> {
-    const aiResponse = await this.aiService.getAvailabilityData(dateTime);
-
-    const { date, time } = aiResponse;
-
-    const index = await this.googleSheetsService.getDate(date, time);
-
-
-    if (index === -1) {
-      return 'No se encontro la fecha'
-    }
-
-    const availability = await this.googleSheetsService.getAvailability(date!, time!);
-
-    if (!availability.isAvailable) {
-      return 'No hay disponibilidad para esa fecha y horario. Si queres, podes reservar en otro horario u otro dia'
-    }
-
-    return `Disponibilidad para el dia ${date} a las ${time}`
-  }
-
-  async deleteReservation(deleteMessage: string): Promise<string> {
-    const aiResponse = await this.aiService.getCancelData(deleteMessage);
-
-    return await this.datesService.deleteReservation(aiResponse)
-
-  }
-
   async conversationOrchestrator(message: string): Promise<string> {
     const waId = "123456789";
+
     console.log(`Mensaje recibido: ${message}`);
+    
     await this.cacheService.appendEntityMessage(waId, message, RoleEnum.USER);
 
     const history = await this.cacheService.getHistory(waId);
 
+    
     const aiResponse = await this.aiService.interactWithAi(message, history);
+    
     const result = await this.router.route(aiResponse);
+    
     return result.reply;
-  }
-
-  async getAvailabilityRange(dateTime: string): Promise<string> {
-    const aiResponse = await this.aiService.getAvailabilityData(dateTime);
-
-    const { date, time } = aiResponse;
-
-    // TODO: new method
-    const index = await this.googleSheetsService.getDate(date, time);
-
-
-    if (index === -1) {
-      return 'No se encontro la fecha'
-    }
-
-    const availability = await this.googleSheetsService.getAvailability(date!, time!);
-
-    if (!availability.isAvailable) {
-      return 'No hay disponibilidad para esa fecha y horario'
-    }
-
-    return `Disponibilidad para el dia ${date} a las ${time}`
   }
 }

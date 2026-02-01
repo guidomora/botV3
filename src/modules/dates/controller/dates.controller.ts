@@ -10,13 +10,6 @@ export class DatesController {
   create(): Promise<string> {
     return this.datesService.createDate();
   }
-
-  @Get()
-  checkDate(
-    @Body('date') date: string
-  ): Promise<boolean> {
-    return this.datesService.checkDate(date);
-  }
   
   @Post('/next-date')
   createNextDate(): Promise<string> {
