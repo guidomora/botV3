@@ -1,13 +1,17 @@
 ### History
 
-#### 01/02/26
-- Unused logic from different files removed
+#### 02/02/26
+- Started integration with whatsapp webhook
+- Controller to handle incoming messages 50% and service to return response 30%
 - TODO:
- - Test unhappy paths on ALL flows
+ - Continue the WhatsApp integration, validators, security, types, queue?
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 01/02/26
+- Unused logic from different files removed
 
 #### 31/01/26
 - Now the the update flow checks if the datetime has availability before continuing with the update flow

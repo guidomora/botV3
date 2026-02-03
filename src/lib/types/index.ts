@@ -15,3 +15,5 @@ export * from './messages';
 export * from './reservation/update-reservation.type';
 
 export * from './method-responses';
+
+export * from './twilio';

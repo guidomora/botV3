@@ -6,7 +6,7 @@ import { ReservationsService } from 'src/modules/reservations/service/reservatio
 import { TWILIO_CLIENT } from 'src/modules/whatsapp/twilio.provider';
 import type { Twilio } from 'twilio';
 import { setTimeLapse } from '../utils/utils';
-
+import { TwilioWebhookPayload } from 'src/lib';
 @Injectable()
 export class WhatsAppService {
   private readonly from: string;
@@ -39,14 +39,14 @@ export class WhatsAppService {
     });
   }
 
-  async handleInboundMessage(params: Record<string, string>) {
+  async handleInboundMessage(params: TwilioWebhookPayload) {
     // Twilio envía campos como: From, To, Body, WaId, NumMedia, MessageSid, etc.
     const from = params.From;         // "whatsapp:+54911..."
     const waId = params.WaId;         // "54911..."
     const body = (params.Body || '').trim();
     const numMedia = Number(params.NumMedia || '0');
 
-    console.log(params);
+    await this.sendText(waId!, 'Hola desde el Server!');
 
   }
 

@@ -1,45 +1,29 @@
 import { Controller, Post, Body, Headers, ForbiddenException, Req } from '@nestjs/common';
 import { WhatsAppService } from '../service/whatsapp.service';
+import { TwilioWebhookPayload } from 'src/lib';
 
 @Controller('communication')
 export class WhatsAppController {
-  constructor(private readonly whatsappService: WhatsAppService) {}
-
-  // @Post()
-  // create(): Promise<string> {
-  //   return this.whatsappService.createReservation();
-  // }
-
-  @Post()
-  async inbound(
-    @Req() req: Request,
-    @Body() body: Record<string, string>,
-    @Headers('x-twilio-signature') signature: string,
-  ) {
-    // // 1) Reconstruí la URL pública de tu webhook (o léela de env para mayor fiabilidad)
-    // const publicBaseUrl = process.env.PUBLIC_BASE_URL; // ej: https://tu-ngrok.ngrok.io
-    // const url = `${publicBaseUrl}${req.originalUrl}`;
-
-    // // 2) Verificá firma
-    // const ok = this.whatsappService.verifySignature(url, body, signature);
-    // if (!ok) throw new ForbiddenException('Invalid Twilio signature');
-
-    // 3) Procesá el mensaje entrante
-    await this.whatsappService.handleInboundMessage(body);
-
-    // 4) Respondé 200 OK sin cuerpo (Twilio queda conforme)
-    return { ok: true };
-  }
+  constructor(private readonly whatsappService: WhatsAppService) { }
 
   @Post('/queue')
   async handleMultipleMessages(
-    @Body('message') body: string,
+    @Body('Body') body: string,
+    @Body() payload: TwilioWebhookPayload,
+    @Body('From') from: string,
     @Headers('x-twilio-signature') signature: string,
   ) {
 
+    console.log('body', body);
+    console.log('from', from);
+    console.log('signature', signature);
+    console.log('payload', payload);
+    
     const waId = '11223344'
-    await this.whatsappService.handleMultipleMessages(waId, body);
+    const response = await this.whatsappService.handleInboundMessage(payload);
+    // await this.whatsappService.handleMultipleMessages(waId, body);
 
-    return {ok: 'ok'};
+    return { ok: true };
   }
 }
+
