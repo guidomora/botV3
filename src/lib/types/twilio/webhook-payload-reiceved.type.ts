@@ -12,3 +12,13 @@ export interface TwilioWebhookPayload {
 
   [key: string]: string | undefined;
 }
+
+export interface SimplifiedTwilioWebhookPayload {
+  Body: string;
+  From: string;
+  WaId: string;
+  ProfileName: string;
+  MessageSid: string;
+  AccountSid: string;
+  MessageType: string;
+}

@@ -6,7 +6,7 @@ import { ReservationsService } from 'src/modules/reservations/service/reservatio
 import { TWILIO_CLIENT } from 'src/modules/whatsapp/twilio.provider';
 import type { Twilio } from 'twilio';
 import { setTimeLapse } from '../utils/utils';
-import { TwilioWebhookPayload } from 'src/lib';
+import { SimplifiedTwilioWebhookPayload } from 'src/lib';
 @Injectable()
 export class WhatsAppService {
   private readonly from: string;
@@ -39,14 +39,14 @@ export class WhatsAppService {
     });
   }
 
-  async handleInboundMessage(params: TwilioWebhookPayload) {
+  async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
     // Twilio envía campos como: From, To, Body, WaId, NumMedia, MessageSid, etc.
     const from = params.From;         // "whatsapp:+54911..."
     const waId = params.WaId;         // "54911..."
     const body = (params.Body || '').trim();
-    const numMedia = Number(params.NumMedia || '0');
-
-    await this.sendText(waId!, 'Hola desde el Server!');
+    console.log('mesage!!', message);
+    
+    await this.sendText(waId!, message);
 
   }
 
@@ -58,20 +58,46 @@ export class WhatsAppService {
   }
 
 
-  async handleMultipleMessages(waId: string, text: string): Promise<void> {
-    const entry = this.buffers.get(waId) ?? { messages: [] };
+  async handleMultipleMessages(waId: string, text: string): Promise<string | undefined> {
+    const entry = this.buffers.get(waId) ?? { messages: [], resolvers: [] };
+
+    entry.resolvers ??= [];
+    
     entry.messages.push(text.trim());
+    
     if (entry.timer) clearTimeout(entry.timer);
+    
     this.logger.log(`Message received and processed for ${waId}`);
 
-    entry.timer = setTimeout(() => {
-      this.processBufferedMessages(waId).catch(err =>
-        this.logger.error(`Process failed for ${waId}`, err.stack),
-      );
+    const responsePromise = new Promise<string | undefined>(resolve => {
+    
+      entry.resolvers?.push(resolve);
+    
+    });
 
+    entry.timer = setTimeout(async () => {
+    
+      const currentEntry = this.buffers.get(waId);
+    
+      if (!currentEntry) return;
+
+      try {
+    
+        const response = await this.processBufferedMessages(waId);
+    
+        currentEntry.resolvers?.forEach(resolver => resolver(response));
+    
+      } catch (err) {
+    
+        this.logger.error(`Process failed for ${waId}`, err instanceof Error ? err.stack : err);
+    
+        currentEntry.resolvers?.forEach(resolver => resolver(undefined));
+      }
+    
     }, setTimeLapse(text));
 
     this.buffers.set(waId, entry);
+    return responsePromise;
   }
 
   private async processBufferedMessages(waId: string) {

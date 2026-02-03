@@ -1,14 +1,20 @@
 ### History
 
-#### 02/02/26
-- Started integration with whatsapp webhook
-- Controller to handle incoming messages 50% and service to return response 30%
+#### 03/02/26
+- Continue with WhatsApp integration
+- now we can see the ai response in WhatsApp
+- new interface added for whatsapp messages
+- conversationOrchestrator returns the response to the whatsapp service
 - TODO:
  - Continue the WhatsApp integration, validators, security, types, queue?
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 02/02/26
+- Started integration with whatsapp webhook
+- Controller to handle incoming messages 50% and service to return response 30%
 
 #### 01/02/26
 - Unused logic from different files removed

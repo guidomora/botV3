@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Headers, ForbiddenException, Req } from '@nestjs/common';
 import { WhatsAppService } from '../service/whatsapp.service';
-import { TwilioWebhookPayload } from 'src/lib';
+import { SimplifiedTwilioWebhookPayload, TwilioWebhookPayload } from 'src/lib';
 
 @Controller('communication')
 export class WhatsAppController {
@@ -13,15 +13,21 @@ export class WhatsAppController {
     @Body('From') from: string,
     @Headers('x-twilio-signature') signature: string,
   ) {
-
-    console.log('body', body);
-    console.log('from', from);
-    console.log('signature', signature);
-    console.log('payload', payload);
     
     const waId = '11223344'
-    const response = await this.whatsappService.handleInboundMessage(payload);
-    // await this.whatsappService.handleMultipleMessages(waId, body);
+
+    const simplifiedPayload: SimplifiedTwilioWebhookPayload = {
+      Body: body,
+      From: from,
+      WaId: waId,
+      ProfileName: payload.ProfileName || '',
+      MessageSid: payload.MessageSid,
+      AccountSid: payload.AccountSid,
+      MessageType: payload.MessageType || 'text',
+    };
+
+    const response = await this.whatsappService.handleMultipleMessages(waId, body);
+    await this.whatsappService.handleInboundMessage(simplifiedPayload, response!);
 
     return { ok: true };
   }
