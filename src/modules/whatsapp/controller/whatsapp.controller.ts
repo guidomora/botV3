@@ -13,18 +13,18 @@ export class WhatsAppController {
     @Body('From') from: string,
     @Headers('x-twilio-signature') signature: string,
   ) {
-    
-    const waId = '11223344'
 
     const simplifiedPayload: SimplifiedTwilioWebhookPayload = {
-      Body: body,
-      From: from,
-      WaId: waId,
-      ProfileName: payload.ProfileName || '',
-      MessageSid: payload.MessageSid,
-      AccountSid: payload.AccountSid,
-      MessageType: payload.MessageType || 'text',
+      body: body,
+      from: from,
+      waId: payload.WaId!,
+      profileName: payload.ProfileName || '',
+      messageSid: payload.MessageSid,
+      accountSid: payload.AccountSid,
+      messageType: payload.MessageType || 'text',
     };
+
+    console.log('Simplified Payload:', simplifiedPayload);
 
     const response = await this.whatsappService.handleMultipleMessages(simplifiedPayload, body);
     await this.whatsappService.handleInboundMessage(simplifiedPayload, response!);

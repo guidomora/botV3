@@ -1,14 +1,18 @@
 ### History
 
-#### 05/02/26
-- twilio adapter added
-- started passing the payload with the data to the strategies (Not still is not being used)
+#### 06/02/26
+- Continued with WhatsApp integration
+- all mocked waId replaced by real waId
 - TODO:
  - Continue the WhatsApp integration, validators, security, types, queue?
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 05/02/26
+- twilio adapter added
+- started passing the payload with the data to the strategies (Not still is not being used)
 
 #### 03/02/26
 - Continue with WhatsApp integration

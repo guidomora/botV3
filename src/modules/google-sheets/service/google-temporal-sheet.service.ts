@@ -34,7 +34,7 @@ export class GoogleTemporalSheetsService {
                 waId,
             );
             if (rowIndex === -1) {
-                throw new Error('No se pudo localizar la fila recién creada para waId'); //TODO: check this err description
+                throw new Error(`No se pudo localizar la fila recién creada para ${waId}`); //TODO: check this err description
             }
         }
 

@@ -21,9 +21,9 @@ export class WhatsAppService {
 
   async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
     // Twilio envía campos como: From, To, Body, WaId, NumMedia, MessageSid, etc.
-    const from = params.From;         // "whatsapp:+54911..."
-    const waId = params.WaId;         // "54911..."
-    const body = (params.Body || '').trim();
+    const from = params.from;         // "whatsapp:+54911..."
+    const waId = params.waId;         // "54911..."
+    const body = (params.body || '').trim();
     console.log('mesage!!', message);
 
     await this.sendText(waId!, message);
@@ -37,7 +37,7 @@ export class WhatsAppService {
 
 
   async handleMultipleMessages(simplifiedPayload: SimplifiedTwilioWebhookPayload, text: string): Promise<string | undefined> {
-    const entry = this.buffers.get(simplifiedPayload.WaId) ?? { messages: [], resolvers: [] };
+    const entry = this.buffers.get(simplifiedPayload.waId) ?? { messages: [], resolvers: [] };
 
     entry.resolvers ??= [];
 
@@ -45,7 +45,7 @@ export class WhatsAppService {
 
     if (entry.timer) clearTimeout(entry.timer);
 
-    this.logger.log(`Message received and processed for ${simplifiedPayload.WaId}`);
+    this.logger.log(`Message received and processed for ${simplifiedPayload.waId}`);
 
     const responsePromise = new Promise<string | undefined>(resolve => {
 
@@ -55,26 +55,26 @@ export class WhatsAppService {
 
     entry.timer = setTimeout(async () => {
 
-      const currentEntry = this.buffers.get(simplifiedPayload.WaId);
+      const currentEntry = this.buffers.get(simplifiedPayload.waId);
 
       if (!currentEntry) return;
 
       try {
 
-        const response = await this.processBufferedMessages(simplifiedPayload.WaId, simplifiedPayload);
+        const response = await this.processBufferedMessages(simplifiedPayload.waId, simplifiedPayload);
 
         currentEntry.resolvers?.forEach(resolver => resolver(response));
 
       } catch (err) {
 
-        this.logger.error(`Process failed for ${simplifiedPayload.WaId}`, err instanceof Error ? err.stack : err);
+        this.logger.error(`Process failed for ${simplifiedPayload.waId}`, err instanceof Error ? err.stack : err);
 
         currentEntry.resolvers?.forEach(resolver => resolver(undefined));
       }
 
     }, setTimeLapse(text));
 
-    this.buffers.set(simplifiedPayload.WaId, entry);
+    this.buffers.set(simplifiedPayload.waId, entry);
     return responsePromise;
   }
 

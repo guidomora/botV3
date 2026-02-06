@@ -20,9 +20,9 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
 
 
         const mockedData: AddMissingFieldInput = {
-            waId: '123456789',
+            waId: simplifiedPayload.waId,
             values: { // TODO: remove this mock once we receive the phone number from the user
-                phone:'1122334455',
+                phone: aiResponse.phone,
                 date: aiResponse.date,
                 time: aiResponse.time,
                 name: aiResponse.name,

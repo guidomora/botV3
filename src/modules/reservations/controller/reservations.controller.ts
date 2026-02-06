@@ -5,8 +5,8 @@ import { ReservationsService } from '../service/reservations.service';
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) { }
 
-  @Post('/multiple-messages')
-  createReservationWithMultipleMessages(@Body('message') createReservationDto: string) {
-    return this.reservationsService.conversationOrchestrator(createReservationDto);
-  }
+  // @Post('/multiple-messages')
+  // createReservationWithMultipleMessages(@Body('message') createReservationDto: string) {
+  //   return this.reservationsService.conversationOrchestrator(createReservationDto);
+  // }
 }

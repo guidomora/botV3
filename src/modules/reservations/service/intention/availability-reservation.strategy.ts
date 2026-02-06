@@ -16,7 +16,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
     ) { }
 
     async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
-        const waId = '123456789'
+        const waId = simplifiedPayload.waId;
 
         const history = await this.cacheService.getHistory(waId);
 

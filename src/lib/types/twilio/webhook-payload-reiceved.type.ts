@@ -14,11 +14,11 @@ export interface TwilioWebhookPayload {
 }
 
 export interface SimplifiedTwilioWebhookPayload {
-  Body: string;
-  From: string;
-  WaId: string;
-  ProfileName: string;
-  MessageSid: string;
-  AccountSid: string;
-  MessageType: string;
+  body: string;
+  from: string;
+  waId: string;
+  profileName: string;
+  messageSid: string;
+  accountSid: string;
+  messageType: string;
 }

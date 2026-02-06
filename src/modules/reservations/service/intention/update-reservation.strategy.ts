@@ -66,7 +66,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
     async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
         this.logger.log('Executing update reservation strategy', UpdateReservationStrategy.name);
-        const waId = '123456789';
+        const waId = simplifiedPayload.waId;
         const currentState = await this.cacheService.getUpdateState(waId);
 
         const mappedState = this.mapAiResponseToUpdateReservation(aiResponse, currentState);

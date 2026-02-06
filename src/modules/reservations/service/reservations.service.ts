@@ -16,9 +16,9 @@ export class ReservationsService {
   async conversationOrchestrator(message: string, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<string> {
     console.log(`Mensaje recibido: ${message}`);
     
-    await this.cacheService.appendEntityMessage(simplifiedPayload.WaId, message, RoleEnum.USER);
+    await this.cacheService.appendEntityMessage(simplifiedPayload.waId, message, RoleEnum.USER);
 
-    const history = await this.cacheService.getHistory(simplifiedPayload.WaId);
+    const history = await this.cacheService.getHistory(simplifiedPayload.waId);
 
     
     const aiResponse = await this.aiService.interactWithAi(message, history);
