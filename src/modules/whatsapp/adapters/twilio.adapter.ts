@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Twilio } from 'twilio';
 import { TWILIO_CLIENT } from '../twilio.provider';
@@ -7,6 +7,7 @@ import { TWILIO_CLIENT } from '../twilio.provider';
 export class TwilioAdapter {
   private readonly from: string;
   private readonly messagingServiceSid?: string;
+  private readonly logger = new Logger(TwilioAdapter.name);
 
   constructor(
     @Inject(TWILIO_CLIENT) private readonly twilio: Twilio,
@@ -22,7 +23,7 @@ export class TwilioAdapter {
 
   sendText(toE164: string, body: string) {
     const to = toE164.startsWith('whatsapp:') ? toE164 : `whatsapp:${toE164}`;
-
+    this.logger.log(`Sending message to ${to}: ${body}`);
     return this.twilio.messages.create({
       body,
       to,
