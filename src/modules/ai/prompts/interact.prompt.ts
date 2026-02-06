@@ -37,6 +37,7 @@ Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
   "name": "Nombre Apellido" | null,
   "phone": "solo dígitos, con o sin prefijo país" | null,
   "quantity": número entero string | null,
+  "useCurrentPhone": boolean | null
 }
 
 [Reglas generales]
@@ -67,6 +68,7 @@ Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
 [phone]
 - phone: solo dígitos, aceptando con o sin “+”. Si hay separadores, remuévelos (ej: "11 3456-7890" → "1134567890").
 - Si aparecen múltiples, el más probable es el último mencionado; si dudas, null y explica en "notes".
+- Si el usuario dice que usemos este número, el mismo WhatsApp, o algo equivalente, pon "useCurrentPhone": true y "phone": null.
 
 [quantity]
 - quantity: número entero string. Convierte palabras a número ("dos" → "2"). Si no aparece, null.
@@ -91,6 +93,7 @@ Salida:
   "name": null,
   "phone": null,
   "quantity": "4",
+  "useCurrentPhone": null
 }
 
 [Ejemplo 2]
@@ -103,6 +106,7 @@ Salida:
   "name": "Roberto",
   "phone": null,
   "quantity": null,
+  "useCurrentPhone": null
 }
 
 [Ejemplo de continuidad - CANCEL]
@@ -117,8 +121,8 @@ Salida:
   "time": "21:00",
   "name": "Guido",
   "phone": null,
-  "quantity": null
+  "quantity": null,
+  "useCurrentPhone": null
 }
 
 `;
-
