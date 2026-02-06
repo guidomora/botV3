@@ -36,8 +36,8 @@ export class WhatsAppService {
   }
 
 
-  async handleMultipleMessages(waId: string, text: string): Promise<string | undefined> {
-    const entry = this.buffers.get(waId) ?? { messages: [], resolvers: [] };
+  async handleMultipleMessages(simplifiedPayload: SimplifiedTwilioWebhookPayload, text: string): Promise<string | undefined> {
+    const entry = this.buffers.get(simplifiedPayload.WaId) ?? { messages: [], resolvers: [] };
 
     entry.resolvers ??= [];
 
@@ -45,7 +45,7 @@ export class WhatsAppService {
 
     if (entry.timer) clearTimeout(entry.timer);
 
-    this.logger.log(`Message received and processed for ${waId}`);
+    this.logger.log(`Message received and processed for ${simplifiedPayload.WaId}`);
 
     const responsePromise = new Promise<string | undefined>(resolve => {
 
@@ -55,30 +55,30 @@ export class WhatsAppService {
 
     entry.timer = setTimeout(async () => {
 
-      const currentEntry = this.buffers.get(waId);
+      const currentEntry = this.buffers.get(simplifiedPayload.WaId);
 
       if (!currentEntry) return;
 
       try {
 
-        const response = await this.processBufferedMessages(waId);
+        const response = await this.processBufferedMessages(simplifiedPayload.WaId, simplifiedPayload);
 
         currentEntry.resolvers?.forEach(resolver => resolver(response));
 
       } catch (err) {
 
-        this.logger.error(`Process failed for ${waId}`, err instanceof Error ? err.stack : err);
+        this.logger.error(`Process failed for ${simplifiedPayload.WaId}`, err instanceof Error ? err.stack : err);
 
         currentEntry.resolvers?.forEach(resolver => resolver(undefined));
       }
 
     }, setTimeLapse(text));
 
-    this.buffers.set(waId, entry);
+    this.buffers.set(simplifiedPayload.WaId, entry);
     return responsePromise;
   }
 
-  private async processBufferedMessages(waId: string) {
+  private async processBufferedMessages(waId: string, simplifiedPayload: SimplifiedTwilioWebhookPayload) {
     const entry = this.buffers.get(waId);
     if (!entry) return;
 
@@ -86,7 +86,7 @@ export class WhatsAppService {
     this.buffers.delete(waId);
 
     if (!joinedMessages) return;
-    return await this.reservationsService.conversationOrchestrator(joinedMessages);
+    return await this.reservationsService.conversationOrchestrator(joinedMessages, simplifiedPayload);
   }
 
 }

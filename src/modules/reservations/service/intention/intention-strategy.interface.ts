@@ -1,8 +1,8 @@
-import { Intention, MultipleMessagesResponse } from "src/lib";
+import { Intention, MultipleMessagesResponse, SimplifiedTwilioWebhookPayload } from "src/lib";
 
 export interface IntentionStrategyInterface {
     readonly intent: Intention;
-    execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult>   
+    execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult>   
 }
 
 export interface StrategyResult {

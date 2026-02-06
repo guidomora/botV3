@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
+import { Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
@@ -13,7 +13,7 @@ export class OtherStrategy implements IntentionStrategyInterface {
         private readonly cacheService: CacheService
     ) { }
 
-    async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
+    async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
 
         const waId = '123456789'
 

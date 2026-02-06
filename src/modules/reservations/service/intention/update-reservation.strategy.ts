@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum, TemporalStatusEnum, UpdateReservationType } from "src/lib";
+import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, TemporalStatusEnum, UpdateReservationType } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { Logger } from "@nestjs/common";
@@ -64,7 +64,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
         return updateData;
     }
 
-    async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
+    async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
         this.logger.log('Executing update reservation strategy', UpdateReservationStrategy.name);
         const waId = '123456789';
         const currentState = await this.cacheService.getUpdateState(waId);

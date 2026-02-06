@@ -26,7 +26,7 @@ export class WhatsAppController {
       MessageType: payload.MessageType || 'text',
     };
 
-    const response = await this.whatsappService.handleMultipleMessages(waId, body);
+    const response = await this.whatsappService.handleMultipleMessages(simplifiedPayload, body);
     await this.whatsappService.handleInboundMessage(simplifiedPayload, response!);
 
     return { ok: true };

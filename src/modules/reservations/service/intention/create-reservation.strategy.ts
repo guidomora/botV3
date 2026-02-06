@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { CacheTypeEnum, Intention, MultipleMessagesResponse, TemporalStatusEnum } from "src/lib";
+import { CacheTypeEnum, Intention, MultipleMessagesResponse, SimplifiedTwilioWebhookPayload, TemporalStatusEnum } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
@@ -16,7 +16,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
         private readonly cacheService: CacheService
     ) { }
 
-    async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
+    async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
 
 
         const mockedData: AddMissingFieldInput = {

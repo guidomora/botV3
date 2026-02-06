@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum } from "src/lib";
+import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
@@ -16,7 +16,7 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
         private readonly cacheService: CacheService
     ) { }
 
-    async execute(aiResponse: MultipleMessagesResponse): Promise<StrategyResult> {
+    async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
         const waId = '123456789'
         const state = await this.cacheService.updateCancelState(waId, {
             phone: aiResponse.phone ?? null,

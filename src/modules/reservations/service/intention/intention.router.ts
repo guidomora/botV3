@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IntentionStrategyInterface, StrategyResult } from './intention-strategy.interface';
-import { Intention, MultipleMessagesResponse } from 'src/lib';
+import { Intention, MultipleMessagesResponse, SimplifiedTwilioWebhookPayload } from 'src/lib';
 
 export const INTENTION_STRATEGIES = Symbol('INTENTION_STRATEGIES');
 
@@ -15,17 +15,17 @@ export class IntentionsRouter {
         for (const handler of handlers) this.registry.set(handler.intent, handler);
     }
 
-    async route(input: MultipleMessagesResponse): Promise<StrategyResult> {
+    async route(input: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
         const key = (input.intent ?? Intention.OTHER) as Intention;
 
         const handler = this.registry.get(key) ?? this.registry.get(Intention.OTHER);
         
         if (!handler) {
-            return { reply: 'No entendí tu pedido. ¿Querés reservar, consultar disponibilidad o cancelar?' };
+            return { reply: 'No entendí tu pedido. ¿Te gustaría reservar, consultar disponibilidad o cancelar?' };
         }
 
         this.logger.log(`Intention router executed for intent: ${key}`);
 
-        return handler.execute(input);
+        return handler.execute(input, simplifiedPayload);
     }
 }
