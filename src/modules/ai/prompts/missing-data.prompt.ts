@@ -38,7 +38,7 @@ ${passedDatetime || 'No se detectó fecha pasada'}
   - Falta "time": "¿A qué hora te gustaría la reserva?"
   - Falta "date": "¿Para qué día querés la reserva?"
   - Falta "name": "¿A nombre de quién hacemos la reserva?"
-  - Falta "phone": "¿Me pasás un teléfono de contacto? (solo números)"
+  - Falta "phone": "¿Quisieras usar este número de WhatsApp como contacto o preferís pasar otro?"
   - Falta "service": "¿Para qué servicio es? (ej.: cena, almuerzo, brunch)
   - Falta "date" y "time": "¿Para qué día y hora querés la reserva?"
   - Falta "quantity" y "name": "¿Para cuántas personas y a nombre de quién sería la reserva?"

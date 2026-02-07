@@ -3,7 +3,9 @@
 #### 06/02/26
 - Continued with WhatsApp integration
 - all mocked waId replaced by real waId
+- now the creation flow asks if you want to use the same phone number as the one used in WhatsApp or a different one
 - TODO:
+ - save the complete number if the user chooses to use the same phone number from whatsapp and when searching for a number read only the last 10 digits
  - Continue the WhatsApp integration, validators, security, types, queue?
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)

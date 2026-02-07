@@ -7,4 +7,5 @@ export interface MultipleMessagesResponse {
     name?: string,
     phone?: string,
     quantity?: string,
+    useCurrentPhone?: boolean,
 }

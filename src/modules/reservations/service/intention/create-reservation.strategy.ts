@@ -17,12 +17,12 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
     ) { }
 
     async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
-
+        const resolvedPhone = aiResponse.phone ?? (aiResponse.useCurrentPhone ? simplifiedPayload.waId : undefined);
 
         const mockedData: AddMissingFieldInput = {
             waId: simplifiedPayload.waId,
             values: { // TODO: remove this mock once we receive the phone number from the user
-                phone: aiResponse.phone,
+                phone: resolvedPhone,
                 date: aiResponse.date,
                 time: aiResponse.time,
                 name: aiResponse.name,
