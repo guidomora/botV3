@@ -20,10 +20,7 @@ export class WhatsAppService {
   }
 
   async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
-    // Twilio envía campos como: From, To, Body, WaId, NumMedia, MessageSid, etc.
-    const from = params.from;         // "whatsapp:+54911..."
-    const waId = params.waId;         // "54911..."
-    const body = (params.body || '').trim();
+    const waId = params.waId;
     console.log('mesage!!', message);
 
     await this.sendText(waId!, message);
