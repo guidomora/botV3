@@ -1,16 +1,20 @@
 ### History
 
-#### 06/02/26
-- Continued with WhatsApp integration
-- all mocked waId replaced by real waId
-- now the creation flow asks if you want to use the same phone number as the one used in WhatsApp or a different one
+#### 07/02/26
+- Standardized phone number formatting in create reservation flow
+- Added helper function to format phone numbers when searching for a reservation
 - TODO:
- - save the complete number if the user chooses to use the same phone number from whatsapp and when searching for a number read only the last 10 digits
  - Continue the WhatsApp integration, validators, security, types, queue?
+ - tell the user to not send pictures or audios. Cover this case
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 06/02/26
+- Continued with WhatsApp integration
+- all mocked waId replaced by real waId
+- now the creation flow asks if you want to use the same phone number as the one used in WhatsApp or a different one
 
 #### 05/02/26
 - twilio adapter added

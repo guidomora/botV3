@@ -19,20 +19,19 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
     async execute(aiResponse: MultipleMessagesResponse, simplifiedPayload: SimplifiedTwilioWebhookPayload): Promise<StrategyResult> {
         const resolvedPhone = aiResponse.phone ?? (aiResponse.useCurrentPhone ? simplifiedPayload.waId : undefined);
 
-        const mockedData: AddMissingFieldInput = {
+        const data: AddMissingFieldInput = {
             waId: simplifiedPayload.waId,
-            values: { // TODO: remove this mock once we receive the phone number from the user
+            values: {
                 phone: resolvedPhone,
                 date: aiResponse.date,
                 time: aiResponse.time,
                 name: aiResponse.name,
                 quantity: aiResponse.quantity,
             },
-            messageSid: '123',
         }
-        const response = await this.datesService.createReservationWithMultipleMessages(mockedData);
+        const response = await this.datesService.createReservationWithMultipleMessages(data);
 
-        const history = await this.cacheService.getHistory(mockedData.waId);
+        const history = await this.cacheService.getHistory(data.waId);
         
         switch (response.status) {
             case TemporalStatusEnum.IN_PROGRESS:
@@ -41,7 +40,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
             
             case TemporalStatusEnum.COMPLETED:
                 this.logger.log(`Create reservation strategy completed`);
-                await this.cacheService.clearHistory(mockedData.waId, CacheTypeEnum.DATA);
+                await this.cacheService.clearHistory(data.waId, CacheTypeEnum.DATA);
                 return {reply: await this.aiService.reservationCompleted(response.reservationData, history)};
             
             case TemporalStatusEnum.FAILED:

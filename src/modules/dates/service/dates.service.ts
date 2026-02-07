@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, GetIndexParams, ServiceResponse, StatusEnum, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
+import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, formatPhoneNumber, GetIndexParams, ServiceResponse, StatusEnum, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
 import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
@@ -34,12 +34,13 @@ export class DatesService {
     const reservation = await this.googleSheetsTemporalService.addMissingField(createReservationDto);
 
     const { date, time, name, phone, quantity } = reservation.snapshot;
+    const formattedPhone = formatPhoneNumber(phone);
     if (reservation.status === TemporalStatusEnum.COMPLETED) {
       const customerData = {
         date: date!.toLowerCase(),
         time: time!.toLowerCase(),
         name: name!.toLowerCase(),
-        phone: phone!.toLowerCase(),
+        phone: formattedPhone?.toLowerCase() ?? phone!.toLowerCase(),
         quantity: Number(quantity!)
       }
 

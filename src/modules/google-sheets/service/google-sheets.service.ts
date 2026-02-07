@@ -4,7 +4,7 @@ import { DateTime } from "src/lib/types/datetime/datetime.type";
 import { SHEETS_NAMES } from "src/constants/sheets-name/sheets-name";
 import { AddDataType } from "src/lib/types/add-data.type";
 import { TablesInfo } from "src/constants/tables-info/tables-info";
-import { Availability, GetIndexParams, ReservationOperation, UpdateParams, UpdateParamsRepository } from "src/lib";
+import { Availability, formatPhoneNumber, GetIndexParams, UpdateParams, UpdateParamsRepository } from "src/lib";
 import { SheetsName } from "src/constants";
 import { Logger } from "@nestjs/common";
 
@@ -69,11 +69,12 @@ export class GoogleSheetsService {
 
   async getDateIndexByData(getIndexParams: GetIndexParams): Promise<number> {
     const { date, time, name, phone } = getIndexParams;
+    const formattedPhone = formatPhoneNumber(phone);
 
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
-      const index = data.findIndex(row => row[0] === date && row[1] === time && row[2] === name?.toLowerCase() && row[3] === phone) + 1;
+      const index = data.findIndex(row => row[0] === date && row[1] === time && row[2] === name?.toLowerCase() && row[3] === formattedPhone) + 1;
 
       if (index === -1 || index === undefined || index === 0) {
         return -1
