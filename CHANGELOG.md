@@ -3,7 +3,9 @@
 #### 07/02/26
 - Standardized phone number formatting in create reservation flow
 - Added helper function to format phone numbers when searching for a reservation
+- DTO added with validators
 - TODO:
+ - if you send multiple messages, the response is double
  - Continue the WhatsApp integration, validators, security, types, queue?
  - tell the user to not send pictures or audios. Cover this case
  - AI it is not greeting the user

@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Headers, ForbiddenException, Req } from '@nestjs/common';
+import { Controller, Post, Body, Headers } from '@nestjs/common';
 import { WhatsAppService } from '../service/whatsapp.service';
-import { SimplifiedTwilioWebhookPayload, TwilioWebhookPayload } from 'src/lib';
+import { SimplifiedTwilioWebhookPayload,TwilioWebhookPayloadDto } from 'src/lib';
 
 @Controller('communication')
 export class WhatsAppController {
@@ -9,7 +9,7 @@ export class WhatsAppController {
   @Post('/queue')
   async handleMultipleMessages(
     @Body('Body') body: string,
-    @Body() payload: TwilioWebhookPayload,
+    @Body() payload: TwilioWebhookPayloadDto,
     @Body('From') from: string,
     @Headers('x-twilio-signature') signature: string,
   ) {
