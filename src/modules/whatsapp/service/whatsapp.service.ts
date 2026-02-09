@@ -34,9 +34,11 @@ export class WhatsAppService {
 
 
   async handleMultipleMessages(simplifiedPayload: SimplifiedTwilioWebhookPayload, text: string): Promise<string | undefined> {
-    const entry = this.buffers.get(simplifiedPayload.waId) ?? { messages: [], resolvers: [] };
+    const entry = this.buffers.get(simplifiedPayload.waId) ?? { messages: [], resolvers: [], sequence: 0 };
 
     entry.resolvers ??= [];
+    entry.sequence = (entry.sequence ?? 0) + 1;
+    const currentId = entry.sequence;
 
     entry.messages.push(text.trim());
 
@@ -45,9 +47,7 @@ export class WhatsAppService {
     this.logger.log(`Message received and processed for ${simplifiedPayload.waId}`);
 
     const responsePromise = new Promise<string | undefined>(resolve => {
-
-      entry.resolvers?.push(resolve);
-
+      entry.resolvers?.push({ id: currentId, resolve });
     });
 
     entry.timer = setTimeout(async () => {
@@ -59,14 +59,17 @@ export class WhatsAppService {
       try {
 
         const response = await this.processBufferedMessages(simplifiedPayload.waId, simplifiedPayload);
+        const latestId = currentEntry.sequence ?? 0;
 
-        currentEntry.resolvers?.forEach(resolver => resolver(response));
+        currentEntry.resolvers?.forEach(({ id, resolve }) => {
+          resolve(id === latestId ? response : undefined);
+        });
 
       } catch (err) {
 
         this.logger.error(`Process failed for ${simplifiedPayload.waId}`, err instanceof Error ? err.stack : err);
 
-        currentEntry.resolvers?.forEach(resolver => resolver(undefined));
+        currentEntry.resolvers?.forEach(({ resolve }) => resolve(undefined));
       }
 
     }, setTimeLapse(text));
