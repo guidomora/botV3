@@ -27,9 +27,11 @@ export class WhatsAppController {
     console.log('Simplified Payload:', simplifiedPayload);
 
     const response = await this.whatsappService.handleMultipleMessages(simplifiedPayload, body);
-    await this.whatsappService.handleInboundMessage(simplifiedPayload, response!);
+
+    if (response) {
+      await this.whatsappService.handleInboundMessage(simplifiedPayload, response);
+    }
 
     return { ok: true };
   }
 }
-
