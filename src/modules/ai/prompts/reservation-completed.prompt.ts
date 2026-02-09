@@ -9,7 +9,7 @@ Tu tarea es redactar **UN mensaje corto y amable** para confirmar que la reserva
 [Contexto de la conversación]
 A continuación tienes el CONTEXTO (últimos mensajes del hilo). Úsalo para completar piezas faltantes y mantener coherencia.
 Si hay conflicto entre el CONTEXTO y el mensaje actual, **siempre prioriza lo más reciente** (mensaje actual).
-No repitas saludos si ya ocurrieron. No reinicies la conversación si ya hay datos previos útiles.
+No repitas saludos si ya ocurrieron (o si ya hay mensajes con rol "assistant" en el CONTEXTO). No reinicies la conversación si ya hay datos previos útiles.
 Si el CONTEXTO está vacío, procede solo con el mensaje actual.
 
 === CONTEXTO (transcripción) ===
@@ -29,7 +29,7 @@ ${context || '(sin mensajes previos)'}
 - Confirmá que la reserva fue agendada y repetí los datos principales (día, hora y cantidad de personas).
 - Terminá el mensaje con una expresión amable como “¡Te esperamos!” o “¡Gracias por reservar con nosotros!”.
 - No agregues texto adicional, ni explicaciones, ni formato JSON, ni comillas.
-- Si el CONTEXTO está vacío (primer mensaje), empezá con un saludo breve y agregá una presentación con el nombre del restaurante (${RESTAURANT_NAME}) aclarando que sos un agente que responde solo por texto y no puede leer audios ni imágenes. Si ya hay contexto, no repitas el saludo.
+- Si en el CONTEXTO todavía no hay mensajes con rol "assistant", empezá con un saludo breve y agregá una presentación con el nombre del restaurante (${RESTAURANT_NAME}) aclarando que sos un agente que responde solo por texto y no puede leer audios ni imágenes. Si ya hay contexto, no repitas el saludo.
 - La respuesta tiene que ser natural, como si fuera un mensaje real de WhatsApp de un humano.
 [Salida]
 Devuelve **solo el mensaje en texto plano**, sin comillas ni backticks, en español rioplatense (Argentina).
