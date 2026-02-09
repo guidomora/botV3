@@ -1,17 +1,19 @@
 ### History
 
-#### 07/02/26
-- Standardized phone number formatting in create reservation flow
-- Added helper function to format phone numbers when searching for a reservation
-- DTO added with validators
+#### 09/02/26
+- Bug fixed: when you send multiple messages, you got 2 responses
 - TODO:
- - if you send multiple messages, the response is double
  - Continue the WhatsApp integration, validators, security, types, queue?
  - tell the user to not send pictures or audios. Cover this case
  - AI it is not greeting the user
  - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
+
+#### 07/02/26
+- Standardized phone number formatting in create reservation flow
+- Added helper function to format phone numbers when searching for a reservation
+- DTO added with validators
 
 #### 06/02/26
 - Continued with WhatsApp integration
