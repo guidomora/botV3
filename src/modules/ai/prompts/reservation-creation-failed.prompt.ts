@@ -1,5 +1,6 @@
 import { TemporalDataType } from "src/lib";
 import { ChatMessage } from "src/lib";
+import { RESTAURANT_NAME } from "./constants";
 
 export const reservationCreationFailedPrompt = (reservationData: TemporalDataType, context: ChatMessage[], errorMessage: string) => `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.
@@ -31,7 +32,7 @@ ${context || '(sin mensajes previos)'}
 - Informá que la reserva no pudo ser registrada, por el motivo especificado y repetí los datos principales (día, hora y cantidad de personas).
 - Pregunta si quiere reservar para otra fecha u horario
 - No agregues texto adicional, ni explicaciones, ni formato JSON, ni comillas.
-- No hace falta que agregues "Hola", "Buenas", etc al inicio del mensaje, ya que la conversacion ya comenzó.
+- Si el CONTEXTO está vacío (primer mensaje), empezá con un saludo breve y agregá una presentación con el nombre del restaurante (${RESTAURANT_NAME}) aclarando que sos un agente que responde solo por texto y no puede leer audios ni imágenes. Si ya hay contexto, no repitas el saludo.
 - La respuesta tiene que ser natural, como si fuera un mensaje real de WhatsApp de un humano.
 [Salida]
 Devuelve **solo el mensaje en texto plano**, sin comillas ni backticks, en español rioplatense (Argentina).

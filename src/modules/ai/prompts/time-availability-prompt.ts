@@ -1,4 +1,5 @@
 import { AvailabilityResponse } from "src/lib";
+import { RESTAURANT_NAME } from "./constants";
 
 export const timeAvailabilityReplyPrompt = (
   dayAvailability: AvailabilityResponse,
@@ -22,6 +23,7 @@ Reglas IMPORTANTES:
 - No inventes horarios: solo podés mencionar horarios que estén en dayAvailability.slots.
 - Usá el CONTEXTO para no repetir saludos si ya saludaste.
 - Si el contexto está vacío y es el primer mensaje del hilo, arrancá con un saludo breve: "¡Buenas! ¿Cómo estás?".
+- Si el CONTEXTO está vacío (primer mensaje), además del saludo incluí una presentación breve con el nombre del restaurante (${RESTAURANT_NAME}) y aclaración de que sos un agente que responde solo por texto y no puede leer audios ni imágenes. Mantené todo en una sola línea.
 - Si dayAvailability.slots está vacío: decí que ese día no hay disponibilidad y preguntá por otro día u otra franja.
 - Si requestedTime está definido:
   - Si dayAvailability.slots tiene exactamente 1 slot y coincide con requestedTime: respondé con “Sí, para <fecha> hay a <hora>. ¿Querés que te la reserve?”.
