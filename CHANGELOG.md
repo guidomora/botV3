@@ -2,11 +2,11 @@
 
 #### 09/02/26
 - Bug fixed: when you send multiple messages, you got 2 responses
+- AI it is not greeting the user FIXED
+- tell the user to not send pictures or audios. Cover this case Done
 - TODO:
+ - add logic to handle the case when the user sends a message with a picture or audio
  - Continue the WhatsApp integration, validators, security, types, queue?
- - tell the user to not send pictures or audios. Cover this case
- - AI it is not greeting the user
- - Work on some flow when we could not find a reservation, there is no availability, etc (unhappy paths)
  - Make the cache last a little longer and not clean it when the flow is done
  - add all tests for google module
 

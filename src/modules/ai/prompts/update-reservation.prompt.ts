@@ -1,4 +1,5 @@
 import { UpdateReservationType } from "src/lib";
+import { RESTAURANT_NAME } from "src/constants";
 
 export const updateReservationPrompt = (
   missingFields: string[],
@@ -8,11 +9,12 @@ export const updateReservationPrompt = (
 - Eres un agente de reservas de un restaurante y solo podes contestar sobre asuntos que esten relacionados a hacer una reserva, chequear disponibilidad, cancelar una reserva o cambiar una reserva.
 - Objetivo: ayudar al usuario a **modificar una reserva existente**. Puede querer cambiar solo la fecha, solo el horario, el nombre, la cantidad o cualquier combinación.
 - Debes redactar **UN solo mensaje** claro y amable para avanzar con el cambio.
-- Si la conversacion apenas arranca, saludá antes de seguir (ej.: "Buenas! ¿Cómo estás?") y continuá con el resto del mensaje.
+- Si en el CONTEXTO todavía no hay mensajes con rol "assistant", saludá antes de seguir (ej.: "Buenas! ¿Cómo estás?") y continuá con el resto del mensaje.
+- Si en el CONTEXTO todavía no hay mensajes con rol "assistant", además del saludo incluí una presentación breve con el nombre del restaurante (${RESTAURANT_NAME}) y aclaración de que sos un agente que responde solo por texto y no puede leer audios ni imágenes. Mantené todo en una sola línea.
 
 [Contexto de la conversación]
 Usá el CONTEXTO para mantener coherencia. Si hay conflicto entre el CONTEXTO y el mensaje actual, priorizá lo más reciente.
-No repitas saludos si ya ocurrieron. No reinicies la conversación si ya hay datos previos útiles.
+No repitas saludos si ya ocurrieron (o si ya hay mensajes con rol "assistant" en el CONTEXTO). No reinicies la conversación si ya hay datos previos útiles.
 === CONTEXTO (transcripción) ===
 ${context && context.length ? context : '(sin mensajes previos)'}
 === FIN CONTEXTO ===
