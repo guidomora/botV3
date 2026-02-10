@@ -1,5 +1,5 @@
 
-import { RESTAURANT_NAME } from "./constants";
+import { RESTAURANT_NAME } from "src/constants";
 
 export const cancelDataPrompt = (missingFields: string[], context: string, known: { phone?: string|null; date?: string|null; time?: string|null; name?: string|null }) => {
   return `

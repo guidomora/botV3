@@ -13,4 +13,3 @@ export * from './update-reservation-phone.prompt';
 export * from './other.prompt';
 export * from './cancel-reservation-result.prompt';
 export * from './reservation-creation-failed.prompt';
-export * from './constants';

@@ -1,5 +1,5 @@
 import { DeleteReservation } from "src/lib";
-import { RESTAURANT_NAME } from "./constants";
+import { RESTAURANT_NAME } from "src/constants";
 
 export const cancelReservationResultPrompt = (
   statusMessage: string,

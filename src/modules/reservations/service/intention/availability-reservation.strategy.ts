@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { AddMissingFieldInput, Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload } from "src/lib";
+import {  Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { CacheService } from "src/modules/cache-context/cache.service";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
@@ -25,15 +25,19 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
             const availabilityResponse = await this.aiService.askDateForAvailabilityAi(history)
 
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
-            
+
+            this.logger.log(`Availability strategy executed`);
+
             return { reply: availabilityResponse };
-            
+
         } else if (aiResponse.date && !aiResponse.time) {
             const availability = await this.dateService.getDayAvailability(aiResponse.date!)
 
             const availabilityResponse = await this.aiService.dayAvailabilityAiResponse(availability, history)
 
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+            
+            this.logger.log(`Availability strategy executed`);
 
             return { reply: availabilityResponse };
 
@@ -42,13 +46,13 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
             const availability = await this.dateService.getDayAndTimeAvailability(aiResponse.date!, aiResponse.time!)
 
             const availabilityResponse = await this.aiService.dayAndTimeAvailabilityAiResponse(availability, history, aiResponse.time)
-            
+
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
-            
+
+            this.logger.log(`Availability strategy executed`);
+
             return { reply: availabilityResponse };
         }
-
-        this.logger.log(`Availability strategy executed`);
 
         // datetime not available TODO:
         return { reply: 'No hay disponibilidad para esa fecha y horario' };

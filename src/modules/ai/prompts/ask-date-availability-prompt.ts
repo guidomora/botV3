@@ -1,4 +1,4 @@
-import { RESTAURANT_NAME } from "./constants";
+import { RESTAURANT_NAME } from "src/constants";
 
 export const askDateAvailabilityPrompt = (context: string) => {
 
