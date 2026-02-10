@@ -81,6 +81,11 @@ export class GoogleTemporalSheetsService {
         };
     }
 
+    async findTemporalRowIndexByWaId(waId: string): Promise<number> {
+        const sheetName = SHEETS_NAMES[2];
+        return this.googleTemporalSheetsRepository.findRowIndexByWaId(sheetName, waId);
+    }
+
     private rowArrayToObject(row: string[], waIdFallback: string) {
         const safe = [...row];
         while (safe.length < 10) safe.push(' ');

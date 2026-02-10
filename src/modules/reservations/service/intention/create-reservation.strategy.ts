@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { CacheTypeEnum, Intention, MultipleMessagesResponse, SimplifiedTwilioWebhookPayload, TemporalStatusEnum } from "src/lib";
+import { Intention, MultipleMessagesResponse, SimplifiedTwilioWebhookPayload, TemporalStatusEnum } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
@@ -40,7 +40,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
             
             case TemporalStatusEnum.COMPLETED:
                 this.logger.log(`Create reservation strategy completed`);
-                await this.cacheService.clearHistory(data.waId, CacheTypeEnum.DATA);
+                await this.cacheService.markFlowCompleted(data.waId);
                 return {reply: await this.aiService.reservationCompleted(response.reservationData, history)};
             
             case TemporalStatusEnum.FAILED:

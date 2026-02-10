@@ -26,6 +26,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
 
+            await this.cacheService.markFlowCompleted(waId);
             this.logger.log(`Availability strategy executed`);
 
             return { reply: availabilityResponse };
@@ -37,6 +38,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
             
+            await this.cacheService.markFlowCompleted(waId);
             this.logger.log(`Availability strategy executed`);
 
             return { reply: availabilityResponse };
@@ -49,6 +51,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
             await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
 
+            await this.cacheService.markFlowCompleted(waId);
             this.logger.log(`Availability strategy executed`);
 
             return { reply: availabilityResponse };
