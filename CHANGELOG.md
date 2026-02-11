@@ -1,11 +1,14 @@
 ### History
 
-#### 10/02/26
-- Make the cache last a little longer and not clean it when the flow is done: DONE -- Now if the flow is not completed it will clean after 3 hours and notifies the user that the conversation has expired and if the flow is completed it will clean after 2 hours and notifies the user that the conversation has expired
+#### 11/02/26
+- AGENTS.md added
 - TODO:
  - add logic to handle the case when the user sends a message with a picture or audio
  - Continue the WhatsApp integration, validators, security, types, queue?
  - add all tests for google module
+
+#### 10/02/26
+- Make the cache last a little longer and not clean it when the flow is done: DONE -- Now if the flow is not completed it will clean after 3 hours and notifies the user that the conversation has expired and if the flow is completed it will clean after 2 hours and notifies the user that the conversation has expire
 
 #### 09/02/26
 - Bug fixed: when you send multiple messages, you got 2 responses
