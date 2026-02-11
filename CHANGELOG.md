@@ -1,14 +1,16 @@
 ### History
 
+#### 10/02/26
+- Make the cache last a little longer and not clean it when the flow is done: DONE -- Now if the flow is not completed it will clean after 3 hours and notifies the user that the conversation has expired and if the flow is completed it will clean after 2 hours and notifies the user that the conversation has expired
+- TODO:
+ - add logic to handle the case when the user sends a message with a picture or audio
+ - Continue the WhatsApp integration, validators, security, types, queue?
+ - add all tests for google module
+
 #### 09/02/26
 - Bug fixed: when you send multiple messages, you got 2 responses
 - AI it is not greeting the user FIXED
 - tell the user to not send pictures or audios. Cover this case Done
-- TODO:
- - add logic to handle the case when the user sends a message with a picture or audio
- - Continue the WhatsApp integration, validators, security, types, queue?
- - Make the cache last a little longer and not clean it when the flow is done
- - add all tests for google module
 
 #### 07/02/26
 - Standardized phone number formatting in create reservation flow

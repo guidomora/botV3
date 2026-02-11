@@ -1,18 +1,8 @@
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Intention, ChatMessage, RoleEnum, DeleteReservation, CacheTypeEnum, UpdateReservationType } from 'src/lib';
+import { Intention, ChatMessage, RoleEnum, DeleteReservation, CacheTypeEnum, UpdateReservationType, ConversationLifecycleState, FlowLifecycleStatus } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { ConversationExpirationNotifierService } from './conversation-expiration-notifier.service';
-
-type FlowLifecycleStatus = 'in_progress' | 'completed';
-
-interface ConversationLifecycleState {
-    waId: string;
-    status: FlowLifecycleStatus;
-    flowStartedAt: number;
-    hardExpireAt: number;
-    expiresAt: number;
-}
 
 @Injectable()
 export class CacheService {
@@ -40,7 +30,7 @@ export class CacheService {
     }
 
     private getTtlByStatus(status: FlowLifecycleStatus): number {
-        return status === 'completed' ? this.COMPLETED_FLOW_TTL_MS : this.INCOMPLETE_FLOW_TTL_MS;
+        return status === FlowLifecycleStatus.COMPLETED ? this.COMPLETED_FLOW_TTL_MS : this.INCOMPLETE_FLOW_TTL_MS;
     }
 
     private async getLifecycleState(waId: string): Promise<ConversationLifecycleState | null> {
@@ -77,7 +67,7 @@ export class CacheService {
 
         const baseState: ConversationLifecycleState = current ?? {
             waId,
-            status: 'in_progress',
+            status: FlowLifecycleStatus.IN_PROGRESS,
             flowStartedAt: now,
             hardExpireAt: now + this.HARD_LIMIT_TTL_MS,
             expiresAt: now + this.INCOMPLETE_FLOW_TTL_MS,
@@ -146,7 +136,7 @@ export class CacheService {
     }
 
     async markFlowCompleted(waId: string): Promise<void> {
-        await this.touchLifecycle(waId, 'completed');
+        await this.touchLifecycle(waId, FlowLifecycleStatus.COMPLETED);
     }
 
     async getHistory(waId: string): Promise<ChatMessage[]> {
@@ -226,7 +216,7 @@ export class CacheService {
 
     async appendMessage(waId: string, msg: ChatMessage, intention?: Intention) {
         if (msg.role === RoleEnum.USER) {
-            await this.touchLifecycle(waId, 'in_progress');
+            await this.touchLifecycle(waId, FlowLifecycleStatus.IN_PROGRESS);
         } else {
             await this.touchLifecycle(waId);
         }
