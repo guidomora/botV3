@@ -9,6 +9,8 @@ import { TwilioAdapter } from '../adapters/twilio.adapter';
 export class WhatsAppService {
   private readonly logger = new Logger(WhatsAppService.name);
   private buffers = new Map<string, BufferEntry>();
+  private readonly unsupportedMessageReply =
+    'No se permite mandar audios e imágenes, solo se permite mandar texto.';
 
   constructor(
     private readonly twilioAdapter: TwilioAdapter,
@@ -17,6 +19,25 @@ export class WhatsAppService {
 
   async sendText(toE164: string, body: string) {
     return this.twilioAdapter.sendText(toE164, body);
+  }
+
+  getUnsupportedMessageReply(): string {
+    return this.unsupportedMessageReply;
+  }
+
+  isUnsupportedMessage(numMedia?: string, messageType?: string): boolean {
+    const mediaCount = Number.parseInt(numMedia ?? '0', 10);
+    const normalizedMessageType = messageType?.trim().toLowerCase();
+
+    if (Number.isFinite(mediaCount) && mediaCount > 0) {
+      return true;
+    }
+
+    if (!normalizedMessageType) {
+      return false;
+    }
+
+    return normalizedMessageType === 'audio' || normalizedMessageType === 'image';
   }
 
   async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {

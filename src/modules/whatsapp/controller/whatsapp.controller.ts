@@ -26,6 +26,20 @@ export class WhatsAppController {
 
     console.log('Simplified Payload:', simplifiedPayload);
 
+    const isUnsupportedMessage = this.whatsappService.isUnsupportedMessage(
+      payload.NumMedia,
+      payload.MessageType,
+    );
+
+    if (isUnsupportedMessage) {
+      await this.whatsappService.handleInboundMessage(
+        simplifiedPayload,
+        this.whatsappService.getUnsupportedMessageReply(),
+      );
+
+      return { ok: true };
+    }
+
     const response = await this.whatsappService.handleMultipleMessages(simplifiedPayload, body);
 
     if (response) {
