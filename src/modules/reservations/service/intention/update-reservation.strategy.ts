@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { CacheTypeEnum, Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, TemporalStatusEnum, UpdateReservationType } from "src/lib";
+import { Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, TemporalStatusEnum, UpdateReservationType } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { Logger } from "@nestjs/common";
@@ -131,7 +131,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
                 return { reply: reply.message };
             }
             await this.cacheService.clearUpdateState(waId);
-            await this.cacheService.clearHistory(waId, CacheTypeEnum.DATA);
+            await this.cacheService.markFlowCompleted(waId);
 
             // TODO: work on something when user enters bad data
             console.log('strategyReply', reply.message)

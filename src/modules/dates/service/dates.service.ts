@@ -74,6 +74,21 @@ export class DatesService {
     }
   }
 
+
+  async deleteIncompleteTemporalReservationByWaId(waId: string): Promise<boolean> {
+    const rowIndex = await this.googleSheetsTemporalService.findTemporalRowIndexByWaId(waId);
+
+    if (rowIndex === -1) {
+      this.logger.log(`No se encontró fila temporal para limpiar en waId ${waId}`);
+      return false;
+    }
+
+    await this.googleSheetsService.deleteRow(rowIndex, 2);
+    this.logger.log(`Fila temporal incompleta eliminada para waId ${waId}`);
+
+    return true;
+  }
+
   async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
     return this.deleteReservationUseCase.deleteReservation(deleteReservation)
   }

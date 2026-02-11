@@ -22,6 +22,7 @@ export class OtherStrategy implements IntentionStrategyInterface {
         const aiOtherResponse = await this.aiService.otherIntentionAi(history);
 
         await this.cacheService.appendEntityMessage(waId, aiOtherResponse, RoleEnum.ASSISTANT, Intention.OTHER);
+        await this.cacheService.markFlowCompleted(waId);
 
         this.logger.log(`Other strategy executed`);
         
