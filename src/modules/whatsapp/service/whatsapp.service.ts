@@ -5,6 +5,7 @@ import { ReservationsService } from 'src/modules/reservations/service/reservatio
 import { setTimeLapse } from '../utils/utils';
 import { SimplifiedTwilioWebhookPayload } from 'src/lib';
 import { TwilioAdapter } from '../adapters/twilio.adapter';
+import { UNSUPPORTED_MESSAGE } from 'src/constants';
 @Injectable()
 export class WhatsAppService {
   private readonly logger = new Logger(WhatsAppService.name);
@@ -19,6 +20,11 @@ export class WhatsAppService {
     return this.twilioAdapter.sendText(toE164, body);
   }
 
+  getUnsupportedMessageReply(): string {
+    return UNSUPPORTED_MESSAGE;
+  }
+
+
   async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
     const waId = params.waId;
     console.log('mesage!!', message);
@@ -27,7 +33,6 @@ export class WhatsAppService {
 
   }
 
-  // (Opcional) verificación de firma de webhooks
   verifySignature(url: string, params: Record<string, any>, signatureHeader: string): boolean {
     return this.twilioAdapter.verifySignature(url, params, signatureHeader);
   }

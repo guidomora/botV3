@@ -2,8 +2,8 @@
 
 #### 11/02/26
 - AGENTS.md added
+- Logic added to handle the case when the user sends a message with a picture or audio
 - TODO:
- - add logic to handle the case when the user sends a message with a picture or audio
  - Continue the WhatsApp integration, validators, security, types, queue?
  - add all tests for google module
 
