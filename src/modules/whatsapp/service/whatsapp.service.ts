@@ -5,12 +5,11 @@ import { ReservationsService } from 'src/modules/reservations/service/reservatio
 import { setTimeLapse } from '../utils/utils';
 import { SimplifiedTwilioWebhookPayload } from 'src/lib';
 import { TwilioAdapter } from '../adapters/twilio.adapter';
+import { UNSUPPORTED_MESSAGE } from 'src/constants';
 @Injectable()
 export class WhatsAppService {
   private readonly logger = new Logger(WhatsAppService.name);
   private buffers = new Map<string, BufferEntry>();
-  private readonly unsupportedMessageReply =
-    'No se permite mandar audios e imágenes, solo se permite mandar texto.';
 
   constructor(
     private readonly twilioAdapter: TwilioAdapter,
@@ -22,23 +21,9 @@ export class WhatsAppService {
   }
 
   getUnsupportedMessageReply(): string {
-    return this.unsupportedMessageReply;
+    return UNSUPPORTED_MESSAGE;
   }
 
-  isUnsupportedMessage(numMedia?: string, messageType?: string): boolean {
-    const mediaCount = Number.parseInt(numMedia ?? '0', 10);
-    const normalizedMessageType = messageType?.trim().toLowerCase();
-
-    if (Number.isFinite(mediaCount) && mediaCount > 0) {
-      return true;
-    }
-
-    if (!normalizedMessageType) {
-      return false;
-    }
-
-    return normalizedMessageType === 'audio' || normalizedMessageType === 'image';
-  }
 
   async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
     const waId = params.waId;
@@ -48,7 +33,6 @@ export class WhatsAppService {
 
   }
 
-  // (Opcional) verificación de firma de webhooks
   verifySignature(url: string, params: Record<string, any>, signatureHeader: string): boolean {
     return this.twilioAdapter.verifySignature(url, params, signatureHeader);
   }

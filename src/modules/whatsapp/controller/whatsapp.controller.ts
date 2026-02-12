@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Headers } from '@nestjs/common';
 import { WhatsAppService } from '../service/whatsapp.service';
 import { SimplifiedTwilioWebhookPayload,TwilioWebhookPayloadDto } from 'src/lib';
+import { UnsupportedMessage } from '../helpers/unsopported-message.helper';   
 
 @Controller('communication')
 export class WhatsAppController {
@@ -26,7 +27,7 @@ export class WhatsAppController {
 
     console.log('Simplified Payload:', simplifiedPayload);
 
-    const isUnsupportedMessage = this.whatsappService.isUnsupportedMessage(
+    const isUnsupportedMessage = UnsupportedMessage(
       payload.NumMedia,
       payload.MessageType,
     );
