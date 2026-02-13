@@ -35,6 +35,8 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 - No introducir nuevas dependencias salvo necesidad clara.
 - Los nombres de archivos, variables, metodos, funciones, etc deben ser descriptivos.
 - Mantener la estructura del proyecto respetando los módulos de Nest, controllers, services, etc.
+- Utilizar patrones de diseño cuando sea necesario.
+- Seguir las mejores prácticas de desarrollo DRY, SOLID, ETC (easy to change), etc.
 
 ## 4) Testing y validación
 - Todavia no se implementan tests, los files existentes son erroneos o estan incompletos
