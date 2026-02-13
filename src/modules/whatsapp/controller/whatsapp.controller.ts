@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Headers } from '@nestjs/common';
+import { Body, Controller, Headers, Post } from '@nestjs/common';
+import { SimplifiedTwilioWebhookPayload, TwilioWebhookPayloadDto } from 'src/lib';
+import { UnsupportedMessage } from '../helpers/unsopported-message.helper';
 import { WhatsAppService } from '../service/whatsapp.service';
-import { SimplifiedTwilioWebhookPayload,TwilioWebhookPayloadDto } from 'src/lib';
-import { UnsupportedMessage } from '../helpers/unsopported-message.helper';   
 
 @Controller('communication')
 export class WhatsAppController {
@@ -14,10 +14,9 @@ export class WhatsAppController {
     @Body('From') from: string,
     @Headers('x-twilio-signature') signature: string,
   ) {
-
     const simplifiedPayload: SimplifiedTwilioWebhookPayload = {
-      body: body,
-      from: from,
+      body,
+      from,
       waId: payload.WaId!,
       profileName: payload.ProfileName || '',
       messageSid: payload.MessageSid,
@@ -25,12 +24,25 @@ export class WhatsAppController {
       messageType: payload.MessageType || 'text',
     };
 
-    console.log('Simplified Payload:', simplifiedPayload);
+    console.log('Simplified Payload:', simplifiedPayload, signature);
 
     const isUnsupportedMessage = UnsupportedMessage(
       payload.NumMedia,
       payload.MessageType,
     );
+
+    const rateLimitDecision = await this.whatsappService.evaluateInboundRateLimit(simplifiedPayload.waId);
+
+    if (!rateLimitDecision.allowed) {
+      if (rateLimitDecision.shouldNotify) {
+        await this.whatsappService.handleInboundMessage(
+          simplifiedPayload,
+          this.whatsappService.getRateLimitMessage(rateLimitDecision.retryAfterSeconds),
+        );
+      }
+
+      return { ok: true };
+    }
 
     if (isUnsupportedMessage) {
       await this.whatsappService.handleInboundMessage(
