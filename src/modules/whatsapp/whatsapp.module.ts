@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ReservationsModule } from '../reservations/reservations.module';
 import { TwilioAdapter } from './adapters/twilio.adapter';
 import { WhatsAppController } from './controller/whatsapp.controller';
+import { WhatsAppRateLimitGuard } from './guards/whatsapp-rate-limit.guard';
 import { RateLimitService } from './service/rate-limit.service';
 import { WhatsAppService } from './service/whatsapp.service';
 import twilioConfig from './twilio.config';
@@ -16,7 +17,13 @@ export class WhatsAppModule {
       module: WhatsAppModule,
       controllers: [WhatsAppController],
       imports: [ConfigModule.forFeature(twilioConfig), ReservationsModule],
-      providers: [TwilioClientProvider, TwilioAdapter, WhatsAppService, RateLimitService],
+      providers: [
+        TwilioClientProvider,
+        TwilioAdapter,
+        WhatsAppService,
+        RateLimitService,
+        WhatsAppRateLimitGuard,
+      ],
       exports: [WhatsAppService],
     };
   }

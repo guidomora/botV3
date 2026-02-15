@@ -1,13 +1,18 @@
-import { Body, Controller, Headers, Post } from '@nestjs/common';
-import { SimplifiedTwilioWebhookPayload, TwilioWebhookPayloadDto } from 'src/lib';
+import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common';
+import {
+  SimplifiedTwilioWebhookPayload,
+  TwilioWebhookPayloadDto,
+} from 'src/lib';
 import { UnsupportedMessage } from '../helpers/unsopported-message.helper';
+import { WhatsAppRateLimitGuard } from '../guards/whatsapp-rate-limit.guard';
 import { WhatsAppService } from '../service/whatsapp.service';
 
 @Controller('communication')
 export class WhatsAppController {
-  constructor(private readonly whatsappService: WhatsAppService) { }
+  constructor(private readonly whatsappService: WhatsAppService) {}
 
   @Post('/queue')
+  @UseGuards(WhatsAppRateLimitGuard)
   async handleMultipleMessages(
     @Body('Body') body: string,
     @Body() payload: TwilioWebhookPayloadDto,
@@ -31,19 +36,6 @@ export class WhatsAppController {
       payload.MessageType,
     );
 
-    const rateLimitDecision = await this.whatsappService.evaluateInboundRateLimit(simplifiedPayload.waId);
-
-    if (!rateLimitDecision.allowed) {
-      if (rateLimitDecision.shouldNotify) {
-        await this.whatsappService.handleInboundMessage(
-          simplifiedPayload,
-          this.whatsappService.getRateLimitMessage(rateLimitDecision.retryAfterSeconds),
-        );
-      }
-
-      return { ok: true };
-    }
-
     if (isUnsupportedMessage) {
       await this.whatsappService.handleInboundMessage(
         simplifiedPayload,
@@ -53,10 +45,16 @@ export class WhatsAppController {
       return { ok: true };
     }
 
-    const response = await this.whatsappService.handleMultipleMessages(simplifiedPayload, body);
+    const response = await this.whatsappService.handleMultipleMessages(
+      simplifiedPayload,
+      body,
+    );
 
     if (response) {
-      await this.whatsappService.handleInboundMessage(simplifiedPayload, response);
+      await this.whatsappService.handleInboundMessage(
+        simplifiedPayload,
+        response,
+      );
     }
 
     return { ok: true };
