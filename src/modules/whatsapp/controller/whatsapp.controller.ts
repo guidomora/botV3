@@ -4,6 +4,7 @@ import {
   TwilioWebhookPayloadDto,
 } from 'src/lib';
 import { UnsupportedMessage } from '../helpers/unsopported-message.helper';
+import { TwilioSignatureGuard } from '../guards/twilio-signature.guard';
 import { WhatsAppRateLimitGuard } from '../guards/whatsapp-rate-limit.guard';
 import { WhatsAppService } from '../service/whatsapp.service';
 
@@ -12,7 +13,7 @@ export class WhatsAppController {
   constructor(private readonly whatsappService: WhatsAppService) {}
 
   @Post('/queue')
-  @UseGuards(WhatsAppRateLimitGuard)
+  @UseGuards(TwilioSignatureGuard, WhatsAppRateLimitGuard)
   async handleMultipleMessages(
     @Body('Body') body: string,
     @Body() payload: TwilioWebhookPayloadDto,
