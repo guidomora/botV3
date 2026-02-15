@@ -38,9 +38,8 @@ export class WhatsAppRateLimitGuard implements CanActivate {
     }
 
     if (rateLimitDecision.shouldNotify) {
-      const rateLimitMessage = `${RATE_LIMIT_MESSAGE} (Intentá nuevamente en ${rateLimitDecision.retryAfterSeconds}s).`;
       try {
-        await this.twilioAdapter.sendText(waId, rateLimitMessage);
+        await this.twilioAdapter.sendText(waId, RATE_LIMIT_MESSAGE);
       } catch (error) {
         this.logger.error(
           `No se pudo enviar notificación de rate limit para ${waId}`,

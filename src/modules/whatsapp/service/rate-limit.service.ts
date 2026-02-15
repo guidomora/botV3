@@ -18,21 +18,12 @@ export class RateLimitService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly configService: ConfigService,
   ) {
-    this.shortWindowMs = this.getIntEnv('RATE_LIMIT_SHORT_WINDOW_MS', 30_000);
-    this.shortWindowLimit = this.getIntEnv('RATE_LIMIT_SHORT_WINDOW_LIMIT', 8);
-    this.longWindowMs = this.getIntEnv(
-      'RATE_LIMIT_LONG_WINDOW_MS',
-      10 * 60_000,
-    );
-    this.longWindowLimit = this.getIntEnv('RATE_LIMIT_LONG_WINDOW_LIMIT', 30);
-    this.blockedWindowMs = this.getIntEnv(
-      'RATE_LIMIT_BLOCK_WINDOW_MS',
-      2 * 60_000,
-    );
-    this.notifyCooldownMs = this.getIntEnv(
-      'RATE_LIMIT_NOTIFY_COOLDOWN_MS',
-      60_000,
-    );
+    this.shortWindowMs = parseInt(process.env.RATE_LIMIT_SHORT_WINDOW_MS || '30000');
+    this.shortWindowLimit = parseInt(process.env.RATE_LIMIT_SHORT_WINDOW_LIMIT || '10');
+    this.longWindowMs = parseInt(process.env.RATE_LIMIT_LONG_WINDOW_MS || '600000');
+    this.longWindowLimit = parseInt(process.env.RATE_LIMIT_LONG_WINDOW_LIMIT || '30');
+    this.blockedWindowMs = parseInt(process.env.RATE_LIMIT_BLOCK_WINDOW_MS || '180000');
+    this.notifyCooldownMs = parseInt(process.env.RATE_LIMIT_NOTIFY_COOLDOWN_MS || '60000');
   }
 
   async evaluateInboundMessage(waId: string): Promise<RateLimitDecision> {
@@ -133,19 +124,5 @@ export class RateLimitService {
 
   private notifyKey(waId: string): string {
     return `rate-limit:notify:${waId}`;
-  }
-
-  private getIntEnv(name: string, fallback: number): number {
-    const rawValue = this.configService.get<string>(name);
-
-    if (!rawValue) {
-      return fallback;
-    }
-
-    const parsedValue = Number.parseInt(rawValue, 10);
-
-    return Number.isFinite(parsedValue) && parsedValue > 0
-      ? parsedValue
-      : fallback;
   }
 }

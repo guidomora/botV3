@@ -1,10 +1,11 @@
 ### History
 
-- Did some research abor deploy, twilio and server security
+#### 15/10/25
+- WhatsApp number-based rate limiting (by From) to prevent per-user spam.
+- Started with README to document few parts of the project
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
 - IP-based rate limiting on public endpoints (global + stricter on /webhook).
-- WhatsApp number-based rate limiting (by From) to prevent per-user spam.
 - Request body size limit (e.g., 50–200KB depending on expected payload).
 - Strict payload validation (schema validation; reject unexpected fields).
 - Request timeouts (avoid hanging requests).
@@ -16,6 +17,9 @@
 - Controlled fallback when OpenAI fails (avoid infinite retries).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
+
+#### 12/10/25
+- Did some research abor deploy, twilio and server security
 
 #### 11/02/26
 
