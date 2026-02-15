@@ -5,16 +5,8 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { TwilioWebhookPayloadDto } from 'src/lib';
 import { WhatsAppService } from '../service/whatsapp.service';
-
-type RequestWithTwilioData = {
-  body?: TwilioWebhookPayloadDto;
-  headers: Record<string, string | string[] | undefined>;
-  originalUrl: string;
-  protocol?: string;
-  get?: (name: string) => string | undefined;
-};
+import { RequestWithTwilioData } from 'src/lib';
 
 @Injectable()
 export class TwilioSignatureGuard implements CanActivate {

@@ -3,6 +3,7 @@
 #### 15/10/25
 - WhatsApp number-based rate limiting (by From) to prevent per-user spam.
 - Started with README to document few parts of the project
+- Validation of X-Twilio-Signature on every webhook request added.
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
 - IP-based rate limiting on public endpoints (global + stricter on /webhook).
@@ -10,7 +11,6 @@
 - Strict payload validation (schema validation; reject unexpected fields).
 - Request timeouts (avoid hanging requests).
 - Idempotency / anti-replay protection to prevent duplicate event retries — to be reviewed.
-- Validate X-Twilio-Signature on every webhook request.
 - Reject requests without a signature or with timestamps outside the allowed window (if implementing additional replay protection).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).

@@ -43,7 +43,7 @@ export class TwilioAdapter {
     params: Record<string, string | undefined>,
     signatureHeader: string,
   ): boolean {
-    const authToken = this.config.get<string>('twilio.authToken')!;
+    const authToken = process.env.TWILIO_AUTH_TOKEN!;
     return validateRequest(authToken, signatureHeader, url, params);
   }
 }
