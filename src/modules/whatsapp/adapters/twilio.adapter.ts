@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Twilio } from 'twilio';
+import { validateRequest } from 'twilio';
 import { TWILIO_CLIENT } from '../twilio.provider';
 
 @Injectable()
@@ -14,10 +15,14 @@ export class TwilioAdapter {
     private readonly config: ConfigService,
   ) {
     this.from = this.config.get<string>('twilio.fromWhatsApp')!;
-    this.messagingServiceSid = this.config.get<string>('twilio.messagingServiceSid');
+    this.messagingServiceSid = this.config.get<string>(
+      'twilio.messagingServiceSid',
+    );
     if (!this.from && !this.messagingServiceSid) {
       // Podés permitir uno u otro; si usás Messaging Service, no necesitas "from"
-      throw new Error('Configurar TWILIO_WHATSAPP_FROM o TWILIO_MESSAGING_SERVICE_SID');
+      throw new Error(
+        'Configurar TWILIO_WHATSAPP_FROM o TWILIO_MESSAGING_SERVICE_SID',
+      );
     }
   }
 
@@ -33,9 +38,12 @@ export class TwilioAdapter {
     });
   }
 
-  verifySignature(url: string, params: Record<string, any>, signatureHeader: string): boolean {
-    const validator = (this.twilio as any).validateRequest;
-    const authToken = this.config.get<string>('twilio.authToken')!;
-    return validator(authToken, signatureHeader, url, params);
+  verifySignature(
+    url: string,
+    params: Record<string, string | undefined>,
+    signatureHeader: string,
+  ): boolean {
+    const authToken = process.env.TWILIO_AUTH_TOKEN!;
+    return validateRequest(authToken, signatureHeader, url, params);
   }
 }

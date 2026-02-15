@@ -35,7 +35,7 @@ export class WhatsAppService {
 
   verifySignature(
     url: string,
-    params: Record<string, any>,
+    params: Record<string, string | undefined>,
     signatureHeader: string,
   ): boolean {
     return this.twilioAdapter.verifySignature(url, params, signatureHeader);
