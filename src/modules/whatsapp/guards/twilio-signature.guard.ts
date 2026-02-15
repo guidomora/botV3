@@ -33,9 +33,14 @@ export class TwilioSignatureGuard implements CanActivate {
 
     const fullRequestUrl = this.buildPublicRequestUrl(request);
 
+    const requestParams = (request.body ?? {}) as Record<
+      string,
+      string | undefined
+    >;
+
     const isValidSignature = this.whatsAppService.verifySignature(
       fullRequestUrl,
-      request.body ?? {},
+      requestParams,
       signatureHeader,
     );
 
