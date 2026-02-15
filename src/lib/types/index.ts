@@ -17,3 +17,5 @@ export * from './reservation/update-reservation.type';
 export * from './method-responses';
 
 export * from './twilio';
+
+export * from './rate-limit';

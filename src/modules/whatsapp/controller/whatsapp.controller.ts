@@ -1,23 +1,27 @@
-import { Controller, Post, Body, Headers } from '@nestjs/common';
+import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common';
+import {
+  SimplifiedTwilioWebhookPayload,
+  TwilioWebhookPayloadDto,
+} from 'src/lib';
+import { UnsupportedMessage } from '../helpers/unsopported-message.helper';
+import { WhatsAppRateLimitGuard } from '../guards/whatsapp-rate-limit.guard';
 import { WhatsAppService } from '../service/whatsapp.service';
-import { SimplifiedTwilioWebhookPayload,TwilioWebhookPayloadDto } from 'src/lib';
-import { UnsupportedMessage } from '../helpers/unsopported-message.helper';   
 
 @Controller('communication')
 export class WhatsAppController {
-  constructor(private readonly whatsappService: WhatsAppService) { }
+  constructor(private readonly whatsappService: WhatsAppService) {}
 
   @Post('/queue')
+  @UseGuards(WhatsAppRateLimitGuard)
   async handleMultipleMessages(
     @Body('Body') body: string,
     @Body() payload: TwilioWebhookPayloadDto,
     @Body('From') from: string,
     @Headers('x-twilio-signature') signature: string,
   ) {
-
     const simplifiedPayload: SimplifiedTwilioWebhookPayload = {
-      body: body,
-      from: from,
+      body,
+      from,
       waId: payload.WaId!,
       profileName: payload.ProfileName || '',
       messageSid: payload.MessageSid,
@@ -25,7 +29,7 @@ export class WhatsAppController {
       messageType: payload.MessageType || 'text',
     };
 
-    console.log('Simplified Payload:', simplifiedPayload);
+    console.log('Simplified Payload:', simplifiedPayload, signature);
 
     const isUnsupportedMessage = UnsupportedMessage(
       payload.NumMedia,
@@ -41,10 +45,16 @@ export class WhatsAppController {
       return { ok: true };
     }
 
-    const response = await this.whatsappService.handleMultipleMessages(simplifiedPayload, body);
+    const response = await this.whatsappService.handleMultipleMessages(
+      simplifiedPayload,
+      body,
+    );
 
     if (response) {
-      await this.whatsappService.handleInboundMessage(simplifiedPayload, response);
+      await this.whatsappService.handleInboundMessage(
+        simplifiedPayload,
+        response,
+      );
     }
 
     return { ok: true };

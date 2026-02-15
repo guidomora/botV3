@@ -1,11 +1,10 @@
-
 import { Injectable, Logger } from '@nestjs/common';
-import { BufferEntry } from 'src/lib';
-import { ReservationsService } from 'src/modules/reservations/service/reservations.service';
-import { setTimeLapse } from '../utils/utils';
-import { SimplifiedTwilioWebhookPayload } from 'src/lib';
-import { TwilioAdapter } from '../adapters/twilio.adapter';
 import { UNSUPPORTED_MESSAGE } from 'src/constants';
+import { BufferEntry, SimplifiedTwilioWebhookPayload } from 'src/lib';
+import { ReservationsService } from 'src/modules/reservations/service/reservations.service';
+import { TwilioAdapter } from '../adapters/twilio.adapter';
+import { setTimeLapse } from '../utils/utils';
+
 @Injectable()
 export class WhatsAppService {
   private readonly logger = new Logger(WhatsAppService.name);
@@ -14,7 +13,7 @@ export class WhatsAppService {
   constructor(
     private readonly twilioAdapter: TwilioAdapter,
     private readonly reservationsService: ReservationsService,
-  ) { }
+  ) {}
 
   async sendText(toE164: string, body: string) {
     return this.twilioAdapter.sendText(toE164, body);
@@ -24,22 +23,33 @@ export class WhatsAppService {
     return UNSUPPORTED_MESSAGE;
   }
 
-
-  async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
+  async handleInboundMessage(
+    params: SimplifiedTwilioWebhookPayload,
+    message: string,
+  ) {
     const waId = params.waId;
     console.log('mesage!!', message);
 
-    await this.sendText(waId!, message);
-
+    await this.sendText(waId, message);
   }
 
-  verifySignature(url: string, params: Record<string, any>, signatureHeader: string): boolean {
+  verifySignature(
+    url: string,
+    params: Record<string, any>,
+    signatureHeader: string,
+  ): boolean {
     return this.twilioAdapter.verifySignature(url, params, signatureHeader);
   }
 
-
-  async handleMultipleMessages(simplifiedPayload: SimplifiedTwilioWebhookPayload, text: string): Promise<string | undefined> {
-    const entry = this.buffers.get(simplifiedPayload.waId) ?? { messages: [], resolvers: [], sequence: 0 };
+  async handleMultipleMessages(
+    simplifiedPayload: SimplifiedTwilioWebhookPayload,
+    text: string,
+  ): Promise<string | undefined> {
+    const entry = this.buffers.get(simplifiedPayload.waId) ?? {
+      messages: [],
+      resolvers: [],
+      sequence: 0,
+    };
 
     entry.resolvers ??= [];
     entry.sequence = (entry.sequence ?? 0) + 1;
@@ -49,41 +59,49 @@ export class WhatsAppService {
 
     if (entry.timer) clearTimeout(entry.timer);
 
-    this.logger.log(`Message received and processed for ${simplifiedPayload.waId}`);
+    this.logger.log(
+      `Message received and processed for ${simplifiedPayload.waId}`,
+    );
 
-    const responsePromise = new Promise<string | undefined>(resolve => {
+    const responsePromise = new Promise<string | undefined>((resolve) => {
       entry.resolvers?.push({ id: currentId, resolve });
     });
 
-    entry.timer = setTimeout(async () => {
+    entry.timer = setTimeout(() => {
+      void (async () => {
+        const currentEntry = this.buffers.get(simplifiedPayload.waId);
 
-      const currentEntry = this.buffers.get(simplifiedPayload.waId);
+        if (!currentEntry) return;
 
-      if (!currentEntry) return;
+        try {
+          const response = await this.processBufferedMessages(
+            simplifiedPayload.waId,
+            simplifiedPayload,
+          );
+          const latestId = currentEntry.sequence ?? 0;
 
-      try {
+          currentEntry.resolvers?.forEach(({ id, resolve }) => {
+            resolve(id === latestId ? response : undefined);
+          });
+        } catch (err) {
+          this.logger.error(
+            `Process failed for ${simplifiedPayload.waId}`,
+            err instanceof Error ? err.stack : err,
+          );
 
-        const response = await this.processBufferedMessages(simplifiedPayload.waId, simplifiedPayload);
-        const latestId = currentEntry.sequence ?? 0;
-
-        currentEntry.resolvers?.forEach(({ id, resolve }) => {
-          resolve(id === latestId ? response : undefined);
-        });
-
-      } catch (err) {
-
-        this.logger.error(`Process failed for ${simplifiedPayload.waId}`, err instanceof Error ? err.stack : err);
-
-        currentEntry.resolvers?.forEach(({ resolve }) => resolve(undefined));
-      }
-
+          currentEntry.resolvers?.forEach(({ resolve }) => resolve(undefined));
+        }
+      })();
     }, setTimeLapse(text));
 
     this.buffers.set(simplifiedPayload.waId, entry);
     return responsePromise;
   }
 
-  private async processBufferedMessages(waId: string, simplifiedPayload: SimplifiedTwilioWebhookPayload) {
+  private async processBufferedMessages(
+    waId: string,
+    simplifiedPayload: SimplifiedTwilioWebhookPayload,
+  ) {
     const entry = this.buffers.get(waId);
     if (!entry) return;
 
@@ -91,7 +109,9 @@ export class WhatsAppService {
     this.buffers.delete(waId);
 
     if (!joinedMessages) return;
-    return await this.reservationsService.conversationOrchestrator(joinedMessages, simplifiedPayload);
+    return this.reservationsService.conversationOrchestrator(
+      joinedMessages,
+      simplifiedPayload,
+    );
   }
-
 }
