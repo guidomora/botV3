@@ -17,6 +17,7 @@
 - Controlled fallback when OpenAI fails (avoid infinite retries).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
+- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config 
 
 #### 12/10/25
 - Did some research abor deploy, twilio and server security
