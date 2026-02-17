@@ -2,8 +2,8 @@ import { IsNotEmpty, IsNumberString, IsOptional, IsString } from 'class-validato
 
 export class TwilioWebhookPayloadDto {
   @IsString()
-  @IsOptional()
-  Body?: string;
+  @IsNotEmpty()
+  Body!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -14,8 +14,8 @@ export class TwilioWebhookPayloadDto {
   To!: string;
 
   @IsString()
-  @IsOptional()
-  WaId?: string;
+  @IsNotEmpty()
+  WaId!: string;
 
   @IsString()
   @IsOptional()
