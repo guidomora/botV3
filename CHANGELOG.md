@@ -1,13 +1,10 @@
 ### History
 
-#### 15/10/25
-- WhatsApp number-based rate limiting (by From) to prevent per-user spam.
-- Started with README to document few parts of the project
-- Validation of X-Twilio-Signature on every webhook request added.
+#### 17/02/26
+- Request body size limit added 100KB.
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
 - IP-based rate limiting on public endpoints (global + stricter on /webhook).
-- Request body size limit (e.g., 50–200KB depending on expected payload).
 - Strict payload validation (schema validation; reject unexpected fields).
 - Request timeouts (avoid hanging requests).
 - Idempotency / anti-replay protection to prevent duplicate event retries — to be reviewed.
@@ -18,6 +15,11 @@
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
 - Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config 
+
+#### 15/10/25
+- WhatsApp number-based rate limiting (by From) to prevent per-user spam.
+- Started with README to document few parts of the project
+- Validation of X-Twilio-Signature on every webhook request added.
 
 #### 12/10/25
 - Did some research abor deploy, twilio and server security
