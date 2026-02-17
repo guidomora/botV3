@@ -5,9 +5,8 @@ import {
   PayloadTooLargeException,
 } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { MAX_REQUEST_BODY_SIZE_BYTES, WARNING_REQUEST_BODY_SIZE_BYTES } from 'src/constants';
 
-const MAX_REQUEST_BODY_SIZE_BYTES = 100 * 1024;
-const WARNING_REQUEST_BODY_SIZE_BYTES = 75 * 1024;
 
 @Injectable()
 export class RequestSizeLimitMiddleware implements NestMiddleware {

@@ -4,3 +4,4 @@ export * from './sheets-name/sheets-name.enum';
 export * from './dates-info/dates-info';
 export * from './restaurant-data/restaurant-data';
 export * from './responses';
+export * from './middlewares';
