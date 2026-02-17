@@ -2,6 +2,8 @@
 
 #### 17/02/26
 - Request body size limit added 100KB.
+- DTO updated
+- Idempotency guard added if payload has the same MessageSid it will not process the request
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
 - IP-based rate limiting on public endpoints (global + stricter on /webhook).
