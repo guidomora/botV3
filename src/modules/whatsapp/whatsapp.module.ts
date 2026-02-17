@@ -11,7 +11,9 @@ import { ReservationsModule } from '../reservations/reservations.module';
 import { TwilioAdapter } from './adapters/twilio.adapter';
 import { WhatsAppController } from './controller/whatsapp.controller';
 import { TwilioSignatureGuard } from './guards/twilio-signature.guard';
+import { WhatsAppIdempotencyGuard } from './guards/whatsapp-idempotency.guard';
 import { WhatsAppRateLimitGuard } from './guards/whatsapp-rate-limit.guard';
+import { IdempotencyService } from './service/idempotency.service';
 import { RateLimitService } from './service/rate-limit.service';
 import { WhatsAppService } from './service/whatsapp.service';
 import twilioConfig from './twilio.config';
@@ -35,8 +37,10 @@ export class WhatsAppModule implements NestModule {
         TwilioClientProvider,
         TwilioAdapter,
         WhatsAppService,
+        IdempotencyService,
         RateLimitService,
         TwilioSignatureGuard,
+        WhatsAppIdempotencyGuard,
         WhatsAppRateLimitGuard,
         RequestSizeLimitMiddleware,
       ],
