@@ -1,22 +1,23 @@
 ### History
 
+#### 18/02/26
+- Strict payload validation (schema validation; reject unexpected fields). --> done with DTO
+- Error handling added for OpenAI and Google Sheets. Notifies the user if something goes wrong
+- TODO:
+- Continue the WhatsApp integration, validators, security, types, queue?
+- IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
+- Request timeouts (avoid hanging requests).
+- Reject requests without a signature or with timestamps outside the allowed window (if implementing additional replay protection).
+- Token limits per request + reasonable max_tokens per response.
+- Terminate abusive conversations (e.g., flooding or repetitive prompts).
+- Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+- add all tests for google module
+- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config 
+
 #### 17/02/26
 - Request body size limit added 100KB.
 - DTO updated
 - Idempotency guard added if payload has the same MessageSid it will not process the request
-- TODO:
-- Continue the WhatsApp integration, validators, security, types, queue?
-- IP-based rate limiting on public endpoints (global + stricter on /webhook).
-- Strict payload validation (schema validation; reject unexpected fields).
-- Request timeouts (avoid hanging requests).
-- Idempotency / anti-replay protection to prevent duplicate event retries — to be reviewed.
-- Reject requests without a signature or with timestamps outside the allowed window (if implementing additional replay protection).
-- Token limits per request + reasonable max_tokens per response.
-- Terminate abusive conversations (e.g., flooding or repetitive prompts).
-- Controlled fallback when OpenAI fails (avoid infinite retries).
-- Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
-- add all tests for google module
-- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config 
 
 #### 15/10/25
 - WhatsApp number-based rate limiting (by From) to prevent per-user spam.
