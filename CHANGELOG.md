@@ -8,7 +8,6 @@
 - Continue the WhatsApp integration, validators, security, types, queue?
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
-- Reject requests without a signature or with timestamps outside the allowed window (if implementing additional replay protection).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
