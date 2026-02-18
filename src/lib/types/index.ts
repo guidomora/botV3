@@ -19,3 +19,4 @@ export * from './method-responses';
 export * from './twilio';
 
 export * from './rate-limit';
+export * from './errors';
