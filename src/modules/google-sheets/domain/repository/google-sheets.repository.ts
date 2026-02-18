@@ -1,6 +1,6 @@
 
 import { JWT } from 'google-auth-library';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
 import { AddValue } from 'src/lib/types/add-value.type';
 
@@ -8,7 +8,7 @@ import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { ServiceName, SHEETS_NAMES } from 'src/constants';
 import { parseSpreadSheetId } from 'src/modules/google-sheets/helpers/parse-spreadsheet-id.helper';
-import { GoogleSheetsOpts, UpdateParamsRepository } from 'src/lib';
+import { GoogleSheetsOpts, ProviderError, ProviderName, UpdateParamsRepository } from 'src/lib';
 
 
 
@@ -235,6 +235,6 @@ export class GoogleSheetsRepository {
 
   failure(error: unknown, msg = 'Google Sheets error'): never {
     console.error(error);
-    throw new InternalServerErrorException(msg);
+    throw new ProviderError(ProviderName.GOOGLE_SHEETS, msg, error);
   }
 }

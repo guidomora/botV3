@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
 import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, cancelReservationResultPrompt, datePrompt, interactPrompt, missingDataPrompt, otherPrompt, phonePrompt, reservationCompletedPrompt, reservationCreationFailedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPhonePrompt, updateReservationPrompt } from '../prompts';
-import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum, UpdateReservationType } from 'src/lib';
+import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum, UpdateReservationType, ProviderError, ProviderName } from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
 
 
@@ -215,7 +215,11 @@ export class AiService {
       return aiResponse;
     } catch (error) {
       this.logger.error(`Error al interactuar con AI`, error);
-      throw error;
+      throw new ProviderError(
+        ProviderName.OPEN_AI,
+        'Error al interactuar con OpenAI',
+        error,
+      );
     }
   }
 }

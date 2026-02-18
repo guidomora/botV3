@@ -1,7 +1,7 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { JWT } from "google-auth-library";
 import { sheets_v4, google } from "googleapis";
-import { GoogleSheetsOpts } from "src/lib";
+import { GoogleSheetsOpts, ProviderError, ProviderName } from "src/lib";
 import { Logger } from "@nestjs/common";
 
 @Injectable()
@@ -96,6 +96,6 @@ export class GoogleTemporalSheetsRepository {
 
     failure(error: unknown, msg = 'Google Sheets error'): never {
         console.error(error);
-        throw new InternalServerErrorException(msg);
+        throw new ProviderError(ProviderName.GOOGLE_SHEETS, msg, error);
     }
 }
