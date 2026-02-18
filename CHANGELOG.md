@@ -3,6 +3,7 @@
 #### 18/02/26
 - Strict payload validation (schema validation; reject unexpected fields). --> done with DTO
 - Error handling added for OpenAI and Google Sheets. Notifies the user if something goes wrong
+- Github Action added. Runs npm run build
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
