@@ -39,13 +39,15 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
         const history = await this.cacheService.getHistory(waId);
 
         const cancelResponse = await this.aiService.cancelReservationResult(response, history, state);
-        
+
+        await this.cacheService.appendEntityMessage(waId, cancelResponse, RoleEnum.ASSISTANT, Intention.CANCEL);
+
         await this.cacheService.clearHistory(waId, CacheTypeEnum.CANCEL);
 
         await this.cacheService.markFlowCompleted(waId);
 
         this.logger.log(`Delete reservation strategy executed`);
-        
+
         return { reply: cancelResponse };
     }
 }

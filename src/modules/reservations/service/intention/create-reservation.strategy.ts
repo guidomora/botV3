@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { Intention, MultipleMessagesResponse, SimplifiedTwilioWebhookPayload, TemporalStatusEnum } from "src/lib";
+import { Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, TemporalStatusEnum } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
@@ -32,24 +32,30 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
         const response = await this.datesService.createReservationWithMultipleMessages(data);
 
         const history = await this.cacheService.getHistory(data.waId);
-        
+
         switch (response.status) {
             case TemporalStatusEnum.IN_PROGRESS:
                 this.logger.log(`Create reservation strategy in progress`);
-                return {reply: await this.aiService.getMissingData(response.missingFields, history, response.message)};
-            
+                const inProgressReply = await this.aiService.getMissingData(response.missingFields, history, response.message);
+                await this.cacheService.appendEntityMessage(data.waId, inProgressReply, RoleEnum.ASSISTANT, Intention.CREATE);
+                return { reply: inProgressReply };
+
             case TemporalStatusEnum.COMPLETED:
                 this.logger.log(`Create reservation strategy completed`);
+                const completedReply = await this.aiService.reservationCompleted(response.reservationData, history);
+                await this.cacheService.appendEntityMessage(data.waId, completedReply, RoleEnum.ASSISTANT, Intention.CREATE);
                 await this.cacheService.markFlowCompleted(data.waId);
-                return {reply: await this.aiService.reservationCompleted(response.reservationData, history)};
-            
+                return { reply: completedReply };
+
             case TemporalStatusEnum.FAILED:
                 this.logger.log(`Create reservation strategy failed`);
-                return {reply: await this.aiService.createReservationFailed(response.reservationData, history, response.message!)};
+                const failedReply = await this.aiService.createReservationFailed(response.reservationData, history, response.message!);
+                await this.cacheService.appendEntityMessage(data.waId, failedReply, RoleEnum.ASSISTANT, Intention.CREATE);
+                return { reply: failedReply };
 
             default:
                 this.logger.warn(`Estado de reserva inesperado: ${response.status}`);
-                return {reply:'Hubo un problema al procesar la reserva, por favor intentá nuevamente.'}
+                return { reply: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.' }
         }
     }
 }

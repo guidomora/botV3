@@ -1,4 +1,3 @@
-import { ChatMessage } from "src/lib";
 import { RESTAURANT_NAME } from "src/constants";
 
 export const missingDataPrompt = (missingFields: string[], context: string, passedDatetime?: string) => {

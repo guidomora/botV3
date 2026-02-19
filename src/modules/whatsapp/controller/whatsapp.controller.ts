@@ -35,8 +35,6 @@ export class WhatsAppController {
       messageType: payload.MessageType || 'text',
     };
 
-    console.log('Simplified Payload:', simplifiedPayload, signature);
-
     const isUnsupportedMessage = UnsupportedMessage(
       payload.NumMedia,
       payload.MessageType,

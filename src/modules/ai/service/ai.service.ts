@@ -10,22 +10,21 @@ import { inferActiveIntent, serializeContext } from '../utils';
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  constructor(private readonly openAi: OpenAiConfig) { }
+  constructor(private readonly openAi: OpenAiConfig,) { }
 
   async interactWithAi(message: string, messageHistory: ChatMessage[]): Promise<MultipleMessagesResponse> {
 
     const activeIntent = inferActiveIntent(messageHistory);
 
-    const last = messageHistory.at(-1);
-    const shouldRemoveLastFromContext =
-      !!last && last.role === RoleEnum.USER && last.content === message;
+    // const last = messageHistory.at(-1);
+    // const shouldRemoveLastFromContext =
+    //   !!last && last.role === RoleEnum.USER && last.content === message;
 
-    const contextHistory = shouldRemoveLastFromContext
-      ? messageHistory.slice(0, -1)
-      : messageHistory;
+    // const contextHistory = shouldRemoveLastFromContext
+    //   ? messageHistory.slice(0, -1)
+    //   : messageHistory;
 
-    const context = serializeContext(contextHistory);
-
+    const context = serializeContext(messageHistory);
 
     const prompt = interactPrompt(context, activeIntent)
     try {
@@ -71,8 +70,9 @@ export class AiService {
   }
 
   async reservationCompleted(reservationData: TemporalDataType, messageHistory: ChatMessage[]): Promise<string> {
+    const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = reservationCompletedPrompt(reservationData, messageHistory)
+      const dataPrompt = reservationCompletedPrompt(reservationData, context)
 
       const aiResponse = await this.openAiConfig(dataPrompt)
 
@@ -83,8 +83,9 @@ export class AiService {
   }
 
   async createReservationFailed(reservationData: TemporalDataType, messageHistory: ChatMessage[], errorMessage: string): Promise<string> {
+    const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = reservationCreationFailedPrompt(reservationData, messageHistory, errorMessage)
+      const dataPrompt = reservationCreationFailedPrompt(reservationData, context, errorMessage)
 
       const aiResponse = await this.openAiConfig(dataPrompt)
 
@@ -209,6 +210,9 @@ export class AiService {
         ],
       });
 
+      console.log('prompt:', prompt);
+      
+
       const aiResponse = response.choices[0]!.message!.content!.trim()
       console.log('AI Response:', aiResponse);
 
@@ -223,3 +227,4 @@ export class AiService {
     }
   }
 }
+

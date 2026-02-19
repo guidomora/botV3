@@ -4,8 +4,12 @@
 - Strict payload validation (schema validation; reject unexpected fields). --> done with DTO
 - Error handling added for OpenAI and Google Sheets. Notifies the user if something goes wrong
 - Github Action added. Runs npm run build
+- context parsed for prompts fixed
 - TODO:
+- ask for name and lastname
 - Continue the WhatsApp integration, validators, security, types, queue?
+- Now the Agent is greeting at every message, need to fix this
+- Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
@@ -13,6 +17,9 @@
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
 - Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config 
+
+En create-reservation.strategy se generan replies pero no se persisten como mensajes assistant en cache (create-reservation.strategy.ts (line 39), create-reservation.strategy.ts (line 44), create-reservation.strategy.ts (line 48)).
+En delete-reservation.strategy, solo se persiste respuesta en la rama de faltantes; la respuesta final de cancelación no se guarda (delete-reservation.strategy.ts (line 33), delete-reservation.strategy.ts (line 41), delete-reservation.strategy.ts (line 49)).
 
 #### 17/02/26
 - Request body size limit added 100KB.

@@ -1,8 +1,7 @@
 import { TemporalDataType } from "src/lib";
-import { ChatMessage } from "src/lib";
 import { RESTAURANT_NAME } from "src/constants";
 
-export const reservationCreationFailedPrompt = (reservationData: TemporalDataType, context: ChatMessage[], errorMessage: string) => `
+export const reservationCreationFailedPrompt = (reservationData: TemporalDataType, context: string, errorMessage: string) => `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.
 Tu tarea es redactar **UN mensaje corto y amable** para informar que la reserva no pudo ser registrada.
 
