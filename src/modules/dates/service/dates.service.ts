@@ -51,14 +51,16 @@ export class DatesService {
             status: TemporalStatusEnum.IN_PROGRESS,
             missingFields: ['date', 'time'],
             reservationData: reservation.snapshot,
-            message: createResponse.message
+            message: createResponse.message,
+            errorStatus: createResponse.status,
           }
         }
         return {
           status: TemporalStatusEnum.FAILED,
           missingFields: reservation.missingFields,
           reservationData: reservation.snapshot,
-          message: createResponse.message
+          message: createResponse.message,
+          errorStatus: createResponse.status,
         }
       }
       this.logger.log('Reserva trasladada a hoja de reservas');
