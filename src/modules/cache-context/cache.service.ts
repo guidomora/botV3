@@ -139,6 +139,11 @@ export class CacheService {
         await this.touchLifecycle(waId, FlowLifecycleStatus.COMPLETED);
     }
 
+    async getFlowLifecycleStatus(waId: string): Promise<FlowLifecycleStatus | null> {
+        const state = await this.getLifecycleState(waId);
+        return state?.status ?? null;
+    }
+
     async getHistory(waId: string): Promise<ChatMessage[]> {
         const key = this.key(waId, CacheTypeEnum.DATA);
         const data = await this.cacheManager.get(key) ?? [];

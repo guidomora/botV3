@@ -24,7 +24,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
             // ask for date
             const availabilityResponse = await this.aiService.askDateForAvailabilityAi(history)
 
-            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT, Intention.AVAILABILITY)
 
             await this.cacheService.markFlowCompleted(waId);
             this.logger.log(`Availability strategy executed`);
@@ -36,7 +36,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
             const availabilityResponse = await this.aiService.dayAvailabilityAiResponse(availability, history)
 
-            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT, Intention.AVAILABILITY)
             
             await this.cacheService.markFlowCompleted(waId);
             this.logger.log(`Availability strategy executed`);
@@ -49,7 +49,7 @@ export class AvailabilityStrategy implements IntentionStrategyInterface {
 
             const availabilityResponse = await this.aiService.dayAndTimeAvailabilityAiResponse(availability, history, aiResponse.time)
 
-            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT)
+            await this.cacheService.appendEntityMessage(waId, availabilityResponse, RoleEnum.ASSISTANT, Intention.AVAILABILITY)
 
             await this.cacheService.markFlowCompleted(waId);
             this.logger.log(`Availability strategy executed`);
