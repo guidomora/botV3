@@ -37,6 +37,7 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 - Mantener la estructura del proyecto respetando los módulos de Nest, controllers, services, etc.
 - Utilizar patrones de diseño cuando sea necesario.
 - Seguir las mejores prácticas de desarrollo DRY, SOLID, ETC (easy to change), etc.
+- No hagas cambios donde por ejemplo que acomodes espacios, lineas vacias sin motivo o agregar "enters" innecesarios.
 
 ## 4) Testing y validación
 - Todavia no se implementan tests, los files existentes son erroneos o estan incompletos
