@@ -210,9 +210,6 @@ export class AiService {
         ],
       });
 
-      console.log('prompt:', prompt);
-      
-
       const aiResponse = response.choices[0]!.message!.content!.trim()
       console.log('AI Response:', aiResponse);
 
