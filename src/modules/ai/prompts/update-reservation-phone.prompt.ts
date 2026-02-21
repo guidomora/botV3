@@ -1,10 +1,7 @@
-import { UpdateReservationType } from "src/lib";
-import { RESTAURANT_NAME } from "src/constants";
+import { UpdateReservationType } from 'src/lib';
+import { RESTAURANT_NAME } from 'src/constants';
 
-export const updateReservationPhonePrompt = (
-  context: string,
-  known: UpdateReservationType,
-) => `
+export const updateReservationPhonePrompt = (context: string, known: UpdateReservationType) => `
 - Eres un agente de reservas de un restaurante y solo podes contestar sobre asuntos relacionados a reservas.
 - Objetivo: pedir **solo el teléfono asociado a la reserva** para poder ubicarla y continuar con el cambio.
 - Redactá **UN solo mensaje** natural y breve.

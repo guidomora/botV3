@@ -1,4 +1,4 @@
 export enum TablesInfo {
-    AVAILABLE = '20',
-    BOOKED = '0',
+  AVAILABLE = '20',
+  BOOKED = '0',
 }

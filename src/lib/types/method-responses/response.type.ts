@@ -1,4 +1,4 @@
-import { StatusEnum } from "./errors.enum";
+import { StatusEnum } from './errors.enum';
 
 export interface ServiceResponse {
   status: StatusEnum;

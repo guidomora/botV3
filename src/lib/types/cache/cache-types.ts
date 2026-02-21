@@ -1,8 +1,8 @@
-import { Intention } from "../ai-response";
+import { Intention } from '../ai-response';
 
 export enum RoleEnum {
-    USER = 'user',
-    ASSISTANT = 'assistant'
+  USER = 'user',
+  ASSISTANT = 'assistant',
 }
 export interface ChatMessage {
   // waId: string;
@@ -12,9 +12,9 @@ export interface ChatMessage {
 }
 
 export enum CacheTypeEnum {
-    CANCEL = 'cancel',
-    AVAILABILITY = 'availability',
-    UPDATE = 'update',
-    DATA = 'data',
-    OTHER = 'other'
+  CANCEL = 'cancel',
+  AVAILABILITY = 'availability',
+  UPDATE = 'update',
+  DATA = 'data',
+  OTHER = 'other',
 }

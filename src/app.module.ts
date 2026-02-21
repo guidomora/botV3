@@ -9,16 +9,17 @@ import { AiModule } from './modules/ai/ai.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { CacheContextModule } from './modules/cache-context/cache.module';
 
-
 @Module({
-  imports: [ReservationsModule,
+  imports: [
+    ReservationsModule,
     GoogleSheetsModule.forRoot(),
     ConfigModule.forRoot({ envFilePath: '.env' }),
     DatesModule,
     AiModule,
     WhatsAppModule.forRootAsync(),
-    CacheContextModule],
+    CacheContextModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

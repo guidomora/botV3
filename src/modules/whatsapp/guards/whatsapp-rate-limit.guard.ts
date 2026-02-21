@@ -21,17 +21,14 @@ export class WhatsAppRateLimitGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context
-      .switchToHttp()
-      .getRequest<{ body?: TwilioWebhookPayloadDto }>();
+    const request = context.switchToHttp().getRequest<{ body?: TwilioWebhookPayloadDto }>();
     const waId = request.body?.WaId;
 
     if (!waId) {
       return true;
     }
 
-    const rateLimitDecision =
-      await this.rateLimitService.evaluateInboundMessage(waId);
+    const rateLimitDecision = await this.rateLimitService.evaluateInboundMessage(waId);
 
     if (rateLimitDecision.allowed) {
       return true;

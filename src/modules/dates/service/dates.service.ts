@@ -1,8 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
-import { AddMissingFieldInput, AddMissingFieldOutput, AvailabilityResponse, DeleteReservation, formatPhoneNumber, GetIndexParams, ServiceResponse, StatusEnum, TemporalStatusEnum, UpdateReservationType } from 'src/lib';
-import { CreateDayUseCase, CreateReservationRowUseCase, DeleteReservationUseCase } from '../application';
+import {
+  AddMissingFieldInput,
+  AddMissingFieldOutput,
+  AvailabilityResponse,
+  DeleteReservation,
+  formatPhoneNumber,
+  GetIndexParams,
+  ServiceResponse,
+  StatusEnum,
+  TemporalStatusEnum,
+  UpdateReservationType,
+} from 'src/lib';
+import {
+  CreateDayUseCase,
+  CreateReservationRowUseCase,
+  DeleteReservationUseCase,
+} from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
 import { SHEETS_NAMES } from 'src/constants';
@@ -17,21 +32,24 @@ export class DatesService {
     private readonly deleteReservationUseCase: DeleteReservationUseCase,
     private readonly googleSheetsService: GoogleSheetsService,
     private readonly googleSheetsTemporalService: GoogleTemporalSheetsService,
-  ) { }
+  ) {}
   async createDate(): Promise<string> {
-    return this.createDayUseCase.createDate()
+    return this.createDayUseCase.createDate();
   }
 
   async createNextDate(): Promise<string> {
-    return this.createDayUseCase.createNextDate()
+    return this.createDayUseCase.createNextDate();
   }
 
   async createXDates(quantity: number): Promise<string> {
-    return this.createDayUseCase.createXDates(quantity)
+    return this.createDayUseCase.createXDates(quantity);
   }
 
-  async createReservationWithMultipleMessages(createReservationDto: AddMissingFieldInput): Promise<AddMissingFieldOutput> {
-    const reservation = await this.googleSheetsTemporalService.addMissingField(createReservationDto);
+  async createReservationWithMultipleMessages(
+    createReservationDto: AddMissingFieldInput,
+  ): Promise<AddMissingFieldOutput> {
+    const reservation =
+      await this.googleSheetsTemporalService.addMissingField(createReservationDto);
 
     const { date, time, name, phone, quantity } = reservation.snapshot;
     const formattedPhone = formatPhoneNumber(phone);
@@ -41,8 +59,8 @@ export class DatesService {
         time: time!.toLowerCase(),
         name: name!.toLowerCase(),
         phone: formattedPhone?.toLowerCase() ?? phone!.toLowerCase(),
-        quantity: Number(quantity!)
-      }
+        quantity: Number(quantity!),
+      };
 
       const createResponse = await this.createReservationRowUseCase.createReservation(customerData);
       if (createResponse.error) {
@@ -53,7 +71,7 @@ export class DatesService {
             reservationData: reservation.snapshot,
             message: createResponse.message,
             errorStatus: createResponse.status,
-          }
+          };
         }
         return {
           status: TemporalStatusEnum.FAILED,
@@ -61,7 +79,7 @@ export class DatesService {
           reservationData: reservation.snapshot,
           message: createResponse.message,
           errorStatus: createResponse.status,
-        }
+        };
       }
       this.logger.log('Reserva trasladada a hoja de reservas');
 
@@ -72,10 +90,9 @@ export class DatesService {
     return {
       status: reservation.status,
       missingFields: reservation.missingFields,
-      reservationData: reservation.snapshot
-    }
+      reservationData: reservation.snapshot,
+    };
   }
-
 
   async deleteIncompleteTemporalReservationByWaId(waId: string): Promise<boolean> {
     const rowIndex = await this.googleSheetsTemporalService.findTemporalRowIndexByWaId(waId);
@@ -92,52 +109,56 @@ export class DatesService {
   }
 
   async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
-    return this.deleteReservationUseCase.deleteReservation(deleteReservation)
+    return this.deleteReservationUseCase.deleteReservation(deleteReservation);
   }
 
   async deleteOldRows() {
-    return this.deleteReservationUseCase.deleteOldRows()
+    return this.deleteReservationUseCase.deleteOldRows();
   }
 
   async getDayAvailability(date: string): Promise<AvailabilityResponse> {
-    const dates = await this.googleSheetsService.getDayAvailability(date)
-    this.logger.log('Day availability checked')
-    return formatAvailabilityResponse(dates)
+    const dates = await this.googleSheetsService.getDayAvailability(date);
+    this.logger.log('Day availability checked');
+    return formatAvailabilityResponse(dates);
   }
 
   async getDayAndTimeAvailability(date: string, time: string): Promise<AvailabilityResponse> {
-    const dates = await this.googleSheetsService.getDayAvailability(date)
+    const dates = await this.googleSheetsService.getDayAvailability(date);
 
-    const formatedDayAvailability = formatAvailabilityResponse(dates)
+    const formatedDayAvailability = formatAvailabilityResponse(dates);
 
-    this.logger.log('Day and time availability checked')
+    this.logger.log('Day and time availability checked');
 
-    return pickAvailabilityForTime(formatedDayAvailability, time)
+    return pickAvailabilityForTime(formatedDayAvailability, time);
   }
 
-  async getReservationIndexByData(currentDate: string, currentTime: string, currentName: string, phone: string): Promise<number> {
-
+  async getReservationIndexByData(
+    currentDate: string,
+    currentTime: string,
+    currentName: string,
+    phone: string,
+  ): Promise<number> {
     const searchIndexObject: GetIndexParams = {
       date: currentDate,
       time: currentTime,
       name: currentName.toLowerCase(),
-      phone
-    }
+      phone,
+    };
 
     return this.googleSheetsService.getDateIndexByData(searchIndexObject);
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {
-
     this.logger.log('Updating reservation', DatesService.name);
 
-    const { currentDate, currentTime, newDate, newTime, currentName, phone, newQuantity, newName } = updateReservation;
+    const { currentDate, currentTime, newDate, newTime, currentName, phone, newQuantity, newName } =
+      updateReservation;
 
     if (!currentDate || !currentTime || !currentName || !phone) {
       return {
         status: StatusEnum.MISSING_DATA_UPDATE,
         message: 'Faltan datos de la reserva original',
-        error: true
+        error: true,
       };
     }
 
@@ -147,21 +168,26 @@ export class DatesService {
 
     const currentReservationDateTime = parseDateTime(currentDate, currentTime);
     if (currentReservationDateTime.getTime() < Date.now()) {
-      this.logger.warn('La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada.');
+      this.logger.warn(
+        'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada.',
+      );
       return {
         status: StatusEnum.DATE_ALREADY_PASSED,
-        message: 'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada. Se puede crear una reserva con los datos solicitados',
-        error: true
+        message:
+          'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada. Se puede crear una reserva con los datos solicitados',
+        error: true,
       };
     }
 
     const targetReservationDateTime = parseDateTime(targetDate, targetTime);
     if (targetReservationDateTime.getTime() < Date.now()) {
-      this.logger.warn('La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.');
+      this.logger.warn(
+        'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.',
+      );
       return {
         status: StatusEnum.DATE_ALREADY_PASSED,
         message: 'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.',
-        error: true
+        error: true,
       };
     }
 
@@ -171,60 +197,63 @@ export class DatesService {
       date: currentDate,
       time: currentTime,
       name: currentName.toLowerCase(),
-      phone
-    }
+      phone,
+    };
 
-    const currentReservationIndex = await this.googleSheetsService.getDateIndexByData(searchIndexObject);
+    const currentReservationIndex =
+      await this.googleSheetsService.getDateIndexByData(searchIndexObject);
 
     console.log('currentReservationIndex: ', currentReservationIndex);
-
 
     if (currentReservationIndex === -1) {
       return {
         status: StatusEnum.NO_DATE_FOUND,
         message: 'No se encontró la reserva con los datos proporcionados.',
-        error: true
+        error: true,
       };
     }
 
-    const currentRow = await this.googleSheetsService.getRowValues(`${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`);
+    const currentRow = await this.googleSheetsService.getRowValues(
+      `${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`,
+    );
 
-    const parseValue = (value: unknown) => Array.isArray(value) ? value[0] : value;
+    const parseValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 
     const quantity = Number(parseValue(currentRow?.[5])) || 1;
 
-    const resolvedQuantity = newQuantity && !Number.isNaN(Number(newQuantity)) ? Number(newQuantity) : quantity;
+    const resolvedQuantity =
+      newQuantity && !Number.isNaN(Number(newQuantity)) ? Number(newQuantity) : quantity;
 
-    const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`
+    const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`;
 
     if (targetDate === currentDate && targetTime === currentTime) {
-      await this.googleSheetsService.createReservation(
-        createRange,
-        {
-          customerData: {
-            name: targetName.toLowerCase(),
-            phone,
-            quantity: resolvedQuantity,
-          },
+      await this.googleSheetsService.createReservation(createRange, {
+        customerData: {
+          name: targetName.toLowerCase(),
+          phone,
+          quantity: resolvedQuantity,
         },
-      );
+      });
 
       this.logger.log('Reservation updated', DatesService.name);
       return {
         status: StatusEnum.SUCCESS,
         message: `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.
         Muchas gracias!`,
-        error: false
+        error: false,
       };
     }
 
-    const availability = await this.googleSheetsService.getAvailabilityFromReservations(targetDate, targetTime);
+    const availability = await this.googleSheetsService.getAvailabilityFromReservations(
+      targetDate,
+      targetTime,
+    );
 
     if (!availability.isAvailable) {
       return {
         status: StatusEnum.NO_AVAILABILITY,
         message: 'No hay disponibilidad para la nueva fecha y horario solicitados.',
-        error: true
+        error: true,
       };
     }
 
@@ -233,16 +262,17 @@ export class DatesService {
       time: targetTime,
       name: targetName.toLowerCase(),
       phone,
-      quantity: resolvedQuantity
-    }
+      quantity: resolvedQuantity,
+    };
 
-    const creationResult: ServiceResponse = await this.createReservationRowUseCase.createReservation(createObject);
+    const creationResult: ServiceResponse =
+      await this.createReservationRowUseCase.createReservation(createObject);
 
     if (creationResult.error) {
       return {
         status: StatusEnum.RESERVATION_ERROR,
         message: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.',
-        error: true
+        error: true,
       };
     }
 
@@ -250,8 +280,8 @@ export class DatesService {
       date: currentDate,
       time: currentTime,
       name: currentName,
-      phone
-    }
+      phone,
+    };
 
     await this.deleteReservationUseCase.deleteReservation(deleteObject);
 
@@ -259,7 +289,7 @@ export class DatesService {
       status: StatusEnum.SUCCESS,
       message: `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.
       Muchas gracias!`,
-      error: false
+      error: false,
     };
   }
 }

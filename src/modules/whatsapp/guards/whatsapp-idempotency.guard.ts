@@ -13,9 +13,7 @@ export class WhatsAppIdempotencyGuard implements CanActivate {
   constructor(private readonly idempotencyService: IdempotencyService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context
-      .switchToHttp()
-      .getRequest<{ body?: TwilioWebhookPayloadDto }>();
+    const request = context.switchToHttp().getRequest<{ body?: TwilioWebhookPayloadDto }>();
 
     const accountSid = request.body?.AccountSid;
     const messageSid = request.body?.MessageSid;
@@ -24,10 +22,7 @@ export class WhatsAppIdempotencyGuard implements CanActivate {
       return true;
     }
 
-    const isDuplicate = await this.idempotencyService.isDuplicateMessage(
-      accountSid,
-      messageSid,
-    );
+    const isDuplicate = await this.idempotencyService.isDuplicateMessage(accountSid, messageSid);
 
     if (isDuplicate) {
       throw new HttpException({ ok: true }, HttpStatus.OK);

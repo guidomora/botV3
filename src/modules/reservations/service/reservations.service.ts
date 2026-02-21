@@ -28,36 +28,26 @@ export class ReservationsService {
   ): Promise<string> {
     console.log(`Mensaje recibido: ${message}`);
 
-    await this.cacheService.appendEntityMessage(
-      simplifiedPayload.waId,
-      message,
-      RoleEnum.USER,
-    );
+    await this.cacheService.appendEntityMessage(simplifiedPayload.waId, message, RoleEnum.USER);
 
     try {
       const hasExplicitAction = hasExplicitReservationAction(message);
 
       if (!hasExplicitAction) {
-        const isSocialCourtesy =
-          await this.aiService.isSocialCourtesyMessage(message);
+        const isSocialCourtesy = await this.aiService.isSocialCourtesyMessage(message);
 
         if (isSocialCourtesy) {
           const forcedOtherResponse: MultipleMessagesResponse = {
             intent: Intention.OTHER,
           };
 
-          const forcedOtherResult = await this.router.route(
-            forcedOtherResponse,
-            simplifiedPayload,
-          );
+          const forcedOtherResult = await this.router.route(forcedOtherResponse, simplifiedPayload);
 
           return forcedOtherResult.reply;
         }
       }
 
-      const history = await this.cacheService.getHistory(
-        simplifiedPayload.waId,
-      );
+      const history = await this.cacheService.getHistory(simplifiedPayload.waId);
       const aiResponse = await this.aiService.interactWithAi(message, history);
       const result = await this.router.route(aiResponse, simplifiedPayload);
 

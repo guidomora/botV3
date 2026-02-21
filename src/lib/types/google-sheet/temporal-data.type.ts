@@ -1,33 +1,33 @@
-import { StatusEnum } from "../method-responses";
+import { StatusEnum } from '../method-responses';
 
 export interface TemporalDataType {
-    date?: string;
-    time?: string;
-    name?: string;
-    phone?: string;
-    service?: string;
-    quantity?: string;
-    waId?: string;
-    intent?: string;
+  date?: string;
+  time?: string;
+  name?: string;
+  phone?: string;
+  service?: string;
+  quantity?: string;
+  waId?: string;
+  intent?: string;
 }
 
 export enum TemporalStatusEnum {
-    NO_DATA = 'NO_DATA',
-    IN_PROGRESS = 'IN_PROGRESS',
-    COMPLETED = 'COMPLETED',
-    FAILED = 'FAILED'
+  NO_DATA = 'NO_DATA',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
 }
 
 export type AddMissingFieldInput = {
-    waId: string;
-    values: TemporalDataType;
-    messageSid?: string;       
+  waId: string;
+  values: TemporalDataType;
+  messageSid?: string;
 };
 
 export type AddMissingFieldOutput = {
-    status: TemporalStatusEnum;
-    missingFields: string[];
-    reservationData: TemporalDataType;
-    message?: string;
-    errorStatus?: StatusEnum;
+  status: TemporalStatusEnum;
+  missingFields: string[];
+  reservationData: TemporalDataType;
+  message?: string;
+  errorStatus?: StatusEnum;
 };

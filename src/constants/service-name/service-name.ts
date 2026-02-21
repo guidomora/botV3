@@ -1,3 +1,3 @@
 export enum ServiceName {
-    DINNER = 'Cena'
+  DINNER = 'Cena',
 }

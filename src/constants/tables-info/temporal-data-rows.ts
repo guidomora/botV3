@@ -1,47 +1,45 @@
-import { TemporalDataType, TemporalStatusEnum } from "src/lib";
+import { TemporalDataType, TemporalStatusEnum } from 'src/lib';
 
 export const COL_MAP = {
-    date: 'A',
-    time: 'B',
-    name: 'C',
-    phone: 'D',
-    service: 'E',
-    quantity: 'F',
-    waId: 'G',
-    status: 'H',
-    intent: 'I',
-  } as const;
+  date: 'A',
+  time: 'B',
+  name: 'C',
+  phone: 'D',
+  service: 'E',
+  quantity: 'F',
+  waId: 'G',
+  status: 'H',
+  intent: 'I',
+} as const;
 
-  export type ColumnKey = keyof typeof COL_MAP;
+export type ColumnKey = keyof typeof COL_MAP;
 
-  export const ROW_ORDER: ColumnKey[] = [
-    'date',
-    'time',
-    'name',
-    'phone',
-    'service',
-    'quantity',
-    'waId',
-    'status',
-    'intent',
-  ];
+export const ROW_ORDER: ColumnKey[] = [
+  'date',
+  'time',
+  'name',
+  'phone',
+  'service',
+  'quantity',
+  'waId',
+  'status',
+  'intent',
+];
 
+export const REQUIRED_SLOTS: (keyof TemporalDataType)[] = [
+  'date',
+  'time',
+  'name',
+  'phone',
+  'service',
+  'quantity',
+  'intent',
+];
 
-  export const REQUIRED_SLOTS: (keyof TemporalDataType)[] = [
-    'date',
-    'time',
-    'name',
-    'phone',
-    'service',
-    'quantity',
-    'intent',
-  ];
-
-
-  export interface TemporalDataRows {
-    status: TemporalStatusEnum;
-    missingFields: (keyof TemporalDataType)[];
-    rowIndex: number;
-    snapshot: TemporalDataType;
-    changedFields: string[];
-  }
+export interface TemporalDataRows {
+  status: TemporalStatusEnum;
+  missingFields: (keyof TemporalDataType)[];
+  rowIndex: number;
+  snapshot: TemporalDataType;
+  changedFields: string[];
+}

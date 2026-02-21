@@ -1,11 +1,11 @@
 ### History
 
-#### 19/02/26
-- Now the Agent is greeting at every message, need to fix this -> DONE
-- Now the AI dont falls if the user sends a message after finishing a flow
+#### 21/02/26
+
+- Now if the user sends a greeting message, the bot will greet him back and wont duplicate the final action of a flow
+- Prettier change
 - TODO:
 - ask for name and lastname
-- When updating or creating a reservation, if the time is not available, suggest another time near to the selected one
 - Continue the WhatsApp integration, validators, security, types, queue?
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -14,9 +14,16 @@
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
-- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config 
+- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
+
+#### 19/02/26
+
+- Now the Agent is greeting at every message, need to fix this -> DONE
+- Now the AI dont falls if the user sends a message after finishing a flow
+- When updating or creating a reservation, if the time is not available, suggest another time near to the selected one
 
 #### 18/02/26
+
 - Strict payload validation (schema validation; reject unexpected fields). --> done with DTO
 - Error handling added for OpenAI and Google Sheets. Notifies the user if something goes wrong
 - Github Action added. Runs npm run build
@@ -26,16 +33,19 @@ En create-reservation.strategy se generan replies pero no se persisten como mens
 En delete-reservation.strategy, solo se persiste respuesta en la rama de faltantes; la respuesta final de cancelación no se guarda (delete-reservation.strategy.ts (line 33), delete-reservation.strategy.ts (line 41), delete-reservation.strategy.ts (line 49)).
 
 #### 17/02/26
+
 - Request body size limit added 100KB.
 - DTO updated
 - Idempotency guard added if payload has the same MessageSid it will not process the request
 
 #### 15/10/25
+
 - WhatsApp number-based rate limiting (by From) to prevent per-user spam.
 - Started with README to document few parts of the project
 - Validation of X-Twilio-Signature on every webhook request added.
 
 #### 12/10/25
+
 - Did some research abor deploy, twilio and server security
 
 #### 11/02/26

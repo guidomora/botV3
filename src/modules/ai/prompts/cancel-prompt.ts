@@ -1,7 +1,15 @@
+import { RESTAURANT_NAME } from 'src/constants';
 
-import { RESTAURANT_NAME } from "src/constants";
-
-export const cancelDataPrompt = (missingFields: string[], context: string, known: { phone?: string|null; date?: string|null; time?: string|null; name?: string|null }) => {
+export const cancelDataPrompt = (
+  missingFields: string[],
+  context: string,
+  known: {
+    phone?: string | null;
+    date?: string | null;
+    time?: string | null;
+    name?: string | null;
+  },
+) => {
   return `
 - Eres un agente de reservas de un restaurante y solo podes contestar sobre asuntos que esten relacionados a hacer una reserva, chequear disponibilidad, cancelar una reserva o cambiar una reserva.
 - Tu tarea es redactar **UN solo mensaje** corto y amable para **cancelar una reserva**, pidiendo **solo el dato más prioritario que falte** o, si ya están todos, **pidiendo confirmación de la cancelación**.

@@ -7,12 +7,15 @@ describe('AiService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AiService, {
-        provide: OpenAiConfig,
-        useValue: {
-          getClient: jest.fn(),
+      providers: [
+        AiService,
+        {
+          provide: OpenAiConfig,
+          useValue: {
+            getClient: jest.fn(),
+          },
         },
-      }],
+      ],
     }).compile();
 
     service = module.get<AiService>(AiService);

@@ -1,5 +1,5 @@
 import { GoogleSheetsRepository } from './google-sheets.repository';
-import { SHEETS_NAMES, ServiceName } from 'src/constants'
+import { SHEETS_NAMES, ServiceName } from 'src/constants';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { parseSpreadSheetId } from '../../helpers/parse-spreadsheet-id.helper';
 import { dateTimeMock } from '../../test/datetime.mock';
@@ -34,7 +34,7 @@ describe('GIVEN GoogleSheetsRepository', () => {
           update: updateMock,
           append: appendMock,
         },
-        batchUpdate: batchUpdateMock
+        batchUpdate: batchUpdateMock,
       },
     };
   });
@@ -90,14 +90,16 @@ describe('GIVEN GoogleSheetsRepository', () => {
         range: 'Sheet1!A1:F1',
         valueInputOption: 'RAW',
         requestBody: {
-          values: [[
-            values.customerData.date,
-            values.customerData.time,
-            values.customerData.name,
-            values.customerData.phone,
-            ServiceName.DINNER,
-            values.customerData.quantity,
-          ]],
+          values: [
+            [
+              values.customerData.date,
+              values.customerData.time,
+              values.customerData.name,
+              values.customerData.phone,
+              ServiceName.DINNER,
+              values.customerData.quantity,
+            ],
+          ],
         },
       });
     });
@@ -238,7 +240,11 @@ describe('GIVEN GoogleSheetsRepository', () => {
 
       await repository.deleteRow(rowIndex, sheetIndex);
 
-      expect(parseSpreadSheetId).toHaveBeenCalledWith(sheetId, (repository as any).sheets, sheetIndex);
+      expect(parseSpreadSheetId).toHaveBeenCalledWith(
+        sheetId,
+        (repository as any).sheets,
+        sheetIndex,
+      );
       expect(batchUpdateMock).toHaveBeenCalledWith({
         spreadsheetId: sheetId,
         requestBody: {

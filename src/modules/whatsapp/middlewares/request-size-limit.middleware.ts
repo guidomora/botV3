@@ -1,12 +1,6 @@
-import {
-  Injectable,
-  Logger,
-  NestMiddleware,
-  PayloadTooLargeException,
-} from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware, PayloadTooLargeException } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { MAX_REQUEST_BODY_SIZE_BYTES, WARNING_REQUEST_BODY_SIZE_BYTES } from 'src/constants';
-
 
 @Injectable()
 export class RequestSizeLimitMiddleware implements NestMiddleware {
@@ -26,9 +20,7 @@ export class RequestSizeLimitMiddleware implements NestMiddleware {
       this.logger.error(
         `Request body excede el limite permitido (${requestSizeBytes} bytes > ${MAX_REQUEST_BODY_SIZE_BYTES} bytes). Path: ${req.originalUrl}`,
       );
-      throw new PayloadTooLargeException(
-        'El tamaño del request excede el máximo permitido.',
-      );
+      throw new PayloadTooLargeException('El tamaño del request excede el máximo permitido.');
     }
 
     next();

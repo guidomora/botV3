@@ -16,15 +16,20 @@ export class ConversationExpirationNotifierService {
     const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
 
     this.fromWhatsApp = this.configService.get<string>('TWILIO_WHATSAPP_FROM') ?? undefined;
-    this.messagingServiceSid = this.configService.get<string>('TWILIO_MESSAGING_SERVICE_SID') ?? undefined;
+    this.messagingServiceSid =
+      this.configService.get<string>('TWILIO_MESSAGING_SERVICE_SID') ?? undefined;
 
     if (!accountSid || !authToken || (!this.fromWhatsApp && !this.messagingServiceSid)) {
       this.twilioClient = null;
-      this.logger.warn('Twilio no está configurado para enviar mensajes de expiración de conversación');
+      this.logger.warn(
+        'Twilio no está configurado para enviar mensajes de expiración de conversación',
+      );
       return;
     }
 
-    this.twilioClient = new Twilio(accountSid, authToken, { lazyLoading: true });
+    this.twilioClient = new Twilio(accountSid, authToken, {
+      lazyLoading: true,
+    });
   }
 
   private toWhatsAppAddress(waId: string): string {
@@ -41,7 +46,9 @@ export class ConversationExpirationNotifierService {
 
   async sendConversationExpiredMessage(waId: string, status: ExpirationStatus): Promise<void> {
     if (!this.twilioClient) {
-      this.logger.warn(`No se pudo notificar expiración para ${waId} porque Twilio no está configurado`);
+      this.logger.warn(
+        `No se pudo notificar expiración para ${waId} porque Twilio no está configurado`,
+      );
       return;
     }
 

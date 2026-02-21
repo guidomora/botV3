@@ -8,6 +8,6 @@ import { ConfigModule } from '@nestjs/config';
   controllers: [AiController],
   imports: [ConfigModule],
   providers: [AiService, OpenAiConfig],
-  exports: [AiService]
+  exports: [AiService],
 })
 export class AiModule {}

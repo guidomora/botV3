@@ -7,13 +7,9 @@ import { ConfigModule } from '@nestjs/config';
 import { ConversationExpirationNotifierService } from './conversation-expiration-notifier.service';
 
 @Module({
-  imports: [
-    CacheModule.register({ isGlobal: true, ttl: 0 }),
-    DatesModule,
-    ConfigModule,
-  ],
+  imports: [CacheModule.register({ isGlobal: true, ttl: 0 }), DatesModule, ConfigModule],
   controllers: [CacheController],
   providers: [CacheService, ConversationExpirationNotifierService],
-  exports: [CacheService]
+  exports: [CacheService],
 })
 export class CacheContextModule {}

@@ -1,11 +1,15 @@
-import { AvailabilityResponse, AvailabilitySlot } from "src/lib";
+import { AvailabilityResponse, AvailabilitySlot } from 'src/lib';
 
 const timeToMinutes = (t: string): number => {
-  const [hh, mm] = t.split(":").map(n => parseInt(n, 10));
+  const [hh, mm] = t.split(':').map((n) => parseInt(n, 10));
   return (Number.isFinite(hh) ? hh : 0) * 60 + (Number.isFinite(mm) ? mm : 0);
 };
 
-export const pickAvailabilityForTime = (day: AvailabilityResponse, requestedTime: string, options?: { neighborCount?: number }): AvailabilityResponse => {
+export const pickAvailabilityForTime = (
+  day: AvailabilityResponse,
+  requestedTime: string,
+  options?: { neighborCount?: number },
+): AvailabilityResponse => {
   const neighborCount = options?.neighborCount ?? 2;
 
   // Normalizar/ordenar
@@ -14,7 +18,7 @@ export const pickAvailabilityForTime = (day: AvailabilityResponse, requestedTime
   );
 
   // 1) Match exacto
-  const exact = slots.find(slot => slot.time === requestedTime);
+  const exact = slots.find((slot) => slot.time === requestedTime);
   if (exact) {
     return {
       ...day,
@@ -25,13 +29,17 @@ export const pickAvailabilityForTime = (day: AvailabilityResponse, requestedTime
 
   // 2) No hay exacto -> sugerir cercanos
   if (slots.length === 0) {
-    return { ...day, slots: [], summary: { first_time: null, last_time: null } };
+    return {
+      ...day,
+      slots: [],
+      summary: { first_time: null, last_time: null },
+    };
   }
 
   const reqMin = timeToMinutes(requestedTime);
 
   // Encontrar índice de inserción (primer slot >= requested)
-  let idx = slots.findIndex(slot => timeToMinutes(slot.time) >= reqMin);
+  let idx = slots.findIndex((slot) => timeToMinutes(slot.time) >= reqMin);
   if (idx === -1) idx = slots.length; // requested es más tarde que todo
 
   const suggestions: AvailabilitySlot[] = [];

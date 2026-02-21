@@ -15,14 +15,10 @@ export class TwilioAdapter {
     private readonly config: ConfigService,
   ) {
     this.from = this.config.get<string>('twilio.fromWhatsApp')!;
-    this.messagingServiceSid = this.config.get<string>(
-      'twilio.messagingServiceSid',
-    );
+    this.messagingServiceSid = this.config.get<string>('twilio.messagingServiceSid');
     if (!this.from && !this.messagingServiceSid) {
       // Podés permitir uno u otro; si usás Messaging Service, no necesitas "from"
-      throw new Error(
-        'Configurar TWILIO_WHATSAPP_FROM o TWILIO_MESSAGING_SERVICE_SID',
-      );
+      throw new Error('Configurar TWILIO_WHATSAPP_FROM o TWILIO_MESSAGING_SERVICE_SID');
     }
   }
 

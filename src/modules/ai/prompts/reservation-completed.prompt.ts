@@ -1,5 +1,5 @@
-import { TemporalDataType } from "src/lib";
-import { RESTAURANT_NAME } from "src/constants";
+import { TemporalDataType } from 'src/lib';
+import { RESTAURANT_NAME } from 'src/constants';
 
 export const reservationCompletedPrompt = (reservationData: TemporalDataType, context: string) => `
 Eres un asistente de WhatsApp (es-AR) para un restaurante.

@@ -1,6 +1,5 @@
-import { ROW_ORDER, REQUIRED_SLOTS } from "src/constants/tables-info/temporal-data-rows";
-import { TemporalStatusEnum } from "src/lib";
-
+import { ROW_ORDER, REQUIRED_SLOTS } from 'src/constants/tables-info/temporal-data-rows';
+import { TemporalStatusEnum } from 'src/lib';
 
 export function objectToRowArray(obj: any): any[] {
   return ROW_ORDER.map((k) => obj[k] ?? ' ');
@@ -24,17 +23,15 @@ export function computeStatus(obj: any) {
 
 export function buildEmptyRow(waId: string): string[] {
   const obj = {
-      date: ' ',
-      time: ' ',
-      name: ' ',
-      phone: ' ',
-      service: 'Food',
-      quantity: ' ',
-      waId,
-      status: TemporalStatusEnum.NO_DATA,
-      intent: 'create'
+    date: ' ',
+    time: ' ',
+    name: ' ',
+    phone: ' ',
+    service: 'Food',
+    quantity: ' ',
+    waId,
+    status: TemporalStatusEnum.NO_DATA,
+    intent: 'create',
   };
   return objectToRowArray(obj);
 }
-
-

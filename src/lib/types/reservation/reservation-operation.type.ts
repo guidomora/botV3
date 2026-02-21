@@ -1,5 +1,4 @@
 export enum ReservationOperation {
-    ADD = 'ADD',
-    SUBTRACT = 'SUBTRACT'
+  ADD = 'ADD',
+  SUBTRACT = 'SUBTRACT',
 }
-    

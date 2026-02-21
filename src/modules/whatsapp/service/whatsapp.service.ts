@@ -23,10 +23,7 @@ export class WhatsAppService {
     return UNSUPPORTED_MESSAGE;
   }
 
-  async handleInboundMessage(
-    params: SimplifiedTwilioWebhookPayload,
-    message: string,
-  ) {
+  async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
     const waId = params.waId;
     console.log('mesage!!', message);
 
@@ -59,9 +56,7 @@ export class WhatsAppService {
 
     if (entry.timer) clearTimeout(entry.timer);
 
-    this.logger.log(
-      `Message received and processed for ${simplifiedPayload.waId}`,
-    );
+    this.logger.log(`Message received and processed for ${simplifiedPayload.waId}`);
 
     const responsePromise = new Promise<string | undefined>((resolve) => {
       entry.resolvers?.push({ id: currentId, resolve });
@@ -109,9 +104,6 @@ export class WhatsAppService {
     this.buffers.delete(waId);
 
     if (!joinedMessages) return;
-    return this.reservationsService.conversationOrchestrator(
-      joinedMessages,
-      simplifiedPayload,
-    );
+    return this.reservationsService.conversationOrchestrator(joinedMessages, simplifiedPayload);
   }
 }

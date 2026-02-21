@@ -1,7 +1,6 @@
-import { RESTAURANT_NAME } from "src/constants";
+import { RESTAURANT_NAME } from 'src/constants';
 
 export const askDateAvailabilityPrompt = (context: string) => {
-
   return `
 Sos el asistente de reservas de un restaurante.
 
@@ -29,7 +28,7 @@ Ejemplos de tono esperado (NO los repitas literalmente):
 - “Decime para qué día y, si querés, también el horario.”
 
 === CONTEXTO ===
-${context || "(sin mensajes previos)"}
+${context || '(sin mensajes previos)'}
 === FIN CONTEXTO ===
 
 Devolvé EXCLUSIVAMENTE el mensaje final de WhatsApp.

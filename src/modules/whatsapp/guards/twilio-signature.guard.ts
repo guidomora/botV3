@@ -25,10 +25,7 @@ export class TwilioSignatureGuard implements CanActivate {
 
     const fullRequestUrl = this.buildPublicRequestUrl(request);
 
-    const requestParams = (request.body ?? {}) as Record<
-      string,
-      string | undefined
-    >;
+    const requestParams = (request.body ?? {}) as Record<string, string | undefined>;
 
     const isValidSignature = this.whatsAppService.verifySignature(
       fullRequestUrl,
@@ -37,9 +34,7 @@ export class TwilioSignatureGuard implements CanActivate {
     );
 
     if (!isValidSignature) {
-      this.logger.warn(
-        `Webhook rechazado: firma inválida para URL ${fullRequestUrl}`,
-      );
+      this.logger.warn(`Webhook rechazado: firma inválida para URL ${fullRequestUrl}`);
       throw new ForbiddenException('Invalid Twilio signature');
     }
 
@@ -62,10 +57,7 @@ export class TwilioSignatureGuard implements CanActivate {
     const forwardedProto = request.headers['x-forwarded-proto'];
     const forwardedHost = request.headers['x-forwarded-host'];
 
-    const protocol =
-      this.extractFirstHeaderValue(forwardedProto) ??
-      request.protocol ??
-      'https';
+    const protocol = this.extractFirstHeaderValue(forwardedProto) ?? request.protocol ?? 'https';
 
     const host =
       this.extractFirstHeaderValue(forwardedHost) ??
@@ -79,9 +71,7 @@ export class TwilioSignatureGuard implements CanActivate {
     return `${protocol}://${host}${request.originalUrl}`;
   }
 
-  private extractFirstHeaderValue(
-    headerValue: string | string[] | undefined,
-  ): string | undefined {
+  private extractFirstHeaderValue(headerValue: string | string[] | undefined): string | undefined {
     if (!headerValue) {
       return undefined;
     }

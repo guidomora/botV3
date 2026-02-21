@@ -1,5 +1,5 @@
-import { UpdateReservationType } from "src/lib";
-import { RESTAURANT_NAME } from "src/constants";
+import { UpdateReservationType } from 'src/lib';
+import { RESTAURANT_NAME } from 'src/constants';
 
 export const updateReservationPrompt = (
   missingFields: string[],

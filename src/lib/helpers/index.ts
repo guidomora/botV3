@@ -1,1 +1,1 @@
-export * from './format-phone.utils'
+export * from './format-phone.utils';

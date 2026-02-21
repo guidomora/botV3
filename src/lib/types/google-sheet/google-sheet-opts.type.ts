@@ -1,5 +1,5 @@
 export interface GoogleSheetsOpts {
-    sheetId: string;
-    clientEmail: string;
-    privateKey: string;
+  sheetId: string;
+  clientEmail: string;
+  privateKey: string;
 }

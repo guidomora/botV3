@@ -1,7 +1,7 @@
-import { AvailabilityResponse } from "src/lib";
-import { RESTAURANT_NAME } from "src/constants";
+import { AvailabilityResponse } from 'src/lib';
+import { RESTAURANT_NAME } from 'src/constants';
 
-export const availabilityReplyPrompt  = (dayAvailability: AvailabilityResponse, context: string) => {
+export const availabilityReplyPrompt = (dayAvailability: AvailabilityResponse, context: string) => {
   const availabilityJson = JSON.stringify(dayAvailability);
 
   return `
@@ -25,7 +25,7 @@ Reglas:
 - Si en el CONTEXTO todavía no hay mensajes con rol "assistant", además del saludo incluí una presentación breve con el nombre del restaurante (${RESTAURANT_NAME}) y aclaración de que sos un agente que responde solo por texto y no puede leer audios ni imágenes. Mantené todo en una sola línea.
 
 === CONTEXTO (últimos mensajes) ===
-${context || "(sin mensajes previos)"}
+${context || '(sin mensajes previos)'}
 === FIN CONTEXTO ===
 
 === DISPONIBILIDAD DEL DÍA (JSON) ===

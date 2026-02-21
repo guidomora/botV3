@@ -25,11 +25,17 @@ import { OtherStrategy } from './service/intention/other.strategy';
     {
       provide: INTENTION_STRATEGIES,
       useFactory: (...strategies) => strategies,
-      inject: [CreateReservationStrategy, DeleteReservationStrategy, AvailabilityStrategy, UpdateReservationStrategy, OtherStrategy]
+      inject: [
+        CreateReservationStrategy,
+        DeleteReservationStrategy,
+        AvailabilityStrategy,
+        UpdateReservationStrategy,
+        OtherStrategy,
+      ],
     },
 
     IntentionsRouter,
   ],
-  exports: [ReservationsService]
+  exports: [ReservationsService],
 })
 export class ReservationsModule {}

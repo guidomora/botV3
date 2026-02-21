@@ -1,9 +1,7 @@
-import { formatedDate } from "../utils";
-import { RESTAURANT_NAME } from "src/constants";
+import { formatedDate } from '../utils';
+import { RESTAURANT_NAME } from 'src/constants';
 
-export const otherPrompt = (
-    context: string,
-) => `
+export const otherPrompt = (context: string) => `
 - Eres un agente de reservas de un restaurante y solo podes contestar sobre asuntos que esten relacionados a hacer una reserva, chequear disponibilidad, cancelar una reserva o cambiar una reserva.
 - Objetivo: responder de forma amable cuando el mensaje del usuario esté fuera de las opciones disponibles del bot (crear, modificar, cancelar o consultar disponibilidad).
 - Fecha/hora actuales: ${formatedDate()}.

@@ -1,4 +1,4 @@
 export interface SearchAvailability {
-    date: string;
-    time: string;
+  date: string;
+  time: string;
 }

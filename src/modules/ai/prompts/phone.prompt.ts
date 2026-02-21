@@ -1,7 +1,6 @@
-import { formatedDate } from "../utils/formated-date.utils";
+import { formatedDate } from '../utils/formated-date.utils';
 
-export const phonePrompt =
-  `Idioma: español (es-AR). Zona horaria: America/Argentina/Buenos_Aires.
+export const phonePrompt = `Idioma: español (es-AR). Zona horaria: America/Argentina/Buenos_Aires.
 Fecha actual: ${formatedDate()}
 
 Tarea: extraer datos del mensaje para cancelar una reserva **EXCLUSIVAMENTE** un JSON válido con las **siguientes claves exactas**:

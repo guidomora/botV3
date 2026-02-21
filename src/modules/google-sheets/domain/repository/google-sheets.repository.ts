@@ -1,4 +1,3 @@
-
 import { JWT } from 'google-auth-library';
 import { Injectable } from '@nestjs/common';
 import { google, sheets_v4 } from 'googleapis';
@@ -10,14 +9,12 @@ import { ServiceName, SHEETS_NAMES } from 'src/constants';
 import { parseSpreadSheetId } from 'src/modules/google-sheets/helpers/parse-spreadsheet-id.helper';
 import { GoogleSheetsOpts, ProviderError, ProviderName, UpdateParamsRepository } from 'src/lib';
 
-
-
 @Injectable()
 export class GoogleSheetsRepository {
   private readonly sheets: sheets_v4.Sheets;
   private readonly sheetId: string;
 
-  constructor(opts: GoogleSheetsOpts,) {
+  constructor(opts: GoogleSheetsOpts) {
     this.sheetId = opts.sheetId;
 
     const auth = new JWT({
@@ -28,7 +25,6 @@ export class GoogleSheetsRepository {
 
     this.sheets = google.sheets({ version: 'v4', auth });
   }
-
 
   async getDates(range?: string): Promise<DateTime> {
     const { data } = await this.sheets.spreadsheets.values.get({
@@ -42,12 +38,24 @@ export class GoogleSheetsRepository {
   async createReservation(range: string, values: AddDataType) {
     const { customerData } = values;
 
-    let dataToAdd: (string | number)[]
+    let dataToAdd: (string | number)[];
 
     if (customerData.date && customerData.time) {
-      dataToAdd = [customerData.date.toLowerCase(), customerData.time, customerData.name.toLowerCase(), customerData.phone, ServiceName.DINNER, customerData.quantity]
+      dataToAdd = [
+        customerData.date.toLowerCase(),
+        customerData.time,
+        customerData.name.toLowerCase(),
+        customerData.phone,
+        ServiceName.DINNER,
+        customerData.quantity,
+      ];
     } else {
-      dataToAdd = [customerData.name.toLowerCase(), customerData.phone, ServiceName.DINNER, customerData.quantity]
+      dataToAdd = [
+        customerData.name.toLowerCase(),
+        customerData.phone,
+        ServiceName.DINNER,
+        customerData.quantity,
+      ];
     }
 
     await this.sheets.spreadsheets.values.update({
@@ -68,7 +76,6 @@ export class GoogleSheetsRepository {
   }
 
   async updateAvailabilitySheet(range: string, updateParams: UpdateParamsRepository) {
-
     const { reservations, available } = updateParams;
 
     await this.sheets.spreadsheets.values.update({
@@ -110,8 +117,8 @@ export class GoogleSheetsRepository {
                 },
                 inheritFromBefore: false,
               },
-            }
-          ]
+            },
+          ],
         },
       });
     } catch (error) {
@@ -133,7 +140,7 @@ export class GoogleSheetsRepository {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.sheetId,
         range,
-        majorDimension: 'COLUMNS'
+        majorDimension: 'COLUMNS',
       });
 
       const rows = response.data.values ?? [];
@@ -157,7 +164,7 @@ export class GoogleSheetsRepository {
       majorDimension: 'ROWS',
     });
 
-    const reservations = data.values?.filter(row => row[0] === date);
+    const reservations = data.values?.filter((row) => row[0] === date);
 
     return reservations ?? [];
   }
@@ -181,7 +188,6 @@ export class GoogleSheetsRepository {
   }
 
   async deleteRow(rowIndex: number, sheetNumber: number) {
-
     try {
       const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetNumber);
       await this.sheets.spreadsheets.batchUpdate({
@@ -197,8 +203,8 @@ export class GoogleSheetsRepository {
                   endIndex: rowIndex,
                 },
               },
-            }
-          ]
+            },
+          ],
         },
       });
     } catch (error) {
@@ -207,7 +213,6 @@ export class GoogleSheetsRepository {
   }
 
   async deleteOldRows(rowStart: number, rowEnd: number, sheetIndex: number) {
-
     try {
       if (rowEnd <= rowStart) return;
       const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
@@ -224,8 +229,8 @@ export class GoogleSheetsRepository {
                   endIndex: rowEnd - 1,
                 },
               },
-            }
-          ]
+            },
+          ],
         },
       });
     } catch (error) {

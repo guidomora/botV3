@@ -20,9 +20,7 @@ export class GoogleSheetsModule {
           useFactory: (config: ConfigService) => {
             const sheetId = config.get<string>('SPREADSHEET_ID');
             const clientEmail = config.get<string>('GOOGLE_CLIENT_EMAIL');
-            const privateKey = config
-              .get<string>('GOOGLE_PRIVATE_KEY')
-              ?.replace(/\\n/g, '\n');
+            const privateKey = config.get<string>('GOOGLE_PRIVATE_KEY')?.replace(/\\n/g, '\n');
 
             if (!sheetId || !clientEmail || !privateKey) {
               throw new Error('Faltan variables para Google Sheets');
@@ -33,7 +31,7 @@ export class GoogleSheetsModule {
               clientEmail,
               privateKey,
             });
-          },  
+          },
           inject: [ConfigService],
         },
         {
@@ -41,9 +39,7 @@ export class GoogleSheetsModule {
           useFactory: (config: ConfigService) => {
             const sheetId = config.get<string>('SPREADSHEET_ID');
             const clientEmail = config.get<string>('GOOGLE_CLIENT_EMAIL');
-            const privateKey = config
-              .get<string>('GOOGLE_PRIVATE_KEY')
-              ?.replace(/\\n/g, '\n');
+            const privateKey = config.get<string>('GOOGLE_PRIVATE_KEY')?.replace(/\\n/g, '\n');
 
             if (!sheetId || !clientEmail || !privateKey) {
               throw new Error('Faltan variables para Google Sheets');
@@ -54,7 +50,7 @@ export class GoogleSheetsModule {
               clientEmail,
               privateKey,
             });
-          },  
+          },
           inject: [ConfigService],
         },
         GoogleSheetsService,

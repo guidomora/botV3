@@ -1,5 +1,5 @@
-import { AvailabilityResponse } from "src/lib";
-import { RESTAURANT_NAME } from "src/constants";
+import { AvailabilityResponse } from 'src/lib';
+import { RESTAURANT_NAME } from 'src/constants';
 
 export const timeAvailabilityReplyPrompt = (
   dayAvailability: AvailabilityResponse,
@@ -35,10 +35,10 @@ Formato de salida:
 - Devolvé EXCLUSIVAMENTE el texto final del mensaje.
 
 === CONTEXTO ===
-${context || "(sin mensajes previos)"}
+${context || '(sin mensajes previos)'}
 === FIN CONTEXTO ===
 
-requestedTime: ${requestedTime ?? "(no especificado)"}
+requestedTime: ${requestedTime ?? '(no especificado)'}
 
 dayAvailability (JSON):
 ${availabilityJson}

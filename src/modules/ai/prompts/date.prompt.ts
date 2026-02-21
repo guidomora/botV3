@@ -1,8 +1,6 @@
-import { formatedDate } from "../utils/formated-date.utils";
+import { formatedDate } from '../utils/formated-date.utils';
 
-
-export const datePrompt =
-  `Idioma: español (es-AR). Zona horaria: America/Argentina/Buenos_Aires.
+export const datePrompt = `Idioma: español (es-AR). Zona horaria: America/Argentina/Buenos_Aires.
 Fecha actual: ${formatedDate()}
 
 Tarea: extraer datos de una solicitud de reserva y devolver **EXCLUSIVAMENTE** un JSON válido con las **siguientes claves exactas**:

@@ -6,18 +6,11 @@ export class IdempotencyService {
   private readonly logger = new Logger(IdempotencyService.name);
   private readonly messageSidTtlMs: number;
 
-  constructor(
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-  ) {
-    this.messageSidTtlMs = parseInt(
-      process.env.IDEMPOTENCY_MESSAGE_SID_TTL_MS || '86400000',
-    );
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
+    this.messageSidTtlMs = parseInt(process.env.IDEMPOTENCY_MESSAGE_SID_TTL_MS || '86400000');
   }
 
-  async isDuplicateMessage(
-    accountSid: string,
-    messageSid: string,
-  ): Promise<boolean> {
+  async isDuplicateMessage(accountSid: string, messageSid: string): Promise<boolean> {
     const key = this.messageSidKey(accountSid, messageSid);
     const existingEntry = await this.cacheManager.get<boolean>(key);
 

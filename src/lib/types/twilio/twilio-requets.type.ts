@@ -1,4 +1,4 @@
-import { TwilioWebhookPayloadDto } from "src/lib";
+import { TwilioWebhookPayloadDto } from 'src/lib';
 
 export type RequestWithTwilioData = {
   body?: TwilioWebhookPayloadDto;

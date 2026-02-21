@@ -28,14 +28,10 @@ export class RateLimitService {
 
   async evaluateInboundMessage(waId: string): Promise<RateLimitDecision> {
     const now = Date.now();
-    const blockState = await this.cacheManager.get<{ blockedUntil: number }>(
-      this.blockedKey(waId),
-    );
+    const blockState = await this.cacheManager.get<{ blockedUntil: number }>(this.blockedKey(waId));
 
     if (blockState && blockState.blockedUntil > now) {
-      const retryAfterSeconds = Math.ceil(
-        (blockState.blockedUntil - now) / 1000,
-      );
+      const retryAfterSeconds = Math.ceil((blockState.blockedUntil - now) / 1000);
       return {
         allowed: false,
         retryAfterSeconds,
@@ -43,11 +39,8 @@ export class RateLimitService {
       };
     }
 
-    const history =
-      (await this.cacheManager.get<number[]>(this.historyKey(waId))) ?? [];
-    const prunedHistory = history.filter(
-      (timestamp) => now - timestamp <= this.longWindowMs,
-    );
+    const history = (await this.cacheManager.get<number[]>(this.historyKey(waId))) ?? [];
+    const prunedHistory = history.filter((timestamp) => now - timestamp <= this.longWindowMs);
 
     const shortWindowCount = prunedHistory.filter(
       (timestamp) => now - timestamp <= this.shortWindowMs,
@@ -55,22 +48,11 @@ export class RateLimitService {
 
     const longWindowCount = prunedHistory.length;
 
-    if (
-      shortWindowCount >= this.shortWindowLimit ||
-      longWindowCount >= this.longWindowLimit
-    ) {
+    if (shortWindowCount >= this.shortWindowLimit || longWindowCount >= this.longWindowLimit) {
       const blockedUntil = now + this.blockedWindowMs;
 
-      await this.cacheManager.set(
-        this.blockedKey(waId),
-        { blockedUntil },
-        this.blockedWindowMs,
-      );
-      await this.cacheManager.set(
-        this.historyKey(waId),
-        prunedHistory,
-        this.longWindowMs,
-      );
+      await this.cacheManager.set(this.blockedKey(waId), { blockedUntil }, this.blockedWindowMs);
+      await this.cacheManager.set(this.historyKey(waId), prunedHistory, this.longWindowMs);
 
       this.logger.warn(
         `Rate limit activado para ${waId}. short=${shortWindowCount}/${this.shortWindowLimit} long=${longWindowCount}/${this.longWindowLimit}`,
@@ -84,11 +66,7 @@ export class RateLimitService {
     }
 
     prunedHistory.push(now);
-    await this.cacheManager.set(
-      this.historyKey(waId),
-      prunedHistory,
-      this.longWindowMs,
-    );
+    await this.cacheManager.set(this.historyKey(waId), prunedHistory, this.longWindowMs);
 
     return {
       allowed: true,
@@ -98,19 +76,13 @@ export class RateLimitService {
   }
 
   private async shouldNotify(waId: string, now: number): Promise<boolean> {
-    const lastNotifiedAt = await this.cacheManager.get<number>(
-      this.notifyKey(waId),
-    );
+    const lastNotifiedAt = await this.cacheManager.get<number>(this.notifyKey(waId));
 
     if (lastNotifiedAt && now - lastNotifiedAt < this.notifyCooldownMs) {
       return false;
     }
 
-    await this.cacheManager.set(
-      this.notifyKey(waId),
-      now,
-      this.notifyCooldownMs,
-    );
+    await this.cacheManager.set(this.notifyKey(waId), now, this.notifyCooldownMs);
     return true;
   }
 
