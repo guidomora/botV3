@@ -284,7 +284,7 @@ export class GoogleSheetsService {
   }
 
   async insertRow(range: string, rowIndex: number): Promise<number> {
-    const sheetNumber = range.split('!')[0];
+    const sheetNumber = range.split('!')[0] as SheetsName;
     let sheetIndex = 0;
     if (sheetNumber === SheetsName.AVAILABLE_BOOKINGS) {
       sheetIndex = 1;

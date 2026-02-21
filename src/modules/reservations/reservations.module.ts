@@ -24,7 +24,19 @@ import { OtherStrategy } from './service/intention/other.strategy';
     OtherStrategy,
     {
       provide: INTENTION_STRATEGIES,
-      useFactory: (...strategies) => strategies,
+      useFactory: (
+        createReservationStrategy: CreateReservationStrategy,
+        deleteReservationStrategy: DeleteReservationStrategy,
+        availabilityStrategy: AvailabilityStrategy,
+        updateReservationStrategy: UpdateReservationStrategy,
+        otherStrategy: OtherStrategy,
+      ) => [
+        createReservationStrategy,
+        deleteReservationStrategy,
+        availabilityStrategy,
+        updateReservationStrategy,
+        otherStrategy,
+      ],
       inject: [
         CreateReservationStrategy,
         DeleteReservationStrategy,

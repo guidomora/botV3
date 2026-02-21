@@ -1,4 +1,4 @@
-import { Body, Controller, Headers, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { SimplifiedTwilioWebhookPayload, TwilioWebhookPayloadDto } from 'src/lib';
 import { UnsupportedMessage } from '../helpers/unsopported-message.helper';
 import { TwilioSignatureGuard } from '../guards/twilio-signature.guard';
@@ -16,7 +16,6 @@ export class WhatsAppController {
     @Body('Body') body: string,
     @Body() payload: TwilioWebhookPayloadDto,
     @Body('From') from: string,
-    @Headers('x-twilio-signature') signature: string,
   ) {
     const simplifiedPayload: SimplifiedTwilioWebhookPayload = {
       body,

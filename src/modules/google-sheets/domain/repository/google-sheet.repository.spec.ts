@@ -3,6 +3,7 @@ import { SHEETS_NAMES, ServiceName } from 'src/constants';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { parseSpreadSheetId } from '../../helpers/parse-spreadsheet-id.helper';
 import { dateTimeMock } from '../../test/datetime.mock';
+import { sheets_v4 } from 'googleapis';
 
 jest.mock('src/google-sheets/helpers/parse-spreadsheet-id.helper');
 
@@ -27,7 +28,7 @@ describe('GIVEN GoogleSheetsRepository', () => {
       privateKey: 'private-key',
     });
 
-    (repository as any).sheets = {
+    (repository as unknown as { sheets: sheets_v4.Sheets }).sheets = {
       spreadsheets: {
         values: {
           get: getMock,
@@ -144,7 +145,11 @@ describe('GIVEN GoogleSheetsRepository', () => {
 
       await repository.insertRow(rowIndex, 0);
 
-      expect(parseSpreadSheetId).toHaveBeenCalledWith(sheetId, (repository as any).sheets, 0);
+      expect(parseSpreadSheetId).toHaveBeenCalledWith(
+        sheetId,
+        (repository as unknown as { sheets: sheets_v4.Sheets }).sheets,
+        0,
+      );
       expect(batchUpdateMock).toHaveBeenCalledWith({
         spreadsheetId: sheetId,
         requestBody: {
@@ -242,7 +247,7 @@ describe('GIVEN GoogleSheetsRepository', () => {
 
       expect(parseSpreadSheetId).toHaveBeenCalledWith(
         sheetId,
-        (repository as any).sheets,
+        (repository as unknown as { sheets: sheets_v4.Sheets }).sheets,
         sheetIndex,
       );
       expect(batchUpdateMock).toHaveBeenCalledWith({

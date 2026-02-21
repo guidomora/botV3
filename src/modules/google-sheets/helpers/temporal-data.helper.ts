@@ -1,14 +1,20 @@
 import { ROW_ORDER, REQUIRED_SLOTS } from 'src/constants/tables-info/temporal-data-rows';
-import { TemporalStatusEnum } from 'src/lib';
+import { TemporalDataType, TemporalStatusEnum } from 'src/lib';
 
-export function objectToRowArray(obj: any): any[] {
-  return ROW_ORDER.map((k) => obj[k] ?? ' ');
+type TemporalRowData = TemporalDataType & { status?: TemporalStatusEnum };
+
+export function objectToRowArray(obj: TemporalRowData): string[] {
+  return ROW_ORDER.map((k) => {
+    const value = obj[k as keyof TemporalRowData];
+    return value !== undefined && value !== null ? String(value) : ' ';
+  });
 }
 
-export function computeStatus(obj: any) {
+export function computeStatus(obj: TemporalDataType) {
   const missing = REQUIRED_SLOTS.filter((k) => {
-    const v = (obj[k] ?? '').toString().trim();
-    return !v || v === ' ';
+    const value = obj[k];
+    const normalized = value ? value.toString().trim() : '';
+    return !normalized || normalized === ' ';
   });
 
   const status =
@@ -22,7 +28,7 @@ export function computeStatus(obj: any) {
 }
 
 export function buildEmptyRow(waId: string): string[] {
-  const obj = {
+  const obj: TemporalRowData = {
     date: ' ',
     time: ' ',
     name: ' ',

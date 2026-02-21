@@ -13,7 +13,9 @@ export async function parseSpreadSheetId(
     if (typeof sheetId !== 'number') throw new Error('Sheet ID no encontrado');
 
     return sheetId;
-  } catch (error) {
-    throw new Error('Error al obtener el sheetId - helper', error);
+  } catch (error: unknown) {
+    throw new Error('Error al obtener el sheetId - helper', {
+      cause: error instanceof Error ? error : undefined,
+    });
   }
 }
