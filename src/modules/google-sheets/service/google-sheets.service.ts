@@ -19,6 +19,30 @@ export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
 
+  private normalizeName(name?: string | null): string {
+    return (name ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' ');
+  }
+
+  private namesMatch(inputName?: string | null, rowName?: string | null): boolean {
+    const normalizedInputName = this.normalizeName(inputName);
+    const normalizedRowName = this.normalizeName(rowName);
+
+    if (!normalizedInputName || !normalizedRowName) {
+      return false;
+    }
+
+    return (
+      normalizedRowName === normalizedInputName ||
+      normalizedRowName.includes(normalizedInputName) ||
+      normalizedInputName.includes(normalizedRowName)
+    );
+  }
+
   async appendRow(range: string, values: DateTime) {
     try {
       await this.googleSheetsRepository.appendRow(range, values);
@@ -90,7 +114,7 @@ export class GoogleSheetsService {
           (row) =>
             row[0] === date &&
             row[1] === time &&
-            row[2] === name?.toLowerCase() &&
+            this.namesMatch(name, row[2]) &&
             row[3] === formattedPhone,
         ) + 1;
 
