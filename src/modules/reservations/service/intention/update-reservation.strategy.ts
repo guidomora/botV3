@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, TemporalStatusEnum, UpdateReservationType } from "src/lib";
+import { Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, StatusEnum, UpdateReservationType } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AiService } from "src/modules/ai/service/ai.service";
 import { Logger } from "@nestjs/common";
@@ -127,6 +127,26 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
             await this.cacheService.appendEntityMessage(waId, reply.message, RoleEnum.ASSISTANT, Intention.UPDATE);
 
             if (reply.error) {
+                if (
+                    [StatusEnum.NO_AVAILABILITY, StatusEnum.NO_DATE_FOUND].includes(reply.status)
+                    && nextState.newDate
+                    && nextState.newTime
+                ) {
+                    const suggestedAvailability = await this.datesService.getDayAndTimeAvailability(
+                        nextState.newDate,
+                        nextState.newTime,
+                    );
+
+                    const unavailableWithAlternativesReply = await this.aiService.dayAndTimeAvailabilityAiResponse(
+                        suggestedAvailability,
+                        history,
+                        nextState.newTime,
+                    );
+
+                    await this.cacheService.appendEntityMessage(waId, unavailableWithAlternativesReply, RoleEnum.ASSISTANT, Intention.UPDATE);
+                    return { reply: unavailableWithAlternativesReply };
+                }
+
                 console.log('strategyReply', reply.message)
                 return { reply: reply.message };
             }

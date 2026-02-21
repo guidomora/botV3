@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { IntentionStrategyInterface, StrategyResult } from "./intention-strategy.interface";
-import { Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, TemporalStatusEnum } from "src/lib";
+import { Intention, MultipleMessagesResponse, RoleEnum, SimplifiedTwilioWebhookPayload, StatusEnum, TemporalStatusEnum } from "src/lib";
 import { DatesService } from "src/modules/dates/service/dates.service";
 import { AddMissingFieldInput } from "src/lib";
 import { AiService } from "src/modules/ai/service/ai.service";
@@ -47,11 +47,34 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
                 await this.cacheService.markFlowCompleted(data.waId);
                 return { reply: completedReply };
 
-            case TemporalStatusEnum.FAILED:
+            case TemporalStatusEnum.FAILED: {
                 this.logger.log(`Create reservation strategy failed`);
+
+                if (
+                    response.errorStatus
+                    && [StatusEnum.NO_AVAILABILITY, StatusEnum.NO_DATE_FOUND].includes(response.errorStatus)
+                    && response.reservationData.date
+                    && response.reservationData.time
+                ) {
+                    const suggestedAvailability = await this.datesService.getDayAndTimeAvailability(
+                        response.reservationData.date,
+                        response.reservationData.time,
+                    );
+
+                    const unavailableWithAlternativesReply = await this.aiService.dayAndTimeAvailabilityAiResponse(
+                        suggestedAvailability,
+                        history,
+                        response.reservationData.time,
+                    );
+
+                    await this.cacheService.appendEntityMessage(data.waId, unavailableWithAlternativesReply, RoleEnum.ASSISTANT, Intention.CREATE);
+                    return { reply: unavailableWithAlternativesReply };
+                }
+
                 const failedReply = await this.aiService.createReservationFailed(response.reservationData, history, response.message!);
                 await this.cacheService.appendEntityMessage(data.waId, failedReply, RoleEnum.ASSISTANT, Intention.CREATE);
                 return { reply: failedReply };
+            }
 
             default:
                 this.logger.warn(`Estado de reserva inesperado: ${response.status}`);

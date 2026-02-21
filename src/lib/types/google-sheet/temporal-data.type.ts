@@ -1,3 +1,5 @@
+import { StatusEnum } from "../method-responses";
+
 export interface TemporalDataType {
     date?: string;
     time?: string;
@@ -27,4 +29,5 @@ export type AddMissingFieldOutput = {
     missingFields: string[];
     reservationData: TemporalDataType;
     message?: string;
+    errorStatus?: StatusEnum;
 };

@@ -15,7 +15,7 @@ export const otherPrompt = (
 [Contexto de la conversación]
 Usá el CONTEXTO para mantener coherencia. Si hay conflicto entre el CONTEXTO y el mensaje actual, priorizá lo más reciente.
 No repitas saludos si ya ocurrieron (o si ya hay mensajes con rol "assistant" en el CONTEXTO). No reinicies la conversación si ya hay datos previos útiles.
-En este flujo la intencion del usuario estaba fuera de las opciones disponibles, que son crear una reserva, modificarla, cancelarla o consultar disponibilidad o puede ser que ya se termino un flujo y el usuario envio un mensaje de despedida como "muchas gracias" "hasta luego" etc.
+En este flujo la intencion del usuario estaba fuera de las opciones disponibles, que son crear una reserva, modificarla, cancelarla o consultar disponibilidad o puede ser que ya se termino un flujo y el usuario envio un mensaje de despedida como "gracias", "muchas gracias" "hasta luego" etc.
 === CONTEXTO (transcripción) ===
 ${context && context.length ? context : '(sin mensajes previos)'}
 === FIN CONTEXTO ===
