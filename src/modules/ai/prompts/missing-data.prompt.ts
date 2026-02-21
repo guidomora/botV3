@@ -30,7 +30,7 @@ ${passedDatetime || 'No se detectó fecha pasada'}
 
 
 [Contexto]
-- Campos faltantes (array): ${missingFields}
+- Campos faltantes (array): ${missingFields.join(', ')}
 - Orden de prioridad para solicitar datos: ["date","time","quantity","name","phone","service"].
 - Si faltan varios, **pregunta primero por el campo más prioritario**. No hagas múltiples preguntas a la vez.
 - Tono: cordial, claro y directo; sin tecnicismos. Evitá emojis salvo que el usuario ya los use (no asumas que los usa).

@@ -217,7 +217,14 @@ export class DatesService {
       `${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`,
     );
 
-    const parseValue = (value: unknown) => (Array.isArray(value) ? value[0] : value);
+    const parseValue = (value: unknown): unknown => {
+      if (!Array.isArray(value)) {
+        return value;
+      }
+
+      const [firstValue] = value as unknown[];
+      return firstValue;
+    };
 
     const quantity = Number(parseValue(currentRow?.[5])) || 1;
 
