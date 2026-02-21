@@ -1,19 +1,51 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAiConfig } from '../config/openai.config';
-import { askDateAvailabilityPrompt, availabilityReplyPrompt, cancelDataPrompt, cancelReservationResultPrompt, datePrompt, interactPrompt, missingDataPrompt, otherPrompt, phonePrompt, reservationCompletedPrompt, reservationCreationFailedPrompt, searchAvailabilityPrompt, timeAvailabilityReplyPrompt, updateReservationPhonePrompt, updateReservationPrompt } from '../prompts';
-import { DeleteReservation, SearchAvailability, ResponseDate, MultipleMessagesResponse, TemporalDataType, ChatMessage, AvailabilityResponse, RoleEnum, UpdateReservationType, ProviderError, ProviderName } from 'src/lib';
+import {
+  askDateAvailabilityPrompt,
+  availabilityReplyPrompt,
+  cancelDataPrompt,
+  cancelReservationResultPrompt,
+  datePrompt,
+  interactPrompt,
+  missingDataPrompt,
+  otherPrompt,
+  phonePrompt,
+  reservationCompletedPrompt,
+  reservationCreationFailedPrompt,
+  searchAvailabilityPrompt,
+  socialCourtesyClassificationPrompt,
+  timeAvailabilityReplyPrompt,
+  updateReservationPhonePrompt,
+  updateReservationPrompt,
+} from '../prompts';
+import {
+  DeleteReservation,
+  SearchAvailability,
+  ResponseDate,
+  MultipleMessagesResponse,
+  TemporalDataType,
+  ChatMessage,
+  AvailabilityResponse,
+  RoleEnum,
+  UpdateReservationType,
+  ProviderError,
+  ProviderName,
+} from 'src/lib';
 import { inferActiveIntent, serializeContext } from '../utils';
 
-
-
+interface SocialCourtesyClassificationResponse {
+  isSocialCourtesy: boolean;
+}
 
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  constructor(private readonly openAi: OpenAiConfig,) { }
+  constructor(private readonly openAi: OpenAiConfig) {}
 
-  async interactWithAi(message: string, messageHistory: ChatMessage[]): Promise<MultipleMessagesResponse> {
-
+  async interactWithAi(
+    message: string,
+    messageHistory: ChatMessage[],
+  ): Promise<MultipleMessagesResponse> {
     const activeIntent = inferActiveIntent(messageHistory);
 
     // const last = messageHistory.at(-1);
@@ -26,9 +58,9 @@ export class AiService {
 
     const context = serializeContext(messageHistory);
 
-    const prompt = interactPrompt(context, activeIntent)
+    const prompt = interactPrompt(context, activeIntent);
     try {
-      const aiResponse = await this.openAiConfig(prompt, message, true)
+      const aiResponse = await this.openAiConfig(prompt, message, true);
 
       const parseResponse: MultipleMessagesResponse = JSON.parse(aiResponse);
       console.log('----', parseResponse);
@@ -39,12 +71,16 @@ export class AiService {
     }
   }
 
-  async getMissingData(missingFields: string[], messageHistory: ChatMessage[], message?: string): Promise<string> {
+  async getMissingData(
+    missingFields: string[],
+    messageHistory: ChatMessage[],
+    message?: string,
+  ): Promise<string> {
     const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = missingDataPrompt(missingFields, context, message)
+      const dataPrompt = missingDataPrompt(missingFields, context, message);
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -52,16 +88,22 @@ export class AiService {
     }
   }
 
-
-  async getMissingDataToCancel(missingFields: string[], messageHistory: ChatMessage[],
-    known: { phone?: string | null; date?: string | null; time?: string | null; name?: string | null }
+  async getMissingDataToCancel(
+    missingFields: string[],
+    messageHistory: ChatMessage[],
+    known: {
+      phone?: string | null;
+      date?: string | null;
+      time?: string | null;
+      name?: string | null;
+    },
   ): Promise<string> {
     const context = serializeContext(messageHistory);
 
     try {
-      const dataPrompt = cancelDataPrompt(missingFields, context, known)
+      const dataPrompt = cancelDataPrompt(missingFields, context, known);
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -69,12 +111,15 @@ export class AiService {
     }
   }
 
-  async reservationCompleted(reservationData: TemporalDataType, messageHistory: ChatMessage[]): Promise<string> {
+  async reservationCompleted(
+    reservationData: TemporalDataType,
+    messageHistory: ChatMessage[],
+  ): Promise<string> {
     const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = reservationCompletedPrompt(reservationData, context)
+      const dataPrompt = reservationCompletedPrompt(reservationData, context);
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -82,12 +127,20 @@ export class AiService {
     }
   }
 
-  async createReservationFailed(reservationData: TemporalDataType, messageHistory: ChatMessage[], errorMessage: string): Promise<string> {
+  async createReservationFailed(
+    reservationData: TemporalDataType,
+    messageHistory: ChatMessage[],
+    errorMessage: string,
+  ): Promise<string> {
     const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = reservationCreationFailedPrompt(reservationData, context, errorMessage)
+      const dataPrompt = reservationCreationFailedPrompt(
+        reservationData,
+        context,
+        errorMessage,
+      );
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -95,12 +148,15 @@ export class AiService {
     }
   }
 
-  async dayAvailabilityAiResponse(dayAvailability: AvailabilityResponse, messageHistory: ChatMessage[]): Promise<string> {
+  async dayAvailabilityAiResponse(
+    dayAvailability: AvailabilityResponse,
+    messageHistory: ChatMessage[],
+  ): Promise<string> {
     const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = availabilityReplyPrompt(dayAvailability, context)
+      const dataPrompt = availabilityReplyPrompt(dayAvailability, context);
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -108,14 +164,21 @@ export class AiService {
     }
   }
 
-  async dayAndTimeAvailabilityAiResponse(dayAvailability: AvailabilityResponse, messageHistory: ChatMessage[], requestedTime?: string | null,
+  async dayAndTimeAvailabilityAiResponse(
+    dayAvailability: AvailabilityResponse,
+    messageHistory: ChatMessage[],
+    requestedTime?: string | null,
   ): Promise<string> {
     const context = serializeContext(messageHistory);
 
     try {
-      const dataPrompt = timeAvailabilityReplyPrompt(dayAvailability, context, requestedTime)
+      const dataPrompt = timeAvailabilityReplyPrompt(
+        dayAvailability,
+        context,
+        requestedTime,
+      );
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -123,7 +186,11 @@ export class AiService {
     }
   }
 
-  async askUpdateReservationData(missingFields: string[], messageHistory: ChatMessage[], known: UpdateReservationType) {
+  async askUpdateReservationData(
+    missingFields: string[],
+    messageHistory: ChatMessage[],
+    known: UpdateReservationType,
+  ) {
     const context = serializeContext(messageHistory);
 
     try {
@@ -137,7 +204,10 @@ export class AiService {
     }
   }
 
-  async askUpdateReservationPhone(messageHistory: ChatMessage[], known: UpdateReservationType) {
+  async askUpdateReservationPhone(
+    messageHistory: ChatMessage[],
+    known: UpdateReservationType,
+  ) {
     const context = serializeContext(messageHistory);
 
     try {
@@ -151,14 +221,15 @@ export class AiService {
     }
   }
 
-  async askDateForAvailabilityAi(messageHistory: ChatMessage[]): Promise<string> {
-
+  async askDateForAvailabilityAi(
+    messageHistory: ChatMessage[],
+  ): Promise<string> {
     const context = serializeContext(messageHistory);
 
     try {
-      const dataPrompt = askDateAvailabilityPrompt(context)
+      const dataPrompt = askDateAvailabilityPrompt(context);
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -166,14 +237,30 @@ export class AiService {
     }
   }
 
-  async otherIntentionAi(messageHistory: ChatMessage[],): Promise<string> {
+  async isSocialCourtesyMessage(message: string): Promise<boolean> {
+    try {
+      const prompt = socialCourtesyClassificationPrompt();
+      const aiResponse = await this.openAiConfig(prompt, message, true);
+      const parsed: SocialCourtesyClassificationResponse = JSON.parse(
+        aiResponse,
+      ) as SocialCourtesyClassificationResponse;
 
+      return parsed.isSocialCourtesy === true;
+    } catch (error) {
+      this.logger.warn(
+        'No se pudo clasificar mensaje social con AI, se continúa flujo normal.',
+      );
+      return false;
+    }
+  }
+
+  async otherIntentionAi(messageHistory: ChatMessage[]): Promise<string> {
     const context = serializeContext(messageHistory);
 
     try {
-      const dataPrompt = otherPrompt(context)
+      const dataPrompt = otherPrompt(context);
 
-      const aiResponse = await this.openAiConfig(dataPrompt)
+      const aiResponse = await this.openAiConfig(dataPrompt);
 
       return aiResponse;
     } catch (error) {
@@ -188,7 +275,11 @@ export class AiService {
   ): Promise<string> {
     const context = serializeContext(messageHistory);
     try {
-      const dataPrompt = cancelReservationResultPrompt(statusMessage, context, reservationData);
+      const dataPrompt = cancelReservationResultPrompt(
+        statusMessage,
+        context,
+        reservationData,
+      );
 
       const aiResponse = await this.openAiConfig(dataPrompt);
 
@@ -198,7 +289,11 @@ export class AiService {
     }
   }
 
-  async openAiConfig(prompt: string, userMessage?: string, json?: boolean): Promise<string> {
+  async openAiConfig(
+    prompt: string,
+    userMessage?: string,
+    json?: boolean,
+  ): Promise<string> {
     try {
       const response = await this.openAi.getClient().chat.completions.create({
         model: 'gpt-4o',
@@ -206,11 +301,11 @@ export class AiService {
         temperature: 0,
         messages: [
           { role: 'system', content: prompt },
-          { role: 'user', content: userMessage || 'Generá el mensaje ahora.' }
+          { role: 'user', content: userMessage || 'Generá el mensaje ahora.' },
         ],
       });
 
-      const aiResponse = response.choices[0]!.message!.content!.trim()
+      const aiResponse = response.choices[0]!.message!.content!.trim();
       console.log('AI Response:', aiResponse);
 
       return aiResponse;
@@ -224,4 +319,3 @@ export class AiService {
     }
   }
 }
-
