@@ -140,13 +140,19 @@ export class CacheService {
 
     await this.clearAllConversationState(waId);
 
-    if (lifecycleState.status === 'in_progress') {
+    if (lifecycleState.status === FlowLifecycleStatus.IN_PROGRESS) {
       await this.datesService.deleteIncompleteTemporalReservationByWaId(waId);
-      await this.expirationNotifier.sendConversationExpiredMessage(waId, 'in_progress');
+      await this.expirationNotifier.sendConversationExpiredMessage(
+        waId,
+        FlowLifecycleStatus.IN_PROGRESS,
+      );
       return;
     }
 
-    await this.expirationNotifier.sendConversationExpiredMessage(waId, 'completed');
+    await this.expirationNotifier.sendConversationExpiredMessage(
+      waId,
+      FlowLifecycleStatus.COMPLETED,
+    );
   }
 
   async markFlowCompleted(waId: string): Promise<void> {
@@ -155,7 +161,7 @@ export class CacheService {
 
   async getHistory(waId: string): Promise<ChatMessage[]> {
     const key = this.key(waId, CacheTypeEnum.DATA);
-    const data = (await this.cacheManager.get(key)) ?? [];
+    const data = await this.cacheManager.get<ChatMessage[] | null>(key);
     this.logger.log(`Cache history for ${waId}`, CacheService.name);
     return Array.isArray(data) ? data : [];
   }
