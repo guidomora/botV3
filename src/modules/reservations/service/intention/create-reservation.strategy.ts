@@ -43,7 +43,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
             case TemporalStatusEnum.COMPLETED:
                 this.logger.log(`Create reservation strategy completed`);
                 const completedReply = await this.aiService.reservationCompleted(response.reservationData, history);
-                await this.cacheService.appendEntityMessage(data.waId, completedReply, RoleEnum.ASSISTANT, Intention.CREATE);
+                await this.cacheService.appendEntityMessage(data.waId, completedReply, RoleEnum.ASSISTANT, Intention.OTHER);
                 await this.cacheService.markFlowCompleted(data.waId);
                 return { reply: completedReply };
 

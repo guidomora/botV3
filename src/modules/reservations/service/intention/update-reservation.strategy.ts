@@ -124,12 +124,14 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
         try {
             const reply = await this.datesService.updateReservation(nextState);
-            await this.cacheService.appendEntityMessage(waId, reply.message, RoleEnum.ASSISTANT, Intention.UPDATE);
 
             if (reply.error) {
+                await this.cacheService.appendEntityMessage(waId, reply.message, RoleEnum.ASSISTANT, Intention.UPDATE);
                 console.log('strategyReply', reply.message)
                 return { reply: reply.message };
             }
+
+            await this.cacheService.appendEntityMessage(waId, reply.message, RoleEnum.ASSISTANT, Intention.OTHER);
             await this.cacheService.clearUpdateState(waId);
             await this.cacheService.markFlowCompleted(waId);
 

@@ -43,6 +43,8 @@ Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
 [Reglas generales]
 - No inventes datos. Si dudas, usa null.
 - Solo cambia la intención si el usuario lo dice explícitamente.
+- Si el mensaje actual es solo de cortesía, agradecimiento o despedida (por ejemplo: "gracias", "muchas gracias", "ok gracias", "genial, gracias", "hasta luego", "chau"), devuelve intent "other" y deja todos los demás campos en null.
+- No interpretes mensajes de cortesía/agradecimiento/despedida como una acción de reserva, aunque haya datos previos en el contexto.
 - Devuelve SOLO el objeto JSON sin texto adicional, sin backticks, sin comentarios.
 - No agregues ni renombres claves.
 - No uses strings vacíos: preferí null.

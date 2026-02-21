@@ -40,7 +40,7 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
 
         const cancelResponse = await this.aiService.cancelReservationResult(response, history, state);
 
-        await this.cacheService.appendEntityMessage(waId, cancelResponse, RoleEnum.ASSISTANT, Intention.CANCEL);
+        await this.cacheService.appendEntityMessage(waId, cancelResponse, RoleEnum.ASSISTANT, Intention.OTHER);
 
         await this.cacheService.clearHistory(waId, CacheTypeEnum.CANCEL);
 
