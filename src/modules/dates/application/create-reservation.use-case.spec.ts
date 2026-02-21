@@ -9,8 +9,14 @@ import { Availability } from 'src/lib/types/availability/availability.type';
 
 describe('GIVEN CreateReservationRowUseCase', () => {
   let createReservationRowUseCase: CreateReservationRowUseCase;
-  let googleSheetsService: GoogleSheetsService;
   let loggerErrorSpy: jest.SpyInstance;
+
+  const getDateMock = jest.fn();
+  const getAvailabilityMock = jest.fn();
+  const getRowValuesMock = jest.fn();
+  const createReservationMockFn = jest.fn();
+  const updateAvailabilityMock = jest.fn();
+  const insertRowMock = jest.fn();
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -19,12 +25,12 @@ describe('GIVEN CreateReservationRowUseCase', () => {
         {
           provide: GoogleSheetsService,
           useValue: {
-            getDate: jest.fn(),
-            getAvailability: jest.fn(),
-            getRowValues: jest.fn(),
-            createReservation: jest.fn(),
-            updateAvailability: jest.fn(),
-            insertRow: jest.fn(),
+            getDate: getDateMock,
+            getAvailability: getAvailabilityMock,
+            getRowValues: getRowValuesMock,
+            createReservation: createReservationMockFn,
+            updateAvailability: updateAvailabilityMock,
+            insertRow: insertRowMock,
           },
         },
       ],
@@ -33,7 +39,6 @@ describe('GIVEN CreateReservationRowUseCase', () => {
     createReservationRowUseCase = module.get<CreateReservationRowUseCase>(
       CreateReservationRowUseCase,
     );
-    googleSheetsService = module.get<GoogleSheetsService>(GoogleSheetsService);
     loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
@@ -49,7 +54,7 @@ describe('GIVEN CreateReservationRowUseCase', () => {
     const reservation: CreateReservationType = createReservationMock;
 
     it('SHOULD return a message if the date is not found', async () => {
-      (googleSheetsService.getDate as jest.Mock).mockResolvedValue(-1);
+      getDateMock.mockResolvedValue(-1);
 
       const result = await createReservationRowUseCase.createReservation(reservation);
 
@@ -57,13 +62,13 @@ describe('GIVEN CreateReservationRowUseCase', () => {
     });
 
     it('SHOULD return a message if there is no availability', async () => {
-      (googleSheetsService.getDate as jest.Mock).mockResolvedValue(5);
+      getDateMock.mockResolvedValue(5);
       const availability: Availability = {
         isAvailable: false,
         reservations: 0,
         available: 0,
       };
-      (googleSheetsService.getAvailability as jest.Mock).mockResolvedValue(availability);
+      getAvailabilityMock.mockResolvedValue(availability);
 
       const result = await createReservationRowUseCase.createReservation(reservation);
 
@@ -77,16 +82,9 @@ describe('GIVEN CreateReservationRowUseCase', () => {
         reservations: 0,
         available: 20,
       };
-      (googleSheetsService.getDate as jest.Mock).mockResolvedValue(index);
-      (googleSheetsService.getAvailability as jest.Mock).mockResolvedValue(availability);
-      (googleSheetsService.getRowValues as jest.Mock).mockResolvedValue([
-        'date',
-        'time',
-        'foo',
-        'bar',
-        'baz',
-        'qux',
-      ]);
+      getDateMock.mockResolvedValue(index);
+      getAvailabilityMock.mockResolvedValue(availability);
+      getRowValuesMock.mockResolvedValue(['date', 'time', 'foo', 'bar', 'baz', 'qux']);
       const reservationAndRowSpy = jest
         .spyOn(createReservationRowUseCase, 'createReservationAndRow')
         .mockResolvedValue();
@@ -100,15 +98,12 @@ describe('GIVEN CreateReservationRowUseCase', () => {
         phone: reservation.phone,
         quantity: reservation.quantity,
       });
-      expect(googleSheetsService.updateAvailability).toHaveBeenCalledWith(
-        ReservationOperation.ADD,
-        {
-          reservations: availability.reservations,
-          available: availability.available,
-          date: reservation.date!,
-          time: reservation.time!,
-        },
-      );
+      expect(updateAvailabilityMock).toHaveBeenCalledWith(ReservationOperation.ADD, {
+        reservations: availability.reservations,
+        available: availability.available,
+        date: reservation.date!,
+        time: reservation.time!,
+      });
       expect(result).toBe(
         `Reserva creada correctamente para el dia ${reservation.date} a las ${reservation.time} para ${reservation.name} y ${reservation.quantity} personas`,
       );
@@ -121,9 +116,9 @@ describe('GIVEN CreateReservationRowUseCase', () => {
         reservations: 0,
         available: 20,
       };
-      (googleSheetsService.getDate as jest.Mock).mockResolvedValue(index);
-      (googleSheetsService.getAvailability as jest.Mock).mockResolvedValue(availability);
-      (googleSheetsService.getRowValues as jest.Mock).mockResolvedValue([
+      getDateMock.mockResolvedValue(index);
+      getAvailabilityMock.mockResolvedValue(availability);
+      getRowValuesMock.mockResolvedValue([
         'date',
         'time',
         undefined,
@@ -134,7 +129,7 @@ describe('GIVEN CreateReservationRowUseCase', () => {
 
       const result = await createReservationRowUseCase.createReservation(reservation);
 
-      expect(googleSheetsService.createReservation).toHaveBeenCalledWith(
+      expect(createReservationMockFn).toHaveBeenCalledWith(
         `${SHEETS_NAMES[0]}!C${index}:F${index}`,
         {
           customerData: {
@@ -151,7 +146,7 @@ describe('GIVEN CreateReservationRowUseCase', () => {
 
     it('SHOULD throw an error and log it', async () => {
       const errorMock = new Error('Append failed');
-      (googleSheetsService.getDate as jest.Mock).mockRejectedValue(errorMock);
+      getDateMock.mockRejectedValue(errorMock);
 
       await expect(createReservationRowUseCase.createReservation(reservation)).rejects.toThrow(
         'Append failed',
@@ -162,15 +157,14 @@ describe('GIVEN CreateReservationRowUseCase', () => {
 
   describe('WHEN createReservationAndRow is called', () => {
     it('SHOULD insert a row and create the reservation', async () => {
-      (googleSheetsService.insertRow as jest.Mock).mockResolvedValue(7);
+      insertRowMock.mockResolvedValue(7);
 
       await createReservationRowUseCase.createReservationAndRow(5, newRowReservationMock);
 
-      expect(googleSheetsService.insertRow).toHaveBeenCalledWith(`${SHEETS_NAMES[0]}!A5:F5`, 5);
-      expect(googleSheetsService.createReservation).toHaveBeenCalledWith(
-        `${SHEETS_NAMES[0]}!A7:F7`,
-        { customerData: newRowReservationMock },
-      );
+      expect(insertRowMock).toHaveBeenCalledWith(`${SHEETS_NAMES[0]}!A5:F5`, 5);
+      expect(createReservationMockFn).toHaveBeenCalledWith(`${SHEETS_NAMES[0]}!A7:F7`, {
+        customerData: newRowReservationMock,
+      });
     });
   });
 });

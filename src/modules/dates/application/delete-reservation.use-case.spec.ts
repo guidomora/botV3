@@ -10,8 +10,14 @@ import { GenerateDatetime } from '../dateTime-build/generate-datetime';
 
 describe('GIVEN DeleteReservationUseCase', () => {
   let deleteReservationUseCase: DeleteReservationUseCase;
-  let googleSheetsService: GoogleSheetsService;
   let loggerErrorSpy: jest.SpyInstance;
+
+  const getDateIndexByDataMock = jest.fn();
+  const getDatetimeDatesMock = jest.fn();
+  const deleteReservationMockFn = jest.fn();
+  const deleteRowMock = jest.fn();
+  const getAvailabilityMock = jest.fn();
+  const updateAvailabilityMock = jest.fn();
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -20,12 +26,12 @@ describe('GIVEN DeleteReservationUseCase', () => {
         {
           provide: GoogleSheetsService,
           useValue: {
-            getDateIndexByData: jest.fn(),
-            getDatetimeDates: jest.fn(),
-            deleteReservation: jest.fn(),
-            deleteRow: jest.fn(),
-            getAvailability: jest.fn(),
-            updateAvailability: jest.fn(),
+            getDateIndexByData: getDateIndexByDataMock,
+            getDatetimeDates: getDatetimeDatesMock,
+            deleteReservation: deleteReservationMockFn,
+            deleteRow: deleteRowMock,
+            getAvailability: getAvailabilityMock,
+            updateAvailability: updateAvailabilityMock,
           },
         },
         {
@@ -38,7 +44,6 @@ describe('GIVEN DeleteReservationUseCase', () => {
     }).compile();
 
     deleteReservationUseCase = module.get<DeleteReservationUseCase>(DeleteReservationUseCase);
-    googleSheetsService = module.get<GoogleSheetsService>(GoogleSheetsService);
     loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
@@ -54,7 +59,7 @@ describe('GIVEN DeleteReservationUseCase', () => {
     const reservation: DeleteReservation = deleteReservationMock;
 
     it('SHOULD return a message if the date is not found', async () => {
-      (googleSheetsService.getDateIndexByData as jest.Mock).mockResolvedValue(-1);
+      getDateIndexByDataMock.mockResolvedValue(-1);
 
       const result = await deleteReservationUseCase.deleteReservation(reservation);
 
@@ -68,24 +73,21 @@ describe('GIVEN DeleteReservationUseCase', () => {
         reservations: 1,
         available: 19,
       };
-      (googleSheetsService.getDateIndexByData as jest.Mock).mockResolvedValue(index);
-      (googleSheetsService.getDatetimeDates as jest.Mock).mockResolvedValue(['date']);
-      (googleSheetsService.getAvailability as jest.Mock).mockResolvedValue(availability);
+      getDateIndexByDataMock.mockResolvedValue(index);
+      getDatetimeDatesMock.mockResolvedValue(['date']);
+      getAvailabilityMock.mockResolvedValue(availability);
 
       const result = await deleteReservationUseCase.deleteReservation(reservation);
 
-      expect(googleSheetsService.deleteReservation).toHaveBeenCalledWith(
+      expect(deleteReservationMockFn).toHaveBeenCalledWith(
         `${SHEETS_NAMES[0]}!C${index}:F${index}`,
       );
-      expect(googleSheetsService.updateAvailability).toHaveBeenCalledWith(
-        ReservationOperation.SUBTRACT,
-        {
-          reservations: availability.reservations,
-          available: availability.available,
-          date: reservation.date!,
-          time: reservation.time!,
-        },
-      );
+      expect(updateAvailabilityMock).toHaveBeenCalledWith(ReservationOperation.SUBTRACT, {
+        reservations: availability.reservations,
+        available: availability.available,
+        date: reservation.date!,
+        time: reservation.time!,
+      });
       expect(result).toBe('Reserva eliminada correctamente');
     });
 
@@ -96,28 +98,25 @@ describe('GIVEN DeleteReservationUseCase', () => {
         reservations: 1,
         available: 19,
       };
-      (googleSheetsService.getDateIndexByData as jest.Mock).mockResolvedValue(index);
-      (googleSheetsService.getDatetimeDates as jest.Mock).mockResolvedValue(['date1', 'date2']);
-      (googleSheetsService.getAvailability as jest.Mock).mockResolvedValue(availability);
+      getDateIndexByDataMock.mockResolvedValue(index);
+      getDatetimeDatesMock.mockResolvedValue(['date1', 'date2']);
+      getAvailabilityMock.mockResolvedValue(availability);
 
       const result = await deleteReservationUseCase.deleteReservation(reservation);
 
-      expect(googleSheetsService.deleteRow).toHaveBeenCalledWith(index, 0);
-      expect(googleSheetsService.updateAvailability).toHaveBeenCalledWith(
-        ReservationOperation.SUBTRACT,
-        {
-          reservations: availability.reservations,
-          available: availability.available,
-          date: reservation.date!,
-          time: reservation.time!,
-        },
-      );
+      expect(deleteRowMock).toHaveBeenCalledWith(index, 0);
+      expect(updateAvailabilityMock).toHaveBeenCalledWith(ReservationOperation.SUBTRACT, {
+        reservations: availability.reservations,
+        available: availability.available,
+        date: reservation.date!,
+        time: reservation.time!,
+      });
       expect(result).toBe('Reserva eliminada correctamente');
     });
 
     it('SHOULD throw an error and log it', async () => {
       const errorMock = new Error('delete failed');
-      (googleSheetsService.getDateIndexByData as jest.Mock).mockRejectedValue(errorMock);
+      getDateIndexByDataMock.mockRejectedValue(errorMock);
 
       await expect(deleteReservationUseCase.deleteReservation(reservation)).rejects.toThrow(
         'delete failed',

@@ -143,7 +143,7 @@ export class GoogleSheetsRepository {
         majorDimension: 'COLUMNS',
       });
 
-      const rows = response.data.values ?? [];
+      const rows = (response.data.values ?? []) as string[][];
 
       if (rows.length === 0 || rows[0].length === 0) {
         return 'no hay valores';
@@ -151,7 +151,7 @@ export class GoogleSheetsRepository {
 
       const lastRowValue = rows[0][rows[0].length - 1];
 
-      return lastRowValue;
+      return String(lastRowValue);
     } catch (error) {
       this.failure(error);
     }
@@ -164,14 +164,22 @@ export class GoogleSheetsRepository {
       majorDimension: 'ROWS',
     });
 
-    const reservations = data.values?.filter((row) => row[0] === date);
+    const values = data.values;
+    if (!values) {
+      return [];
+    }
 
-    return reservations ?? [];
+    const reservations = values.filter(
+      (row): row is string[] => Array.isArray(row) && row[0] === date,
+    );
+
+    return reservations;
   }
 
-  async createDate(createDateType: any) {
+  async createDate(createDateType: { date: string }) {
     const { date } = createDateType;
-    await this.appendRow('Sheet1!A:E', [[date]]);
+    const values: AddValue = [[date]];
+    await this.appendRow('Sheet1!A:E', values);
   }
 
   async deleteReservation(range: string) {

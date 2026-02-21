@@ -29,7 +29,7 @@ export class GoogleTemporalSheetsRepository {
         spreadsheetId: this.sheetId,
         range,
       });
-      const values = res.data.values ?? [];
+      const values = (res.data.values ?? []) as string[][];
       for (let i = 1; i < values.length; i++) {
         const cell = (values[i] && values[i][0]) || '';
         if (cell === waId) {
@@ -45,7 +45,7 @@ export class GoogleTemporalSheetsRepository {
   async appendSeedRow(sheetName: string, rowArray: string[]): Promise<number> {
     try {
       const range = `${sheetName}!G:I`;
-      const res = await this.sheets.spreadsheets.values.append({
+      await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.sheetId,
         range,
         valueInputOption: 'RAW',
@@ -67,14 +67,15 @@ export class GoogleTemporalSheetsRepository {
         range,
       });
       this.logger.log('Fila leida');
-      return (res.data.values && res.data.values[0]) || [];
+      const firstRow = res.data.values?.[0];
+      return Array.isArray(firstRow) ? firstRow.map((value) => String(value)) : [];
     } catch (err) {
       this.failure(err, 'No se pudo leer fila temporal');
     }
   }
 
   /** Actualiza una fila completa con un array con 9 columnas (A..I) */
-  async updateFullRow(sheetName: string, rowIndex: number, rowArray: any[]): Promise<void> {
+  async updateFullRow(sheetName: string, rowIndex: number, rowArray: string[]): Promise<void> {
     try {
       const range = `${sheetName}!A${rowIndex}:I${rowIndex}`;
       await this.sheets.spreadsheets.values.update({

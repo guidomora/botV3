@@ -45,7 +45,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
     const history = await this.cacheService.getHistory(data.waId);
 
     switch (response.status) {
-      case TemporalStatusEnum.IN_PROGRESS:
+      case TemporalStatusEnum.IN_PROGRESS: {
         this.logger.log(`Create reservation strategy in progress`);
         const inProgressReply = await this.aiService.getMissingData(
           response.missingFields,
@@ -59,8 +59,9 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
           Intention.CREATE,
         );
         return { reply: inProgressReply };
+      }
 
-      case TemporalStatusEnum.COMPLETED:
+      case TemporalStatusEnum.COMPLETED: {
         this.logger.log(`Create reservation strategy completed`);
         const completedReply = await this.aiService.reservationCompleted(
           response.reservationData,
@@ -74,6 +75,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
         );
         await this.cacheService.markFlowCompleted(data.waId);
         return { reply: completedReply };
+      }
 
       case TemporalStatusEnum.FAILED: {
         this.logger.log(`Create reservation strategy failed`);
