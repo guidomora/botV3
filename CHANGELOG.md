@@ -4,6 +4,8 @@
 
 - Now if the user sends a greeting message, the bot will greet him back and wont duplicate the final action of a flow
 - Prettier change
+- Now when searching for an existing reservation, it will accept both the formatted phone number and the original phone number
+- Now when searching for an existing reservation, it will find the reservation even if the name is not exact name at sheets: "guido morabito" will match if the user sends "guido" or "morabito"
 - TODO:
 - ask for name and lastname
 - Continue the WhatsApp integration, validators, security, types, queue?

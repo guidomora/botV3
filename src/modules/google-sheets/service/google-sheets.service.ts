@@ -109,14 +109,18 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
+      console.log('data', date, time, name, formattedPhone);
+
       const index =
         data.findIndex(
           (row) =>
             row[0] === date &&
             row[1] === time &&
             this.namesMatch(name, row[2]) &&
-            row[3] === formattedPhone,
+            (row[3] === formattedPhone || row[3] === phone),
         ) + 1;
+
+      console.log('index', index);
 
       if (index === -1 || index === undefined || index === 0) {
         return -1;
