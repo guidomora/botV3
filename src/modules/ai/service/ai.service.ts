@@ -25,7 +25,7 @@ import {
   ProviderError,
   ProviderName,
 } from 'src/lib';
-import { inferActiveIntent, serializeContext } from '../utils';
+import { inferActiveIntent, parseJsonResponse, serializeContext } from '../utils';
 
 interface SocialCourtesyClassificationResponse {
   isSocialCourtesy: boolean;
@@ -36,10 +36,6 @@ export class AiService {
   private readonly logger = new Logger(AiService.name);
   constructor(private readonly openAi: OpenAiConfig) {}
 
-  private parseJsonResponse<T>(response: string): T {
-    const parsed: unknown = JSON.parse(response);
-    return parsed as T;
-  }
 
   async interactWithAi(
     message: string,
@@ -59,7 +55,7 @@ export class AiService {
 
     const prompt = interactPrompt(context, activeIntent);
     const aiResponse = await this.openAiConfig(prompt, message, true);
-    const parseResponse = this.parseJsonResponse<MultipleMessagesResponse>(aiResponse);
+    const parseResponse = parseJsonResponse<MultipleMessagesResponse>(aiResponse);
     console.log('----', parseResponse);
 
     return parseResponse;
@@ -168,7 +164,7 @@ export class AiService {
     try {
       const prompt = socialCourtesyClassificationPrompt();
       const aiResponse = await this.openAiConfig(prompt, message, true);
-      const parsed = this.parseJsonResponse<SocialCourtesyClassificationResponse>(aiResponse);
+      const parsed = parseJsonResponse<SocialCourtesyClassificationResponse>(aiResponse);
 
       return parsed.isSocialCourtesy === true;
     } catch {
@@ -199,7 +195,7 @@ export class AiService {
   async openAiConfig(prompt: string, userMessage?: string, json?: boolean): Promise<string> {
     try {
       const response = await this.openAi.getClient().chat.completions.create({
-        model: 'gpt-4o',
+        model: process.env.GPT_MODEL || 'gpt-5-mini',
         response_format: { type: json ? 'json_object' : 'text' },
         temperature: 0,
         messages: [

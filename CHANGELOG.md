@@ -4,6 +4,8 @@
 
 - Moved normalizeName to a helper
 - Updated prompt to ask for name and lastname
+- Added GPT_MODEL to .env.template and few vars more.
+- Update the GPT model 
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
 - Check if we can delete the comments from ai.service line 19
@@ -34,9 +36,6 @@
 - Error handling added for OpenAI and Google Sheets. Notifies the user if something goes wrong
 - Github Action added. Runs npm run build
 - context parsed for prompts fixed
-
-En create-reservation.strategy se generan replies pero no se persisten como mensajes assistant en cache (create-reservation.strategy.ts (line 39), create-reservation.strategy.ts (line 44), create-reservation.strategy.ts (line 48)).
-En delete-reservation.strategy, solo se persiste respuesta en la rama de faltantes; la respuesta final de cancelación no se guarda (delete-reservation.strategy.ts (line 33), delete-reservation.strategy.ts (line 41), delete-reservation.strategy.ts (line 49)).
 
 #### 17/02/26
 
