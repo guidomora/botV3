@@ -1,13 +1,10 @@
 ### History
 
-#### 21/02/26
+#### 24/10/25
 
-- Now if the user sends a greeting message, the bot will greet him back and wont duplicate the final action of a flow
-- Prettier change
-- Now when searching for an existing reservation, it will accept both the formatted phone number and the original phone number
-- Now when searching for an existing reservation, it will find the reservation even if the name is not exact name at sheets: "guido morabito" will match if the user sends "guido" or "morabito"
+- Moved normalizeName to a helper
+- Updated prompt to ask for name and lastname
 - TODO:
-- ask for name and lastname
 - Continue the WhatsApp integration, validators, security, types, queue?
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -17,6 +14,13 @@
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
 - Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
+
+#### 21/02/26
+
+- Now if the user sends a greeting message, the bot will greet him back and wont duplicate the final action of a flow
+- Prettier change
+- Now when searching for an existing reservation, it will accept both the formatted phone number and the original phone number
+- Now when searching for an existing reservation, it will find the reservation even if the name is not exact name at sheets: "guido morabito" will match if the user sends "guido" or "morabito"
 
 #### 19/02/26
 
