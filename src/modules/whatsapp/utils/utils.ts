@@ -3,7 +3,7 @@ export const setTimeLapse = (message: string): number => {
   const len = message.trim().length;
 
   if (len < 15) {
-    time = 20000;
+    time = 25000;
   } else if (len < 30) {
     time = 10000;
   }

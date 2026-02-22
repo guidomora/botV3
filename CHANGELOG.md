@@ -8,6 +8,8 @@
 - Update the GPT model 
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
+- a user cant have mora than 1 reservation in a day
+- when confirming the creation of a reservation, show the phone number in the message
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).

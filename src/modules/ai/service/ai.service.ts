@@ -197,7 +197,7 @@ export class AiService {
       const response = await this.openAi.getClient().chat.completions.create({
         model: process.env.GPT_MODEL || 'gpt-5-mini',
         response_format: { type: json ? 'json_object' : 'text' },
-        temperature: 0,
+        temperature: 1,
         messages: [
           { role: 'system', content: prompt },
           { role: 'user', content: userMessage || 'Generá el mensaje ahora.' },

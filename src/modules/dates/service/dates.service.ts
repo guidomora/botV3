@@ -162,6 +162,8 @@ export class DatesService {
       };
     }
 
+    const formattedPhone = formatPhoneNumber(phone) ?? phone;
+
     const targetDate = newDate ?? currentDate;
     const targetTime = newTime ?? currentTime;
     const targetName = newName ?? currentName;
@@ -197,7 +199,7 @@ export class DatesService {
       date: currentDate,
       time: currentTime,
       name: currentName.toLowerCase(),
-      phone,
+      phone: formattedPhone,
     };
 
     const currentReservationIndex =
@@ -237,7 +239,7 @@ export class DatesService {
       await this.googleSheetsService.createReservation(createRange, {
         customerData: {
           name: targetName.toLowerCase(),
-          phone,
+          phone: formattedPhone,
           quantity: resolvedQuantity,
         },
       });
@@ -268,7 +270,7 @@ export class DatesService {
       date: targetDate.toLowerCase(),
       time: targetTime,
       name: targetName.toLowerCase(),
-      phone,
+      phone: formattedPhone,
       quantity: resolvedQuantity,
     };
 
@@ -287,7 +289,7 @@ export class DatesService {
       date: currentDate,
       time: currentTime,
       name: currentName,
-      phone,
+      phone: formattedPhone,
     };
 
     await this.deleteReservationUseCase.deleteReservation(deleteObject);
