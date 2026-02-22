@@ -20,16 +20,20 @@ export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
 
-  private normalizeDateLabel(date: string): string {
-    return date.trim().toLowerCase().replace(/\s+/g, ' ');
+  private normalizeDateLabel(date?: string): string {
+    return date?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
   }
 
-  private extractCalendarDate(date: string): string | null {
+  private extractCalendarDate(date?: string): string | null {
+    if (!date) return null;
+
     const match = date.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
     return match?.[0] ?? null;
   }
 
-  private datesMatch(leftDate: string, rightDate: string): boolean {
+  private datesMatch(leftDate?: string, rightDate?: string): boolean {
+    if (!leftDate || !rightDate) return false;
+
     const leftCalendarDate = this.extractCalendarDate(leftDate);
     const rightCalendarDate = this.extractCalendarDate(rightDate);
 
@@ -65,7 +69,8 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(range);
 
-      const index = data.findIndex((row) => this.datesMatch(row[0], date) && row[1] === time) + 1;
+      const index =
+        data.findIndex((row) => this.datesMatch(row[0], date) && row[1] && row[1] === time) + 1;
 
       if (index === -1 || index === undefined || index === 0) {
         return -1;
@@ -85,7 +90,8 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(range);
 
-      const index = data.findIndex((row) => this.datesMatch(row[0], date) && row[1] === time) + 1;
+      const index =
+        data.findIndex((row) => this.datesMatch(row[0], date) && row[1] && row[1] === time) + 1;
 
       if (index === -1 || index === undefined || index === 0) {
         return null;
@@ -112,6 +118,7 @@ export class GoogleSheetsService {
         data.findIndex(
           (row) =>
             this.datesMatch(row[0], date) &&
+            row[1] &&
             row[1] === time &&
             namesMatch(name, row[2]) &&
             (row[3] === formattedPhone || row[3] === phone),
@@ -149,7 +156,9 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
-      const filteredData = data.filter((row) => this.datesMatch(row[0], date) && row[1] === time);
+      const filteredData = data.filter(
+        (row) => this.datesMatch(row[0], date) && row[1] && row[1] === time,
+      );
 
       if (filteredData.length === 0) {
         return [];
