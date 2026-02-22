@@ -34,7 +34,15 @@ interface SocialCourtesyClassificationResponse {
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  constructor(private readonly openAi: OpenAiConfig) {}
+  private readonly maxPromptChars: number;
+  private readonly maxUserMessageChars: number;
+  private readonly maxCompletionTokens: number;
+
+  constructor(private readonly openAi: OpenAiConfig) {
+    this.maxPromptChars = this.getPositiveNumberEnv('AI_MAX_PROMPT_CHARS', 12000);
+    this.maxUserMessageChars = this.getPositiveNumberEnv('AI_MAX_USER_MESSAGE_CHARS', 2000);
+    this.maxCompletionTokens = this.getPositiveNumberEnv('AI_MAX_COMPLETION_TOKENS', 350);
+  }
 
 
   async interactWithAi(
@@ -194,13 +202,21 @@ export class AiService {
 
   async openAiConfig(prompt: string, userMessage?: string, json?: boolean): Promise<string> {
     try {
+      const safePrompt = this.truncateText(prompt, this.maxPromptChars, 'prompt');
+      const safeUserMessage = this.truncateText(
+        userMessage || 'Generá el mensaje ahora.',
+        this.maxUserMessageChars,
+        'mensaje del usuario',
+      );
+
       const response = await this.openAi.getClient().chat.completions.create({
         model: process.env.GPT_MODEL || 'gpt-5-mini',
         response_format: { type: json ? 'json_object' : 'text' },
         temperature: 0,
+        max_completion_tokens: this.maxCompletionTokens,
         messages: [
-          { role: 'system', content: prompt },
-          { role: 'user', content: userMessage || 'Generá el mensaje ahora.' },
+          { role: 'system', content: safePrompt },
+          { role: 'user', content: safeUserMessage },
         ],
       });
 
@@ -212,5 +228,37 @@ export class AiService {
       this.logger.error(`Error al interactuar con AI`, error);
       throw new ProviderError(ProviderName.OPEN_AI, 'Error al interactuar con OpenAI', error);
     }
+  }
+
+  private truncateText(text: string, maxChars: number, fieldName: string): string {
+    if (text.length <= maxChars) {
+      return text;
+    }
+
+    this.logger.warn(
+      `Se truncó ${fieldName} para limitar consumo de tokens (${text.length} -> ${maxChars} caracteres).`,
+    );
+
+    return text.slice(0, maxChars);
+  }
+
+  private getPositiveNumberEnv(envName: string, defaultValue: number): number {
+    const rawValue = process.env[envName];
+
+    if (!rawValue) {
+      return defaultValue;
+    }
+
+    const parsedValue = Number(rawValue);
+
+    if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+      this.logger.warn(
+        `Valor inválido para ${envName}: ${rawValue}. Se utilizará ${defaultValue}.`,
+      );
+
+      return defaultValue;
+    }
+
+    return Math.floor(parsedValue);
   }
 }

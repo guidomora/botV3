@@ -10,3 +10,11 @@
 - inbound events are deduplicated by `AccountSid + MessageSid`
 - if an already processed `MessageSid` is received again, the webhook is ignored and responds `200` with `{ ok: true }`
 - configurable TTL for dedup cache key with `IDEMPOTENCY_MESSAGE_SID_TTL_MS` (default: `86400000` = 24h)
+
+
+#### AI token safeguards
+
+- `AI_MAX_PROMPT_CHARS` límite máximo de caracteres enviados en el prompt de sistema (default: `12000`).
+- `AI_MAX_USER_MESSAGE_CHARS` límite máximo de caracteres del mensaje de usuario enviado a OpenAI (default: `2000`).
+- `AI_MAX_COMPLETION_TOKENS` límite de tokens de salida por respuesta de OpenAI (default: `350`).
+
