@@ -235,7 +235,7 @@ export class DatesService {
 
     const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`;
 
-    if (targetDate === currentDate && targetTime === currentTime) {
+    if (targetReservationDateTime.getTime() === currentReservationDateTime.getTime()) {
       await this.googleSheetsService.createReservation(createRange, {
         customerData: {
           name: targetName.toLowerCase(),
@@ -267,7 +267,7 @@ export class DatesService {
     }
 
     const createObject: CreateReservationType = {
-      date: targetDate.toLowerCase(),
+      date: targetDate,
       time: targetTime,
       name: targetName.toLowerCase(),
       phone: formattedPhone,

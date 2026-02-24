@@ -13,12 +13,13 @@ import {
 } from 'src/lib';
 import { SheetsName } from 'src/constants';
 import { Logger } from '@nestjs/common';
-import { namesMatch } from '../helpers/names-match.helper';
+import { datesMatch, namesMatch } from '../helpers/names-match.helper';
 
 @Injectable()
 export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
+
 
   async appendRow(range: string, values: DateTime) {
     try {
@@ -45,7 +46,8 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(range);
 
-      const index = data.findIndex((row) => row[0] === date && row[1] === time) + 1;
+      const index =
+        data.findIndex((row) => datesMatch(row[0], date) && row[1] && row[1] === time) + 1;
 
       if (index === -1 || index === undefined || index === 0) {
         return -1;
@@ -65,7 +67,8 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(range);
 
-      const index = data.findIndex((row) => row[0] === date && row[1] === time) + 1;
+      const index =
+        data.findIndex((row) => datesMatch(row[0], date) && row[1] && row[1] === time) + 1;
 
       if (index === -1 || index === undefined || index === 0) {
         return null;
@@ -91,7 +94,8 @@ export class GoogleSheetsService {
       const index =
         data.findIndex(
           (row) =>
-            row[0] === date &&
+            datesMatch(row[0], date) &&
+            row[1] &&
             row[1] === time &&
             namesMatch(name, row[2]) &&
             (row[3] === formattedPhone || row[3] === phone),
@@ -129,7 +133,9 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
-      const filteredData = data.filter((row) => row[0] === date && row[1] === time);
+      const filteredData = data.filter(
+        (row) => datesMatch(row[0], date) && row[1] && row[1] === time,
+      );
 
       if (filteredData.length === 0) {
         return [];
