@@ -1,14 +1,10 @@
 ### History
 
-#### 24/10/25
-
-- Moved normalizeName to a helper
-- Updated prompt to ask for name and lastname
-- Added GPT_MODEL to .env.template and few vars more.
-- Update the GPT model 
+### 24/10/25
+- Bug fixed at update reservation flow
 - TODO:
 - Continue the WhatsApp integration, validators, security, types, queue?
-- a user cant have mora than 1 reservation in a day
+- a user can't have more than 1 reservation in a day
 - when confirming the creation of a reservation, show the phone number in the message
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -18,6 +14,13 @@
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
 - Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
+
+#### 23/10/25
+
+- Moved normalizeName to a helper
+- Updated prompt to ask for name and lastname
+- Added GPT_MODEL to .env.template and few vars more.
+- Update the GPT model 
 
 #### 21/02/26
 
