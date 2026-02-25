@@ -1,12 +1,11 @@
 ### History
 
-### 24/10/25
-- Bug fixed at update reservation flow
-- TODO:
-- Continue the WhatsApp integration, validators, security, types, queue?
+### 25/02/26
 - a user can't have more than 1 reservation in a day
-- when confirming the creation of a reservation, show the phone number in the message
+- interact prompt updated
+- TODO:
 - Check if we can delete the comments from ai.service line 19
+- Test an escenario where a user enters a range of times
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
@@ -14,6 +13,9 @@
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
 - Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
+
+### 24/10/25
+- Bug fixed at update reservation flow
 
 #### 23/10/25
 

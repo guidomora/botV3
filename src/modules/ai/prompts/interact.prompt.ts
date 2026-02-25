@@ -71,7 +71,8 @@ Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
 
 [phone]
 - phone: solo dígitos, aceptando con o sin “+”. Si hay separadores, remuévelos (ej: "11 3456-7890" → "1134567890").
-- Si aparecen múltiples, el más probable es el último mencionado; si dudas, null y explica en "notes".
+- Si aparecen múltiples, el más probable es el último mencionado; si dudas, null.
+- Si el teléfono no aparece en el mensaje actual pero en el CONTEXTO reciente ya hay uno explícito y único (confirmado por usuario o asistente), reutilizalo en "phone".
 - Si el usuario dice que usemos este número, el mismo WhatsApp, o algo equivalente, pon "useCurrentPhone": true y "phone": null.
 
 [quantity]
