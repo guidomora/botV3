@@ -4,6 +4,7 @@ import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sh
 import { CreateReservationType, ServiceResponse, StatusEnum, UpdateParams } from 'src/lib';
 import { Logger } from '@nestjs/common';
 import { parseDateTime } from '../utils/parseDate';
+import { getDuplicateSameDayReservationResponse } from '../utils';
 
 @Injectable()
 export class CreateReservationRowUseCase {
@@ -32,6 +33,16 @@ export class CreateReservationRowUseCase {
             'La fecha u horario seleccionado no esta disponible. Por lo tanto la reserva no se pudo realizar.',
           status: StatusEnum.NO_DATE_FOUND,
         };
+      }
+
+      const hasReservationSameDay = await this.googleSheetsService.hasReservationByDateAndPhone(
+        date!,
+        phone,
+      );
+
+      if (hasReservationSameDay) {
+        this.logger.warn('Ya existe una reserva para ese telefono en el dia solicitado');
+        return getDuplicateSameDayReservationResponse();
       }
 
       const availability = await this.googleSheetsService.getAvailabilityFromReservations(
