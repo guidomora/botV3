@@ -16,6 +16,7 @@
 
 ### 24/10/25
 - Bug fixed at update reservation flow
+- when confirming the creation of a reservation, show the phone number in the message
 
 #### 23/10/25
 
