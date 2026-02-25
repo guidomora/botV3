@@ -147,6 +147,37 @@ export class GoogleSheetsService {
     }
   }
 
+  async hasReservationByDateAndPhone(
+    date: string,
+    phone: string,
+    excludedRowIndex?: number,
+  ): Promise<boolean> {
+    const formattedPhone = formatPhoneNumber(phone) ?? phone;
+
+    try {
+      const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
+
+      return data.some((row, index) => {
+        const rowNumber = index + 1;
+        if (excludedRowIndex && rowNumber === excludedRowIndex) {
+          return false;
+        }
+
+        const rowDate = row[0];
+        const rowPhone = row[3];
+        const rowName = row[2];
+
+        if (!rowDate || !rowPhone || !rowName) {
+          return false;
+        }
+
+        return datesMatch(rowDate, date) && (rowPhone === formattedPhone || rowPhone === phone);
+      });
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
   async getRowValues(range: string): Promise<DateTime> {
     try {
       const data = await this.googleSheetsRepository.getRowValues(range);

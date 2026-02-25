@@ -34,6 +34,21 @@ export class CreateReservationRowUseCase {
         };
       }
 
+      const hasReservationSameDay = await this.googleSheetsService.hasReservationByDateAndPhone(
+        date!,
+        phone,
+      );
+
+      if (hasReservationSameDay) {
+        this.logger.warn('Ya existe una reserva para ese telefono en el dia solicitado');
+        return {
+          error: true,
+          message:
+            'Ya existe una reserva asociada a este numero para el dia solicitado. Si queres, puedo ayudarte a modificar la reserva existente.',
+          status: StatusEnum.DUPLICATE_RESERVATION_SAME_DAY,
+        };
+      }
+
       const availability = await this.googleSheetsService.getAvailabilityFromReservations(
         date!,
         time!,
