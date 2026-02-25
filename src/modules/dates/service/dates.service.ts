@@ -19,7 +19,11 @@ import {
   DeleteReservationUseCase,
 } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
-import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
+import {
+  pickAvailabilityForTime,
+  formatAvailabilityResponse,
+  getDuplicateSameDayReservationResponse,
+} from '../utils';
 import { SHEETS_NAMES } from 'src/constants';
 import { parseDateTime } from '../utils/parseDate';
 
@@ -222,12 +226,7 @@ export class DatesService {
     );
 
     if (hasReservationSameDay) {
-      return {
-        status: StatusEnum.DUPLICATE_RESERVATION_SAME_DAY,
-        message:
-          'Ya existe una reserva asociada a este numero para el dia solicitado. Si queres, puedo ayudarte a modificar la reserva existente.',
-        error: true,
-      };
+      return getDuplicateSameDayReservationResponse();
     }
 
     const currentRow = await this.googleSheetsService.getRowValues(
