@@ -19,7 +19,11 @@ import {
   DeleteReservationUseCase,
 } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
-import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
+import {
+  pickAvailabilityForTime,
+  formatAvailabilityResponse,
+  getDuplicateSameDayReservationResponse,
+} from '../utils';
 import { SHEETS_NAMES } from 'src/constants';
 import { parseDateTime } from '../utils/parseDate';
 
@@ -213,6 +217,16 @@ export class DatesService {
         message: 'No se encontró la reserva con los datos proporcionados.',
         error: true,
       };
+    }
+
+    const hasReservationSameDay = await this.googleSheetsService.hasReservationByDateAndPhone(
+      targetDate,
+      formattedPhone,
+      currentReservationIndex,
+    );
+
+    if (hasReservationSameDay) {
+      return getDuplicateSameDayReservationResponse();
     }
 
     const currentRow = await this.googleSheetsService.getRowValues(
