@@ -1,23 +1,5 @@
-import { DateTime } from 'src/lib/types/datetime/datetime.type';
+import { CapacityWindowInput, CapacityWindowResult } from 'src/lib';
 import { parseDateTime } from 'src/modules/dates/utils/parseDate';
-
-export interface CapacityWindowInput {
-  date: string;
-  time: string;
-  requestedPeople: number;
-  reservationDurationMinutes: number;
-  onlineMaxCapacity: number;
-  existingReservations: DateTime;
-  excludedRowIndex?: number;
-}
-
-export interface CapacityWindowResult {
-  onlineMaxCapacity: number;
-  overlappingReservations: DateTime;
-  occupiedPeople: number;
-  availableCapacity: number;
-  canReserve: boolean;
-}
 
 export const calculateCapacityForRequestedWindow = (
   input: CapacityWindowInput,
