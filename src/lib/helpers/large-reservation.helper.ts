@@ -1,10 +1,6 @@
-const DEFAULT_MAX_PEOPLE_PER_RESERVATION = 12;
+import { LargeReservationValidation } from '../types/reservation/large-reservation-validation.type';
 
-export interface LargeReservationValidation {
-  isLargeReservation: boolean;
-  maxPeoplePerReservation: number;
-  contactNumber?: string;
-}
+const DEFAULT_MAX_PEOPLE_PER_RESERVATION = 12;
 
 export function getLargeReservationValidation(quantity: number): LargeReservationValidation {
   const parsedLimit = Number(process.env.MAX_PEOPLE_PER_RESERVATION);
@@ -21,4 +17,3 @@ export function getLargeReservationValidation(quantity: number): LargeReservatio
     contactNumber: rawContactNumber && rawContactNumber.length > 0 ? rawContactNumber : undefined,
   };
 }
-
