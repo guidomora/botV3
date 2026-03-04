@@ -1,18 +1,24 @@
 ### History
 
-### 25/02/26
-- a user can't have more than 1 reservation in a day
-- interact prompt updated
+### 03/03/26
+- Logic added for reservation availability:
+  - Now the availability is calculated based on people quantity
+  - Time is considered when calculating availability (120 min buffer)
+  - Total availability is a .env variable
 - TODO:
-- Check if we can delete the comments from ai.service line 19
+- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
 - Test an escenario where a user enters a range of times
+- Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
-- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
+
+### 25/02/26
+- a user can't have more than 1 reservation in a day
+- interact prompt updated
 
 ### 24/10/25
 - Bug fixed at update reservation flow
