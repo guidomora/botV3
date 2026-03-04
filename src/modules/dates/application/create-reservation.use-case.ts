@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { SHEETS_NAMES } from 'src/constants';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
-import { CreateReservationType, ServiceResponse, StatusEnum, UpdateParams } from 'src/lib';
+import {
+  CreateReservationType,
+  getLargeReservationValidation,
+  ServiceResponse,
+  StatusEnum,
+  UpdateParams,
+} from 'src/lib';
 import { Logger } from '@nestjs/common';
 import { parseDateTime } from '../utils/parseDate';
 import { getDuplicateSameDayReservationResponse } from '../utils';
@@ -50,6 +56,21 @@ export class CreateReservationRowUseCase {
         time!,
         quantity,
       );
+
+      const largeReservationValidation = getLargeReservationValidation(quantity);
+      if (largeReservationValidation.isLargeReservation) {
+        this.logger.warn('Cantidad excede el límite permitido para reservas por WhatsApp');
+
+        const contactInstruction = largeReservationValidation.contactNumber
+          ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte a gestionarla, ya que este tipo de reserva requiere atención directa.`
+          : 'Por favor escribinos o llamanos para ayudarte a gestionarla, ya que este tipo de reserva requiere atención directa.';
+
+        return {
+          error: true,
+          message: `Para reservas de más de ${largeReservationValidation.maxPeoplePerReservation} personas necesitamos gestionarlo por atención directa. ${contactInstruction}`,
+          status: StatusEnum.RESERVATION_ERROR,
+        };
+      }
 
       if (!availability.isAvailable) {
         this.logger.warn('No hay disponibilidad para esa fecha y horario');

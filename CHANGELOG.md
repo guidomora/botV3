@@ -1,12 +1,8 @@
 ### History
 
-### 03/03/26
-- Logic added for reservation availability:
-  - Now the availability is calculated based on people quantity
-  - Time is considered when calculating availability (120 min buffer)
-  - Total availability is a .env variable
+### 04/03/26
+- Added validation for large reservations. If the reservation quantity is greater than MAX_PEOPLE_PER_RESERVATION, the bot asks the user to call/write to LARGE_RESERVATION_CONTACT_NUMBER.
 - TODO:
-- Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
 - Test an escenario where a user enters a range of times
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -15,6 +11,14 @@
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
+
+### 03/03/26
+- Logic added for reservation availability:
+  - Now the availability is calculated based on people quantity
+  - Time is considered when calculating availability (120 min buffer)
+  - Total availability is a .env variable
+- Validation added for large reservations:
+  - If reservation quantity is greater than MAX_PEOPLE_PER_RESERVATION, the bot asks user to call/write to LARGE_RESERVATION_CONTACT_NUMBER
 
 ### 25/02/26
 - a user can't have more than 1 reservation in a day

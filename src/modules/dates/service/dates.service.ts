@@ -8,6 +8,7 @@ import {
   DeleteReservation,
   formatPhoneNumber,
   GetIndexParams,
+  getLargeReservationValidation,
   ServiceResponse,
   StatusEnum,
   TemporalStatusEnum,
@@ -251,6 +252,19 @@ export class DatesService {
 
     const resolvedQuantity =
       newQuantity && !Number.isNaN(Number(newQuantity)) ? Number(newQuantity) : quantity;
+
+    const largeReservationValidation = getLargeReservationValidation(resolvedQuantity);
+    if (largeReservationValidation.isLargeReservation) {
+      const contactInstruction = largeReservationValidation.contactNumber
+        ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.`
+        : 'Por favor escribinos o llamanos para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.';
+
+      return {
+        status: StatusEnum.RESERVATION_ERROR,
+        message: `Para reservas de más de ${largeReservationValidation.maxPeoplePerReservation} personas necesitamos gestionarlo por atención directa. ${contactInstruction}`,
+        error: true,
+      };
+    }
 
     const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`;
 
