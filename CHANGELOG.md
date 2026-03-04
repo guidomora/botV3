@@ -5,6 +5,8 @@
   - Now the availability is calculated based on people quantity
   - Time is considered when calculating availability (120 min buffer)
   - Total availability is a .env variable
+- Validation added for large reservations:
+  - If reservation quantity is greater than MAX_PEOPLE_PER_RESERVATION, the bot asks user to call/write to LARGE_RESERVATION_CONTACT_NUMBER
 - TODO:
 - Add a max people quantity for reservations. Maybe it can be optional and be allowed to be set at the config
 - Test an escenario where a user enters a range of times
