@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { daysOfWeek, months, timeList } from 'src/constants/dates-info/dates-info';
 import { TablesInfo } from 'src/constants/tables-info/tables-info';
+import { computeOnlineMaxCapacity } from 'src/lib';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 
 @Injectable()
@@ -20,11 +21,15 @@ export class GenerateDatetime {
   public createOneDayWithBookings(date?: string): DateTime {
     const day = date ?? this.createOneDay();
     const dateTime: string[][] = [];
+    const onlineMaxCapacity = computeOnlineMaxCapacity(
+      process.env.MAX_CAPACITY_TOTAL,
+      process.env.ONLINE_BUFFER_PERCENT,
+    );
 
     timeList.forEach((schedule) => {
       if (schedule === '') {
         dateTime.push(['', schedule]);
-      } else dateTime.push([day, schedule, TablesInfo.BOOKED, TablesInfo.AVAILABLE]);
+      } else dateTime.push([day, schedule, TablesInfo.BOOKED, String(onlineMaxCapacity)]);
     });
     return dateTime;
   }

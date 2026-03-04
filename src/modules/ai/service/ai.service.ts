@@ -36,7 +36,6 @@ export class AiService {
   private readonly logger = new Logger(AiService.name);
   constructor(private readonly openAi: OpenAiConfig) {}
 
-
   async interactWithAi(
     message: string,
     messageHistory: ChatMessage[],

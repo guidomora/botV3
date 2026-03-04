@@ -3,9 +3,9 @@ import { GoogleSheetsRepository } from '../domain/repository/google-sheets.repos
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
 import { AddDataType } from 'src/lib/types/add-data.type';
-import { TablesInfo } from 'src/constants/tables-info/tables-info';
 import {
   Availability,
+  computeOnlineMaxCapacity,
   formatPhoneNumber,
   GetIndexParams,
   UpdateParams,
@@ -14,12 +14,28 @@ import {
 import { SheetsName } from 'src/constants';
 import { Logger } from '@nestjs/common';
 import { datesMatch, namesMatch } from '../helpers/names-match.helper';
+import { calculateCapacityForRequestedWindow } from '../helpers/capacity-overlap.helper';
 
 @Injectable()
 export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
 
+  private getOnlineMaxCapacity(): number {
+    return computeOnlineMaxCapacity(
+      process.env.MAX_CAPACITY_TOTAL,
+      process.env.ONLINE_BUFFER_PERCENT,
+    );
+  }
+
+  private getReservationDurationMinutes(): number {
+    const duration = Number(process.env.RESERVATION_DURATION_MINUTES ?? 120);
+    if (Number.isNaN(duration) || duration <= 0) {
+      return 120;
+    }
+
+    return duration;
+  }
 
   async appendRow(range: string, values: DateTime) {
     try {
@@ -217,7 +233,7 @@ export class GoogleSheetsService {
 
       const available = Number(data[0][1]);
 
-      const maxReservations = Number(TablesInfo.AVAILABLE);
+      const maxReservations = this.getOnlineMaxCapacity();
 
       if (available != null && available > 0 && reservations <= maxReservations) {
         isAvailable = true;
@@ -233,24 +249,31 @@ export class GoogleSheetsService {
     }
   }
 
-  async getAvailabilityFromReservations(date: string, time: string): Promise<Availability> {
-    const reservationsData = await this.getDatetimeDates(date, time);
+  async getAvailabilityFromReservations(
+    date: string,
+    time: string,
+    requestedPeople: number = 1,
+    excludedRowIndex?: number,
+  ): Promise<Availability> {
+    const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
-    const validReservations = reservationsData.filter((row) => row[2] && row[3]);
+    const reservationDurationMinutes = this.getReservationDurationMinutes();
+    const onlineMaxCapacity = this.getOnlineMaxCapacity();
 
-    const reservations = validReservations.length;
+    const capacity = calculateCapacityForRequestedWindow({
+      date,
+      time,
+      requestedPeople,
+      reservationDurationMinutes,
+      onlineMaxCapacity,
+      existingReservations: allReservations,
+      excludedRowIndex,
+    });
 
-    console.log('reservations', reservations);
-
-    const maxReservations = Number(TablesInfo.AVAILABLE);
-
-    const available = Math.max(maxReservations - reservations, 0);
-
-    console.log('available', available);
     return {
-      isAvailable: available > 0,
-      reservations,
-      available,
+      isAvailable: capacity.canReserve,
+      reservations: capacity.occupiedPeople,
+      available: capacity.availableCapacity,
     };
   }
 
@@ -275,7 +298,7 @@ export class GoogleSheetsService {
     const index = await this.getDate(date, time, `${SHEETS_NAMES[1]}!A:C`);
 
     try {
-      const TOTAL = Number(TablesInfo.AVAILABLE);
+      const TOTAL = this.getOnlineMaxCapacity();
       if (available < 0 || reservations < 0 || reservations > TOTAL || available > TOTAL) {
         this.logger.warn(`Estado inválido: reservations=${reservations}, available=${available}`);
         return 'Estado inválido de disponibilidad.';
@@ -292,6 +315,45 @@ export class GoogleSheetsService {
       );
     } catch (error) {
       this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  async refreshAvailabilityForDate(date: string): Promise<void> {
+    const slots = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[1]}!A:D`);
+    const daySlots = slots.filter((row) => datesMatch(row[0], date) && row[1]);
+
+    const reservationDurationMinutes = this.getReservationDurationMinutes();
+    const onlineMaxCapacity = this.getOnlineMaxCapacity();
+    const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
+
+    for (const slot of daySlots) {
+      const slotTime = String(slot[1]);
+
+      const capacity = calculateCapacityForRequestedWindow({
+        date,
+        time: slotTime,
+        requestedPeople: 0,
+        reservationDurationMinutes,
+        onlineMaxCapacity,
+        existingReservations: allReservations,
+      });
+
+      const slotRowIndex = await this.getDate(date, slotTime, `${SHEETS_NAMES[1]}!A:C`);
+
+      if (slotRowIndex === -1) {
+        continue;
+      }
+
+      const occupiedPeople = capacity.occupiedPeople;
+      const availableCapacity = capacity.availableCapacity;
+
+      await this.googleSheetsRepository.updateAvailabilitySheet(
+        `${SHEETS_NAMES[1]}!C${slotRowIndex}:D${slotRowIndex}`,
+        {
+          reservations: occupiedPeople,
+          available: availableCapacity,
+        },
+      );
     }
   }
 

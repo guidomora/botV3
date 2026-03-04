@@ -48,6 +48,7 @@ export class CreateReservationRowUseCase {
       const availability = await this.googleSheetsService.getAvailabilityFromReservations(
         date!,
         time!,
+        quantity,
       );
 
       if (!availability.isAvailable) {
@@ -55,7 +56,7 @@ export class CreateReservationRowUseCase {
         return {
           error: true,
           message:
-            'No hay disponibilidad para esa fecha y horario. Por lo tanto la reserva no se pudo realizar.',
+            'No hay lugar para esa cantidad de personas en ese horario. Probá con una hora cercana y te ayudamos a encontrar lugar.',
           status: StatusEnum.NO_AVAILABILITY,
         };
       }
@@ -87,13 +88,14 @@ export class CreateReservationRowUseCase {
       }
 
       const updateParams: UpdateParams = {
-        reservations: availability.reservations + 1,
-        available: Math.max(availability.available - 1, 0),
+        reservations: availability.reservations + quantity,
+        available: Math.max(availability.available - quantity, 0),
         date: date!,
         time: time!,
       };
 
       await this.googleSheetsService.updateAvailabilityFromReservations(updateParams);
+      await this.googleSheetsService.refreshAvailabilityForDate(date!);
 
       return {
         error: false,
