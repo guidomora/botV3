@@ -256,8 +256,8 @@ export class DatesService {
     const largeReservationValidation = getLargeReservationValidation(resolvedQuantity);
     if (largeReservationValidation.isLargeReservation) {
       const contactInstruction = largeReservationValidation.contactNumber
-        ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte con la modificación.`
-        : 'Por favor escribinos o llamanos para ayudarte con la modificación.';
+        ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.`
+        : 'Por favor escribinos o llamanos para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.';
 
       return {
         status: StatusEnum.RESERVATION_ERROR,

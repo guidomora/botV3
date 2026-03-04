@@ -62,8 +62,8 @@ export class CreateReservationRowUseCase {
         this.logger.warn('Cantidad excede el límite permitido para reservas por WhatsApp');
 
         const contactInstruction = largeReservationValidation.contactNumber
-          ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte a gestionarla.`
-          : 'Por favor escribinos o llamanos para ayudarte a gestionarla.';
+          ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte a gestionarla, ya que este tipo de reserva requiere atención directa.`
+          : 'Por favor escribinos o llamanos para ayudarte a gestionarla, ya que este tipo de reserva requiere atención directa.';
 
         return {
           error: true,

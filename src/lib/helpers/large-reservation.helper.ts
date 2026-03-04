@@ -1,6 +1,7 @@
+import { DEFAULT_MAX_PEOPLE_PER_RESERVATION } from 'src/constants';
 import { LargeReservationValidation } from '../types/reservation/large-reservation-validation.type';
 
-const DEFAULT_MAX_PEOPLE_PER_RESERVATION = 12;
+
 
 export function getLargeReservationValidation(quantity: number): LargeReservationValidation {
   const parsedLimit = Number(process.env.MAX_PEOPLE_PER_RESERVATION);
