@@ -52,6 +52,7 @@ export class DeleteReservationUseCase {
       };
 
       await this.googleSheetsService.updateAvailabilityFromReservations(updateParams);
+      await this.googleSheetsService.refreshAvailabilityForDate(date!);
       this.logger.log(
         `Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`,
         DeleteReservationUseCase.name,

@@ -133,7 +133,12 @@ export class DatesService {
 
     this.logger.log('Day and time availability checked');
 
-    return pickAvailabilityForTime(formatedDayAvailability, time);
+    const slotIntervalMinutes = Number(process.env.SLOT_INTERVAL_MINUTES ?? 60);
+
+    return pickAvailabilityForTime(formatedDayAvailability, time, {
+      neighborCount: 2,
+      slotIntervalMinutes: Number.isNaN(slotIntervalMinutes) ? 60 : slotIntervalMinutes,
+    });
   }
 
   async getReservationIndexByData(
@@ -249,7 +254,23 @@ export class DatesService {
 
     const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`;
 
+    const availability = await this.googleSheetsService.getAvailabilityFromReservations(
+      targetDate,
+      targetTime,
+      resolvedQuantity,
+      currentReservationIndex,
+    );
+
     if (targetReservationDateTime.getTime() === currentReservationDateTime.getTime()) {
+      if (!availability.isAvailable) {
+        return {
+          status: StatusEnum.NO_AVAILABILITY,
+          message:
+            'No hay lugar para esa cantidad de personas en ese horario. Probá con una hora cercana y te ayudamos a encontrar lugar.',
+          error: true,
+        };
+      }
+
       await this.googleSheetsService.createReservation(createRange, {
         customerData: {
           name: targetName.toLowerCase(),
@@ -257,6 +278,8 @@ export class DatesService {
           quantity: resolvedQuantity,
         },
       });
+
+      await this.googleSheetsService.refreshAvailabilityForDate(currentDate);
 
       this.logger.log('Reservation updated', DatesService.name);
       return {
@@ -267,15 +290,11 @@ export class DatesService {
       };
     }
 
-    const availability = await this.googleSheetsService.getAvailabilityFromReservations(
-      targetDate,
-      targetTime,
-    );
-
     if (!availability.isAvailable) {
       return {
         status: StatusEnum.NO_AVAILABILITY,
-        message: 'No hay disponibilidad para la nueva fecha y horario solicitados.',
+        message:
+          'No hay lugar para esa cantidad de personas en el nuevo horario. Probá con una hora cercana y te ayudamos a encontrar lugar.',
         error: true,
       };
     }
@@ -307,6 +326,11 @@ export class DatesService {
     };
 
     await this.deleteReservationUseCase.deleteReservation(deleteObject);
+
+    await this.googleSheetsService.refreshAvailabilityForDate(currentDate);
+    if (targetDate !== currentDate) {
+      await this.googleSheetsService.refreshAvailabilityForDate(targetDate);
+    }
 
     return {
       status: StatusEnum.SUCCESS,

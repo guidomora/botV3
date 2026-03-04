@@ -22,7 +22,6 @@ export const namesMatch = (inputName?: string | null, rowName?: string | null): 
   );
 };
 
-
 export const normalizeDateLabel = (date?: string): string => {
   return date?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
 };
@@ -30,9 +29,9 @@ export const normalizeDateLabel = (date?: string): string => {
 export const extractCalendarDate = (date?: string): string | null => {
   if (!date) return null;
 
-    const match = date.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
-    return match?.[0] ?? null;
-  };
+  const match = date.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
+  return match?.[0] ?? null;
+};
 
 export const datesMatch = (leftDate?: string, rightDate?: string): boolean => {
   if (!leftDate || !rightDate) return false;

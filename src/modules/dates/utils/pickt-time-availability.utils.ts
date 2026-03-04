@@ -8,9 +8,10 @@ const timeToMinutes = (t: string): number => {
 export const pickAvailabilityForTime = (
   day: AvailabilityResponse,
   requestedTime: string,
-  options?: { neighborCount?: number },
+  options?: { neighborCount?: number; slotIntervalMinutes?: number },
 ): AvailabilityResponse => {
   const neighborCount = options?.neighborCount ?? 2;
+  const slotIntervalMinutes = options?.slotIntervalMinutes ?? 60;
 
   // Normalizar/ordenar
   const slots = [...(day.slots ?? [])].sort(
@@ -44,9 +45,23 @@ export const pickAvailabilityForTime = (
 
   const suggestions: AvailabilitySlot[] = [];
 
-  // Alternar alrededor: 1 antes, 1 después, repetir
-  let left = idx - 1;
-  let right = idx;
+  const previousSlot = slots[idx - 1];
+  const nextSlot = slots[idx];
+
+  if (previousSlot && reqMin - timeToMinutes(previousSlot.time) <= slotIntervalMinutes) {
+    suggestions.push(previousSlot);
+  }
+
+  if (
+    nextSlot &&
+    suggestions.length < neighborCount &&
+    timeToMinutes(nextSlot.time) - reqMin <= slotIntervalMinutes
+  ) {
+    suggestions.push(nextSlot);
+  }
+
+  let left = idx - 2;
+  let right = idx + 1;
 
   while (suggestions.length < neighborCount && (left >= 0 || right < slots.length)) {
     if (left >= 0) suggestions.push(slots[left--]);
