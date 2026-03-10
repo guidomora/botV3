@@ -1,5 +1,9 @@
 ### History
 
+### 10/03/26
+- Removed unused code for dates.controller and app.controller
+- README updated with all the business and repo logic
+
 ### 04/03/26
 - Added validation for large reservations. If the reservation quantity is greater than MAX_PEOPLE_PER_RESERVATION, the bot asks the user to call/write to LARGE_RESERVATION_CONTACT_NUMBER.
 - TODO:

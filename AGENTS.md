@@ -4,15 +4,7 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 
 ### Idea del proyecto:
 
-- Es un Bot de WhatsApp (twilio) que permite crear reservas para restaurantes. Se usa Google Sheets para almacenar la informacion de las reservas, como el dia, horarios disponibles, mesas reservadas, mesas disponibles y se guardan los datos del usuario.
-- Hay 5 flujos principales:
-  - Crear reserva: se crea una reserva con los datos del usuario para una fecha y horario solicitado
-  - Cancelar reserva: se cancela una reserva existente
-  - Modificar reserva: se modifica una reserva existente
-  - Consultar disponibilidad: se consulta la disponibilidad de una fecha y horario solicitado
-  - Otro: Este caso es cuando la intencion del usuario esta fuera de lo que permite el sistema
-- Usamos AI (API de Open AI) para responder a los usuarios y que pueda entender el lenguaje natural del usuario
-- El contexto de la informacion se almacena en cache durante un peridodo de tiempo, para que la IA pueda entender el contexto de la conversacion y crear una respuesta mas precisa
+- Toda la logica del proyecto y de negocio se encuentra en el README.md 
 
 ## 1) Objetivo del repositorio
 
@@ -41,6 +33,7 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 - Utilizar patrones de diseño cuando sea necesario.
 - Seguir las mejores prácticas de desarrollo DRY, SOLID, ETC (easy to change), etc.
 - No hagas cambios donde por ejemplo que acomodes espacios, lineas vacias sin motivo o agregar "enters" innecesarios.
+- Cada interface, type, enum debe ser creado en la carpeta lib > types. Nunca deben ser creados en los archivos de los controllers, services, etc.
 
 ## 4) Testing y validación
 

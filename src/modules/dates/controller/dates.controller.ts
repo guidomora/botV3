@@ -25,9 +25,4 @@ export class DatesController {
   deleteOldRows(): Promise<string | undefined> {
     return this.datesService.deleteOldRows();
   }
-
-  @Post('/multiple-messages')
-  createReservationWithMultipleMessages(@Body() createReservationDto: AddMissingFieldInput) {
-    return this.datesService.createReservationWithMultipleMessages(createReservationDto);
-  }
 }
