@@ -1,13 +1,9 @@
 ### History
 
-### 10/03/26
-- Removed unused code for dates.controller and app.controller
-- README updated with all the business and repo logic
+### 12/03/26
 
-### 04/03/26
-- Added validation for large reservations. If the reservation quantity is greater than MAX_PEOPLE_PER_RESERVATION, the bot asks the user to call/write to LARGE_RESERVATION_CONTACT_NUMBER.
+- Test an scenario where a user enters a range of times -> works well
 - TODO:
-- Test an escenario where a user enters a range of times
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
@@ -16,7 +12,17 @@
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
 
+### 10/03/26
+
+- Removed unused code for dates.controller and app.controller
+- README updated with all the business and repo logic
+
+### 04/03/26
+
+- Added validation for large reservations. If the reservation quantity is greater than MAX_PEOPLE_PER_RESERVATION, the bot asks the user to call/write to LARGE_RESERVATION_CONTACT_NUMBER.
+
 ### 03/03/26
+
 - Logic added for reservation availability:
   - Now the availability is calculated based on people quantity
   - Time is considered when calculating availability (120 min buffer)
@@ -25,10 +31,12 @@
   - If reservation quantity is greater than MAX_PEOPLE_PER_RESERVATION, the bot asks user to call/write to LARGE_RESERVATION_CONTACT_NUMBER
 
 ### 25/02/26
+
 - a user can't have more than 1 reservation in a day
 - interact prompt updated
 
 ### 24/10/25
+
 - Bug fixed at update reservation flow
 - when confirming the creation of a reservation, show the phone number in the message
 
@@ -37,7 +45,7 @@
 - Moved normalizeName to a helper
 - Updated prompt to ask for name and lastname
 - Added GPT_MODEL to .env.template and few vars more.
-- Update the GPT model 
+- Update the GPT model
 
 #### 21/02/26
 

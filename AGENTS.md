@@ -4,7 +4,7 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 
 ### Idea del proyecto:
 
-- Toda la logica del proyecto y de negocio se encuentra en el README.md 
+- Toda la logica del proyecto y de negocio se encuentra en el README.md
 
 ## 1) Objetivo del repositorio
 

@@ -7,6 +7,7 @@
 El sistema recibe mensajes entrantes desde **Twilio**, interpreta la intención del usuario con **OpenAI**, orquesta la lógica de negocio de reservas y persiste los datos operativos en **Google Sheets**.
 
 Objetivo principal:
+
 - Permitir que una persona pueda conversar en lenguaje natural para:
   - crear una reserva,
   - consultar disponibilidad,
@@ -99,6 +100,7 @@ Objetivo principal:
 ### 5.1 Datos requeridos para crear
 
 Para una reserva completa se necesitan:
+
 - fecha,
 - hora,
 - nombre,
@@ -111,11 +113,13 @@ Si faltan campos, la reserva queda temporalmente en estado parcial y el bot cont
 ### 5.2 Regla de duplicidad por día
 
 Un mismo teléfono no puede tener más de una reserva para el mismo día (regla anti-duplicado de jornada).
+
 - Si detecta duplicado, no crea una nueva y sugiere modificar la existente.
 
 ### 5.3 Fechas y horarios pasados
 
 No se permite:
+
 - crear reservas en fecha/hora ya pasada,
 - mover una reserva a una fecha/hora pasada,
 - modificar una reserva cuya fecha/hora original ya pasó.
@@ -123,6 +127,7 @@ No se permite:
 ### 5.4 Capacidad y disponibilidad
 
 La disponibilidad no depende solo de una celda fija, sino de capacidad efectiva:
+
 - Se calcula una **capacidad máxima online** usando:
   - `MAX_CAPACITY_TOTAL` (capacidad total del local),
   - `ONLINE_BUFFER_PERCENT` (porcentaje reservado fuera del canal online).
@@ -137,6 +142,7 @@ Esto evita sobreventa cuando dos turnos se superponen en el tiempo.
 ### 5.5 Límite por tamaño de grupo
 
 Existe un umbral para reservas grandes:
+
 - `MAX_PEOPLE_PER_RESERVATION` (default 12).
 - Si la cantidad solicitada supera ese valor:
   - la reserva no se gestiona automáticamente,
@@ -147,6 +153,7 @@ Existe un umbral para reservas grandes:
 
 Durante la creación, los datos parciales se guardan en una hoja temporal.
 Cuando la reserva se completa y se confirma:
+
 - se migra a la hoja principal,
 - se elimina la fila temporal.
 
@@ -164,6 +171,7 @@ Si la firma no es válida, se rechaza la solicitud.
 ### 6.2 Idempotencia de webhooks
 
 Twilio puede reintentar envíos. Para evitar doble procesamiento:
+
 - se deduplica por `AccountSid + MessageSid`,
 - si ya se procesó, se responde `200 { ok: true }` sin reprocesar.
 - TTL configurable: `IDEMPOTENCY_MESSAGE_SID_TTL_MS` (default 24h).
@@ -172,12 +180,14 @@ Twilio puede reintentar envíos. Para evitar doble procesamiento:
 
 El control se aplica por `waId` con historial en cache.
 Reglas por defecto:
+
 - **10 mensajes en 30 segundos** → bloqueo temporal.
 - **30 mensajes en 10 minutos** → bloqueo temporal.
 - Duración de bloqueo: **3 minutos**.
 - Cooldown de notificación al usuario: **60 segundos** (evita repetir aviso constantemente).
 
 Todos los valores son configurables:
+
 - `RATE_LIMIT_SHORT_WINDOW_MS`
 - `RATE_LIMIT_SHORT_WINDOW_LIMIT`
 - `RATE_LIMIT_LONG_WINDOW_MS`
@@ -188,6 +198,7 @@ Todos los valores son configurables:
 ### 6.4 Límite de tamaño de request
 
 Para proteger el webhook:
+
 - alerta al acercarse al límite,
 - rechaza requests por encima de `MAX_REQUEST_BODY_SIZE_BYTES` (100 KB default).
 
@@ -202,11 +213,13 @@ Errores temporales de OpenAI o Google Sheets se encapsulan como errores de prove
 El bot mantiene historial por usuario para mejorar comprensión de contexto e intención activa.
 
 TTL de ciclo conversacional:
+
 - **flujo en progreso**: 3h,
 - **flujo completado**: 2h,
 - **límite duro total**: 6h.
 
 Al expirar:
+
 - limpia estado de cache,
 - si había flujo incompleto, elimina la reserva temporal incompleta,
 - opcionalmente notifica al usuario por WhatsApp que la conversación expiró.
@@ -218,11 +231,13 @@ También se limita el tamaño del historial conversacional para mantener context
 ## 8) Estructura de datos en Google Sheets (visión funcional)
 
 El sistema trabaja con tres vistas principales:
+
 1. **Hoja de reservas**: reservas confirmadas (fecha, hora, nombre, teléfono, cantidad).
 2. **Hoja de disponibilidad**: disponibilidad por franja (ocupados/disponibles).
 3. **Hoja temporal**: estado parcial de reservas en construcción.
 
 Después de cada alta, baja o modificación:
+
 - se recalcula ocupación,
 - se actualizan cupos disponibles,
 - se mantiene consistencia entre reservas y disponibilidad.
@@ -232,19 +247,23 @@ Después de cada alta, baja o modificación:
 ## 9) Variables de entorno relevantes
 
 ### Twilio
+
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_WHATSAPP_FROM` o `TWILIO_MESSAGING_SERVICE_SID`
 
 ### OpenAI
+
 - `OPEN_AI`
 - `PROJECT_ID` (opcional)
 - `GPT_MODEL` (default `gpt-5-mini`)
 
 ### Google Sheets
+
 - credenciales de service account + spreadsheet id (según provider del módulo)
 
 ### Reglas de negocio y capacidad
+
 - `MAX_CAPACITY_TOTAL`
 - `ONLINE_BUFFER_PERCENT`
 - `RESERVATION_DURATION_MINUTES`
@@ -252,6 +271,7 @@ Después de cada alta, baja o modificación:
 - `LARGE_RESERVATION_CONTACT_NUMBER`
 
 ### Seguridad operativa
+
 - `IDEMPOTENCY_MESSAGE_SID_TTL_MS`
 - `RATE_LIMIT_SHORT_WINDOW_MS`
 - `RATE_LIMIT_SHORT_WINDOW_LIMIT`
@@ -265,6 +285,7 @@ Después de cada alta, baja o modificación:
 ## 10) Resumen ejecutivo
 
 Este proyecto implementa un **asistente transaccional de reservas** por WhatsApp con:
+
 - procesamiento de lenguaje natural,
 - lógica de negocio de restaurante (cupos, duplicados, tiempos, reservas grandes),
 - controles de seguridad para canales webhook (firma, idempotencia, rate limit, tamaño),
