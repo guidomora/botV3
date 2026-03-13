@@ -33,8 +33,8 @@ describe('Given GoogleTemporalSheetsService', () => {
         values: { date: 'Martes 03/03/2026', time: '20:00', quantity: '2' },
       });
 
-      expect(repository.appendSeedRow).toHaveBeenCalledTimes(1);
-      expect(repository.updateFullRow).toHaveBeenCalledTimes(1);
+      expect(repository.appendSeedRow.mock.calls).toHaveLength(1);
+      expect(repository.updateFullRow.mock.calls).toHaveLength(1);
       expect(result.status).toBe(TemporalStatusEnum.IN_PROGRESS);
       expect(result.changedFields).toEqual(expect.arrayContaining(['date', 'time', 'quantity']));
     });
@@ -66,7 +66,7 @@ describe('Given GoogleTemporalSheetsService', () => {
       repository.findRowIndexByWaId.mockResolvedValue(10);
 
       await expect(service.findTemporalRowIndexByWaId('wa-abc')).resolves.toBe(10);
-      expect(repository.findRowIndexByWaId).toHaveBeenCalledTimes(1);
+      expect(repository.findRowIndexByWaId.mock.calls).toHaveLength(1);
     });
   });
 });
