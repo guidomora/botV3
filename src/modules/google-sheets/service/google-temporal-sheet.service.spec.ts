@@ -39,6 +39,36 @@ describe('Given GoogleTemporalSheetsService', () => {
       expect(result.changedFields).toEqual(expect.arrayContaining(['date', 'time', 'quantity']));
     });
 
+    it('Should normalize input values and keep status in progress when data is partial', async () => {
+      repository.findRowIndexByWaId.mockResolvedValue(8);
+      repository.readRowByIndex.mockResolvedValue([
+        ' ',
+        ' ',
+        ' ',
+        ' ',
+        'Food',
+        ' ',
+        'wa-321',
+        'NO_DATA',
+        'create',
+      ]);
+
+      await service.addMissingField({
+        waId: 'wa-321',
+        values: {
+          date: 'VIERNES 05/03/2026',
+          name: '  ANA LOPEZ  ',
+          phone: '54-9-1166655544',
+        },
+      });
+
+      expect(repository.updateFullRow.mock.calls[0]).toEqual([
+        expect.any(String),
+        8,
+        expect.arrayContaining(['viernes 05/03/2026', ' ', 'ana lopez']),
+      ]);
+    });
+
     it('Should throw when seeded row cannot be found again', async () => {
       repository.findRowIndexByWaId.mockResolvedValueOnce(-1).mockResolvedValueOnce(-1);
 

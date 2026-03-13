@@ -50,6 +50,14 @@ describe('Given GoogleTemporalSheetsRepository', () => {
 
       await expect(repository.findRowIndexByWaId('Temporal', 'wa-missing')).resolves.toBe(-1);
     });
+
+    it('Should throw ProviderError when search fails', async () => {
+      sheetsMock.spreadsheets.values.get.mockRejectedValue(new Error('get-failed'));
+
+      await expect(repository.findRowIndexByWaId('Temporal', 'wa-missing')).rejects.toBeInstanceOf(
+        ProviderError,
+      );
+    });
   });
 
   describe('When appendSeedRow is called', () => {
@@ -84,6 +92,12 @@ describe('Given GoogleTemporalSheetsRepository', () => {
 
       await expect(repository.readRowByIndex('Temporal', 10)).resolves.toEqual([]);
     });
+
+    it('Should throw ProviderError when read fails', async () => {
+      sheetsMock.spreadsheets.values.get.mockRejectedValue(new Error('read-failed'));
+
+      await expect(repository.readRowByIndex('Temporal', 10)).rejects.toBeInstanceOf(ProviderError);
+    });
   });
 
   describe('When updateFullRow is called', () => {
@@ -104,6 +118,12 @@ describe('Given GoogleTemporalSheetsRepository', () => {
       await expect(
         repository.updateFullRow('Temporal', 20, temporalRowMock),
       ).rejects.toBeInstanceOf(ProviderError);
+    });
+  });
+
+  describe('When failure is called', () => {
+    it('Should throw ProviderError with provided message', () => {
+      expect(() => repository.failure(new Error('boom'), 'fallo temporal')).toThrow(ProviderError);
     });
   });
 });
