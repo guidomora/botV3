@@ -60,7 +60,7 @@ describe('Given GoogleSheetsRepository', () => {
   });
 
   describe('When createReservation is called', () => {
-    it('Should update full reservation row when date and time exist', async () => {
+    it('Should write a complete reservation row when date and time are provided', async () => {
       await repository.createReservation('Reservas!A2:F2', reservationPayloadMock);
 
       expect(sheetsMock.spreadsheets.values.update).toHaveBeenCalledWith({
@@ -82,7 +82,7 @@ describe('Given GoogleSheetsRepository', () => {
       });
     });
 
-    it('Should update fallback row when date and time are not provided', async () => {
+    it('Should write a partial reservation row when date and time are missing', async () => {
       await repository.createReservation('Reservas!C2:F2', {
         customerData: {
           name: 'Ana Lopez',

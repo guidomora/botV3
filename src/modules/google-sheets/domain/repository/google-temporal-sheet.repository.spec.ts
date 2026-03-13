@@ -33,7 +33,13 @@ describe('Given GoogleTemporalSheetsRepository', () => {
   describe('When findRowIndexByWaId is called', () => {
     it('Should return row index when waId exists', async () => {
       sheetsMock.spreadsheets.values.get.mockResolvedValue({
-        data: { values: [['waId', 'status', 'intent'], ['wa-100', 'x', 'x'], ['wa-123', 'x', 'x']] },
+        data: {
+          values: [
+            ['WaId', 'Status', 'Intention'],
+            ['wa-100', 'IN_PROGRESS', 'create'],
+            ['wa-123', 'COMPLETED', 'update'],
+          ],
+        },
       });
 
       await expect(repository.findRowIndexByWaId('Temporal', 'wa-123')).resolves.toBe(3);
