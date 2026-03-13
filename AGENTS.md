@@ -37,7 +37,8 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 
 ## 4) Testing y validación
 
-- Todavia no se implementan tests, los files existentes son erroneos o estan incompletos
+- Siempre ejecutar los tests existentes y los creados.
+- Siempre que termines de agregar codigo, ejecuta `npm run fix` para corregir errores de linting y que prettier formatee el codigo. Si esto arroja algun error corregilo y volvelo a ejecutar hasta que no arroje mas errores.
 
 ## 5) Seguridad y configuración
 
