@@ -1,4 +1,9 @@
-import { datesMatch, extractCalendarDate, namesMatch, normalizeDateLabel } from './names-match.helper';
+import {
+  datesMatch,
+  extractCalendarDate,
+  namesMatch,
+  normalizeDateLabel,
+} from './names-match.helper';
 
 describe('Given names-match helper', () => {
   describe('When namesMatch is used', () => {

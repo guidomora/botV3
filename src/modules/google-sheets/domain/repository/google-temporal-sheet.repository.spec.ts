@@ -101,9 +101,9 @@ describe('Given GoogleTemporalSheetsRepository', () => {
     it('Should throw ProviderError when update fails', async () => {
       sheetsMock.spreadsheets.values.update.mockRejectedValue(new Error('update-error'));
 
-      await expect(repository.updateFullRow('Temporal', 20, temporalRowMock)).rejects.toBeInstanceOf(
-        ProviderError,
-      );
+      await expect(
+        repository.updateFullRow('Temporal', 20, temporalRowMock),
+      ).rejects.toBeInstanceOf(ProviderError);
     });
   });
 });

@@ -2,7 +2,10 @@ import { sheets_v4 } from 'googleapis';
 import { ServiceName, SHEETS_NAMES } from 'src/constants';
 import { ProviderError } from 'src/lib';
 import { parseSpreadSheetId } from 'src/modules/google-sheets/helpers/parse-spreadsheet-id.helper';
-import { reservationPayloadMock, reservationRowsMock } from '../../test/mocks/google-sheets-data.mock';
+import {
+  reservationPayloadMock,
+  reservationRowsMock,
+} from '../../test/mocks/google-sheets-data.mock';
 import { GoogleSheetsRepository } from './google-sheets.repository';
 
 const sheetsMock = {
@@ -40,7 +43,9 @@ describe('Given GoogleSheetsRepository', () => {
 
   describe('When getDates is called', () => {
     it('Should use default range and return rows', async () => {
-      sheetsMock.spreadsheets.values.get.mockResolvedValue({ data: { values: reservationRowsMock } });
+      sheetsMock.spreadsheets.values.get.mockResolvedValue({
+        data: { values: reservationRowsMock },
+      });
 
       const result = await repository.getDates();
 
@@ -117,7 +122,9 @@ describe('Given GoogleSheetsRepository', () => {
     it('Should throw ProviderError when Google API fails', async () => {
       sheetsMock.spreadsheets.values.get.mockRejectedValue(new Error('boom'));
 
-      await expect(repository.getLastRowValue('Reservas!A:A')).rejects.toBeInstanceOf(ProviderError);
+      await expect(repository.getLastRowValue('Reservas!A:A')).rejects.toBeInstanceOf(
+        ProviderError,
+      );
     });
   });
 
@@ -127,7 +134,11 @@ describe('Given GoogleSheetsRepository', () => {
 
       await repository.insertRow(5, 1);
 
-      expect(parseSpreadSheetId).toHaveBeenCalledWith('sheet-id', sheetsMock as unknown as sheets_v4.Sheets, 1);
+      expect(parseSpreadSheetId).toHaveBeenCalledWith(
+        'sheet-id',
+        sheetsMock as unknown as sheets_v4.Sheets,
+        1,
+      );
       expect(sheetsMock.spreadsheets.batchUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           requestBody: {
@@ -176,7 +187,9 @@ describe('Given GoogleSheetsRepository', () => {
 
   describe('When getReservationsByDate is called', () => {
     it('Should filter rows by exact first column date', async () => {
-      sheetsMock.spreadsheets.values.get.mockResolvedValue({ data: { values: reservationRowsMock } });
+      sheetsMock.spreadsheets.values.get.mockResolvedValue({
+        data: { values: reservationRowsMock },
+      });
 
       const result = await repository.getReservationsByDate('martes 03 de marzo 2026 03/03/2026');
 

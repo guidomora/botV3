@@ -1,8 +1,8 @@
 ### History
 
-### 12/03/26
+### 13/10/25
 
-- Test an scenario where a user enters a range of times -> works well
+- Added tests for google module. Still need to add few more unite test for some methods
 - TODO:
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -11,6 +11,10 @@
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 - add all tests for google module
+
+### 12/03/26
+
+- Test an scenario where a user enters a range of times -> works well
 
 ### 10/03/26
 

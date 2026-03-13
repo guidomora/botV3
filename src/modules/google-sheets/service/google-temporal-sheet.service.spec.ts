@@ -16,7 +16,17 @@ describe('Given GoogleTemporalSheetsService', () => {
   describe('When addMissingField is called', () => {
     it('Should create seed row when waId does not exist and then update row', async () => {
       repository.findRowIndexByWaId.mockResolvedValueOnce(-1).mockResolvedValueOnce(12);
-      repository.readRowByIndex.mockResolvedValue([' ', ' ', ' ', ' ', 'Food', ' ', 'wa-123', 'NO_DATA', 'create']);
+      repository.readRowByIndex.mockResolvedValue([
+        ' ',
+        ' ',
+        ' ',
+        ' ',
+        'Food',
+        ' ',
+        'wa-123',
+        'NO_DATA',
+        'create',
+      ]);
 
       const result = await service.addMissingField({
         waId: 'wa-123',

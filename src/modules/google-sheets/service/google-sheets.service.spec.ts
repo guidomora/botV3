@@ -1,5 +1,9 @@
 import { SheetsName } from 'src/constants';
-import { availabilityRowsMock, reservationPayloadMock, reservationRowsMock } from '../test/mocks/google-sheets-data.mock';
+import {
+  availabilityRowsMock,
+  reservationPayloadMock,
+  reservationRowsMock,
+} from '../test/mocks/google-sheets-data.mock';
 import { createGoogleSheetsRepositoryMock } from '../test/mocks/google-repository.mock';
 import { GoogleSheetsService } from './google-sheets.service';
 
@@ -85,7 +89,9 @@ describe('Given GoogleSheetsService', () => {
     it('Should return unavailable when date-time does not exist', async () => {
       repository.getDates.mockResolvedValue([]);
 
-      await expect(service.getAvailability('martes 03 de marzo 2026 03/03/2026', '19:00')).resolves.toEqual({
+      await expect(
+        service.getAvailability('martes 03 de marzo 2026 03/03/2026', '19:00'),
+      ).resolves.toEqual({
         isAvailable: false,
         reservations: 0,
         available: 0,
@@ -169,7 +175,10 @@ describe('Given GoogleSheetsService', () => {
       await service.createReservation('Reservas!A2:F2', reservationPayloadMock);
       const insertResult = await service.insertRow(`${SheetsName.AVAILABLE_BOOKINGS}!A1`, 8);
 
-      expect(repository.createReservation).toHaveBeenCalledWith('Reservas!A2:F2', reservationPayloadMock);
+      expect(repository.createReservation).toHaveBeenCalledWith(
+        'Reservas!A2:F2',
+        reservationPayloadMock,
+      );
       expect(repository.insertRow).toHaveBeenCalledWith(8, 1);
       expect(insertResult).toBe(9);
     });
