@@ -91,7 +91,6 @@ export class GoogleTemporalSheetsRepository {
   }
 
   failure(error: unknown, msg = 'Google Sheets error'): never {
-    console.error(error);
     throw new ProviderError(ProviderName.GOOGLE_SHEETS, msg, error);
   }
 }

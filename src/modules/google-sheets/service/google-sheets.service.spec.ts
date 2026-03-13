@@ -136,7 +136,7 @@ describe('Given GoogleSheetsService', () => {
       });
 
       expect(response).toBe('Estado inválido de disponibilidad.');
-      expect(repository.updateAvailabilitySheet).not.toHaveBeenCalled();
+      expect(repository.updateAvailabilitySheet.mock.calls).toHaveLength(0);
     });
 
     it('Should update counters in availability sheet for valid state', async () => {
@@ -149,7 +149,7 @@ describe('Given GoogleSheetsService', () => {
         available: 10,
       });
 
-      expect(repository.updateAvailabilitySheet).toHaveBeenCalledTimes(1);
+      expect(repository.updateAvailabilitySheet.mock.calls).toHaveLength(1);
     });
   });
 
@@ -164,7 +164,7 @@ describe('Given GoogleSheetsService', () => {
 
       await service.refreshAvailabilityForDate('martes 03 de marzo 2026 03/03/2026');
 
-      expect(repository.updateAvailabilitySheet).toHaveBeenCalledTimes(3);
+      expect(repository.updateAvailabilitySheet.mock.calls).toHaveLength(3);
     });
   });
 
@@ -175,11 +175,11 @@ describe('Given GoogleSheetsService', () => {
       await service.createReservation('Reservas!A2:F2', reservationPayloadMock);
       const insertResult = await service.insertRow(`${SheetsName.AVAILABLE_BOOKINGS}!A1`, 8);
 
-      expect(repository.createReservation).toHaveBeenCalledWith(
+      expect(repository.createReservation.mock.calls[0]).toEqual([
         'Reservas!A2:F2',
         reservationPayloadMock,
-      );
-      expect(repository.insertRow).toHaveBeenCalledWith(8, 1);
+      ]);
+      expect(repository.insertRow.mock.calls[0]).toEqual([8, 1]);
       expect(insertResult).toBe(9);
     });
   });
