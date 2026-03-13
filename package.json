@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "fix": "prettier . --write && npm run lint"
+    "fix": "prettier . --write && npm run lint",
+    "test:google": "jest src/modules/google-sheets"
   },
   "dependencies": {
     "@googleapis/sheets": "^11.1.0",
