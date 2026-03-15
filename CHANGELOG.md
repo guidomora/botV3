@@ -2,8 +2,9 @@
 
 ### 15/10/25
 
-- Test added for dates module.
+- Test added for dates module and cache module.
 - Command added to run only the tests for dates module.
+- Command added to run only the tests for cache module.
 - TODO:
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
