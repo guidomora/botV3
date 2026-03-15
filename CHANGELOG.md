@@ -1,10 +1,9 @@
 ### History
 
-### 13/10/25
+### 15/10/25
 
-- Added tests for google module
-- Nest Skill Added
-- New Command to run only the tests for google module
+- Test added for dates module.
+- Command added to run only the tests for dates module.
 - TODO:
 - Check if we can delete the comments from ai.service line 19
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -12,6 +11,12 @@
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 13/10/25
+
+- Added tests for google module
+- Nest Skill Added
+- New Command to run only the tests for google module
 
 ### 12/03/26
 
