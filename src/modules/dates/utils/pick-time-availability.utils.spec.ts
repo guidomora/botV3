@@ -60,4 +60,30 @@ describe('pickAvailabilityForTime', () => {
       { time: '15:00', available_tables: 40 },
     ]);
   });
+
+  it('should suggest earliest slots when requested time is before all availability', () => {
+    const result = pickAvailabilityForTime(day, '11:00', {
+      neighborCount: 2,
+      slotIntervalMinutes: 30,
+    });
+
+    expect(result.slots).toEqual([
+      { time: '13:00', available_tables: 42 },
+      { time: '15:00', available_tables: 40 },
+    ]);
+    expect(result.summary).toEqual({ first_time: '13:00', last_time: '15:00' });
+  });
+
+  it('should suggest latest slots when requested time is after all availability', () => {
+    const result = pickAvailabilityForTime(day, '23:00', {
+      neighborCount: 2,
+      slotIntervalMinutes: 30,
+    });
+
+    expect(result.slots).toEqual([
+      { time: '15:00', available_tables: 40 },
+      { time: '16:00', available_tables: 39 },
+    ]);
+    expect(result.summary).toEqual({ first_time: '15:00', last_time: '16:00' });
+  });
 });

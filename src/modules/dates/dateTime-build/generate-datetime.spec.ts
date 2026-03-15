@@ -38,6 +38,13 @@ describe('GenerateDatetime', () => {
     expect(generateDatetime.createOneDay()).toBe('domingo 01 de marzo 2026 01/03/2026');
   });
 
+  it('should create shifted day labels when fromThisDay is provided', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-03-01T15:00:00.000Z'));
+
+    expect(generateDatetime.createOneDay(2)).toBe('martes 03 de marzo 2026 03/03/2026');
+  });
+
   it('should create a past day label', () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-03-10T15:00:00.000Z'));
@@ -49,5 +56,25 @@ describe('GenerateDatetime', () => {
     expect(generateDatetime.createNextDay(new Date(2026, 2, 1))).toBe(
       'lunes 02 de marzo 2026 02/03/2026',
     );
+  });
+
+  it('should create date-time rows using the current system date when no date is provided', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-03-01T15:00:00.000Z'));
+
+    const rows = generateDatetime.createDateTime();
+
+    expect(rows[2]).toEqual(['domingo 01 de marzo 2026 01/03/2026', '12:00']);
+    expect(rows[12]).toEqual(['domingo 01 de marzo 2026 01/03/2026', '22:00']);
+  });
+
+  it('should create booking rows using the current system date when no date is provided', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-03-01T15:00:00.000Z'));
+
+    const rows = generateDatetime.createOneDayWithBookings();
+
+    expect(rows[2]).toEqual(['domingo 01 de marzo 2026 01/03/2026', '12:00', '0', '42']);
+    expect(rows[12]).toEqual(['domingo 01 de marzo 2026 01/03/2026', '22:00', '0', '42']);
   });
 });

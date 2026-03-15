@@ -102,4 +102,11 @@ describe('DeleteReservationUseCase', () => {
 
     expect(googleSheetsServiceMock.deleteOldRows).toHaveBeenCalledTimes(1);
   });
+
+  it('should rethrow unexpected errors while deleting old rows', async () => {
+    generateDatetimeMock.createPastDay.mockReturnValue('martes 10 de marzo 2030 10/03/2030');
+    googleSheetsServiceMock.getDateIndexByDate.mockRejectedValue(new Error('delete-old-failed'));
+
+    await expect(useCase.deleteOldRows()).rejects.toThrow('delete-old-failed');
+  });
 });

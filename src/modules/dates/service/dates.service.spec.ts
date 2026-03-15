@@ -181,6 +181,16 @@ describe('DatesService', () => {
     );
   });
 
+  it('should rethrow when deleting incomplete temporal reservation fails', async () => {
+    googleTemporalSheetsServiceMock.findTemporalRowIndexByWaId.mockRejectedValue(
+      new Error('temporal-failed'),
+    );
+
+    await expect(
+      service.deleteIncompleteTemporalReservationByWaId('5491154916243'),
+    ).rejects.toThrow('temporal-failed');
+  });
+
   it('should proxy deleteReservation and deleteOldRows', async () => {
     deleteReservationUseCaseMock.deleteReservation.mockResolvedValue('deleted');
     deleteReservationUseCaseMock.deleteOldRows.mockResolvedValue('cleaned');
@@ -213,6 +223,37 @@ describe('DatesService', () => {
       columns: ['time', 'available_tables'],
       slots: [{ time: '17:00', available_tables: 40 }],
       summary: { first_time: '17:00', last_time: '17:00' },
+    });
+  });
+
+  it('should suggest nearby slots when requested time does not exist', async () => {
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
+
+    await expect(
+      service.getDayAndTimeAvailability(futureReservationDateLabelMock, '17:30'),
+    ).resolves.toEqual({
+      date_label: futureReservationDateLabelMock,
+      columns: ['time', 'available_tables'],
+      slots: [
+        { time: '17:00', available_tables: 40 },
+        { time: '18:00', available_tables: 39 },
+      ],
+      summary: { first_time: '17:00', last_time: '18:00' },
+    });
+  });
+
+  it('should fallback to 60 minutes when slot interval env is invalid', async () => {
+    process.env.SLOT_INTERVAL_MINUTES = 'invalid';
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
+
+    await expect(
+      service.getDayAndTimeAvailability(futureReservationDateLabelMock, '17:30'),
+    ).resolves.toMatchObject({
+      slots: [
+        { time: '17:00', available_tables: 40 },
+        { time: '18:00', available_tables: 39 },
+      ],
+      summary: { first_time: '17:00', last_time: '18:00' },
     });
   });
 
@@ -354,6 +395,34 @@ describe('DatesService', () => {
     );
   });
 
+  it('should use current row quantity when newQuantity is not numeric', async () => {
+    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
+    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
+    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 10,
+      available: 32,
+    });
+
+    await expect(
+      service.updateReservation(
+        buildUpdateReservationMock({ newName: 'Guido Fallback', newQuantity: 'muchas' }),
+      ),
+    ).resolves.toMatchObject({
+      status: StatusEnum.SUCCESS,
+      error: false,
+    });
+
+    expect(googleSheetsServiceMock.createReservation).toHaveBeenCalledWith('Reservas!C27:F27', {
+      customerData: {
+        name: 'guido fallback',
+        phone: '54-9-1154916243',
+        quantity: 4,
+      },
+    });
+  });
+
   it('should reject moved reservation when target slot has no availability', async () => {
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
@@ -450,6 +519,41 @@ describe('DatesService', () => {
     expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenNthCalledWith(
       2,
       nextReservationDateLabelMock,
+    );
+  });
+
+  it('should move reservation within the same date and refresh availability once', async () => {
+    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
+    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
+    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 10,
+      available: 32,
+    });
+    createReservationRowUseCaseMock.createReservation.mockResolvedValue({
+      error: false,
+      status: StatusEnum.SUCCESS,
+    });
+    deleteReservationUseCaseMock.deleteReservation.mockResolvedValue(
+      'Su reserva ha sido cancelada correctamente.',
+    );
+
+    await expect(
+      service.updateReservation(
+        buildUpdateReservationMock({
+          newTime: '21:00',
+          newName: 'guido noche',
+        }),
+      ),
+    ).resolves.toMatchObject({
+      status: StatusEnum.SUCCESS,
+      error: false,
+    });
+
+    expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledTimes(1);
+    expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledWith(
+      futureReservationDateLabelMock,
     );
   });
 });
