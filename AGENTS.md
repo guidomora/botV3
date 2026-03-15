@@ -39,7 +39,7 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 
 - Siempre ejecutar los tests existentes y los creados.
 - Siempre que termines de agregar codigo, ejecuta `npm run fix` para corregir errores de linting y que prettier formatee el codigo. Si esto arroja algun error corregilo y volvelo a ejecutar hasta que no arroje mas errores.
-- Cada vez que agregues tests, tene en cuenta de crear los mocks en la carpeta de mocks, a menos que sea algo muy pequeño y no reutilizable.
+- Cada vez que agregues tests, tene en cuenta de crear los mocks en la carpeta mocks del propio module (tests > mocks), a menos que sea algo muy pequeño y no reutilizable.
 
 ## 5) Seguridad y configuración
 

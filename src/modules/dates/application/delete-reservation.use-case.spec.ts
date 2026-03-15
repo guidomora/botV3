@@ -1,35 +1,26 @@
 import { DeleteReservationUseCase } from './delete-reservation.use-case';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { GenerateDatetime } from '../dateTime-build/generate-datetime';
+import { deleteReservationRequestMock } from '../test/mocks/reservation-scenarios.mock';
+import {
+  duplicatedReservationSheetRowsMock,
+  singleReservationSheetRowMock,
+} from '../test/mocks/sheets-data.mock';
+import {
+  generateDatetimeMock as buildGenerateDatetimeMock,
+  googleSheetsServiceMock as buildGoogleSheetsServiceMock,
+} from '../test/mocks/dependency-mocks';
 
 describe('DeleteReservationUseCase', () => {
   let useCase: DeleteReservationUseCase;
 
-  const googleSheetsServiceMock = {
-    getDateIndexByData: jest.fn(),
-    getDatetimeDates: jest.fn(),
-    deleteReservation: jest.fn(),
-    deleteRow: jest.fn(),
-    getAvailabilityFromReservations: jest.fn(),
-    updateAvailabilityFromReservations: jest.fn(),
-    refreshAvailabilityForDate: jest.fn(),
-    getDateIndexByDate: jest.fn(),
-    deleteOldRows: jest.fn(),
-  };
-
-  const generateDatetimeMock = {
-    createPastDay: jest.fn(),
-  };
-
-  const deleteReservationData = {
-    date: 'viernes 27 de febrero 2030 27/02/2030',
-    time: '22:00',
-    name: 'guido',
-    phone: '54-9-1154916243',
-  };
+  const googleSheetsServiceMock = buildGoogleSheetsServiceMock();
+  const generateDatetimeMock = buildGenerateDatetimeMock();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    Object.values(googleSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
+    Object.values(generateDatetimeMock).forEach((mockFn) => mockFn.mockReset());
+
     useCase = new DeleteReservationUseCase(
       googleSheetsServiceMock as unknown as GoogleSheetsService,
       generateDatetimeMock as unknown as GenerateDatetime,
@@ -38,36 +29,31 @@ describe('DeleteReservationUseCase', () => {
 
   it('should clear reservation cells when there is only one row for the slot', async () => {
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.getDatetimeDates.mockResolvedValue([
-      ['viernes 27 de febrero 2030 27/02/2030', '22:00', 'guido', '54-9-1154916243', 'Cena', '4'],
-    ]);
+    googleSheetsServiceMock.getDatetimeDates.mockResolvedValue(singleReservationSheetRowMock);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
       reservations: 0,
       available: 42,
     });
 
-    await expect(useCase.deleteReservation(deleteReservationData)).resolves.toBe(
+    await expect(useCase.deleteReservation(deleteReservationRequestMock)).resolves.toBe(
       'Su reserva ha sido cancelada correctamente.',
     );
 
     expect(googleSheetsServiceMock.deleteReservation).toHaveBeenCalledWith('Reservas!C27:F27');
     expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledWith(
-      'viernes 27 de febrero 2030 27/02/2030',
+      deleteReservationRequestMock.date,
     );
   });
 
   it('should delete the full row when there are duplicated rows for the same slot', async () => {
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.getDatetimeDates.mockResolvedValue([
-      ['viernes 27 de febrero 2030 27/02/2030', '22:00', 'guido', '54-9-1154916243', 'Cena', '4'],
-      ['viernes 27 de febrero 2030 27/02/2030', '22:00', 'ana', '54-9-1199999999', 'Cena', '2'],
-    ]);
+    googleSheetsServiceMock.getDatetimeDates.mockResolvedValue(duplicatedReservationSheetRowsMock);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
       reservations: 2,
       available: 40,
     });
 
-    await useCase.deleteReservation(deleteReservationData);
+    await useCase.deleteReservation(deleteReservationRequestMock);
 
     expect(googleSheetsServiceMock.deleteRow).toHaveBeenCalledWith(27, 0);
     expect(googleSheetsServiceMock.deleteReservation).not.toHaveBeenCalled();
@@ -76,7 +62,7 @@ describe('DeleteReservationUseCase', () => {
   it('should return a friendly message when reservation cannot be found', async () => {
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(-1);
 
-    await expect(useCase.deleteReservation(deleteReservationData)).resolves.toBe(
+    await expect(useCase.deleteReservation(deleteReservationRequestMock)).resolves.toBe(
       'Algunos de los datos ingresados no coinciden con la reserva.',
     );
   });
@@ -84,7 +70,9 @@ describe('DeleteReservationUseCase', () => {
   it('should rethrow unexpected errors while deleting reservation', async () => {
     googleSheetsServiceMock.getDateIndexByData.mockRejectedValue(new Error('lookup-failed'));
 
-    await expect(useCase.deleteReservation(deleteReservationData)).rejects.toThrow('lookup-failed');
+    await expect(useCase.deleteReservation(deleteReservationRequestMock)).rejects.toThrow(
+      'lookup-failed',
+    );
   });
 
   it('should delete old rows in both sheets when cutoff date exists', async () => {
