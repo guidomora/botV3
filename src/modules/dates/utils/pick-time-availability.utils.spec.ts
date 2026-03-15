@@ -1,5 +1,5 @@
 import { AvailabilityResponse } from 'src/lib';
-import { pickAvailabilityForTime } from './pickt-time-availability.utils';
+import { pickAvailabilityForTime } from './pick-time-availability.utils';
 
 describe('pickAvailabilityForTime', () => {
   const day: AvailabilityResponse = {
