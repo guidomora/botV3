@@ -73,6 +73,12 @@ describe('CreateDayUseCase', () => {
     );
   });
 
+  it('should rethrow when reading last row fails in createNextDate', async () => {
+    googleSheetsServiceMock.getLastRowValue.mockRejectedValue(new Error('next-date-failed'));
+
+    await expect(useCase.createNextDate()).rejects.toThrow('next-date-failed');
+  });
+
   it('should create multiple consecutive dates', async () => {
     googleSheetsServiceMock.getLastRowValue
       .mockResolvedValueOnce(futureReservationDateLabelMock)
