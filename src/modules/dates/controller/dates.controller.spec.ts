@@ -9,6 +9,7 @@ describe('DatesController', () => {
     createDate: jest.fn(),
     createNextDate: jest.fn(),
     createXDates: jest.fn(),
+    ensureAgendaWindow: jest.fn(),
     deleteOldRows: jest.fn(),
   };
 
@@ -49,6 +50,27 @@ describe('DatesController', () => {
 
     await expect(controller.createXDates(3)).resolves.toBe('Se agregaron 3 dias');
     expect(datesServiceMock.createXDates).toHaveBeenCalledWith(3);
+  });
+
+  it('should delegate ensureAgendaWindow to service', async () => {
+    datesServiceMock.ensureAgendaWindow.mockResolvedValue({
+      targetDaysAhead: 15,
+      currentCoverageDays: 14,
+      missingDays: 1,
+      createdDays: 1,
+      lastRegisteredDate: 'domingo 30 de marzo 2026 30/03/2026',
+      message: 'Se agregaron 1 dias para completar 15 dias de agenda.',
+    });
+
+    await expect(controller.ensureAgendaWindow()).resolves.toEqual({
+      targetDaysAhead: 15,
+      currentCoverageDays: 14,
+      missingDays: 1,
+      createdDays: 1,
+      lastRegisteredDate: 'domingo 30 de marzo 2026 30/03/2026',
+      message: 'Se agregaron 1 dias para completar 15 dias de agenda.',
+    });
+    expect(datesServiceMock.ensureAgendaWindow).toHaveBeenCalledTimes(1);
   });
 
   it('should delegate deleteOldRows to service', async () => {

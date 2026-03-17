@@ -18,6 +18,7 @@ import {
   CreateDayUseCase,
   CreateReservationRowUseCase,
   DeleteReservationUseCase,
+  EnsureAgendaWindowUseCase,
 } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import {
@@ -35,6 +36,7 @@ export class DatesService {
     private readonly createDayUseCase: CreateDayUseCase,
     private readonly createReservationRowUseCase: CreateReservationRowUseCase,
     private readonly deleteReservationUseCase: DeleteReservationUseCase,
+    private readonly ensureAgendaWindowUseCase: EnsureAgendaWindowUseCase,
     private readonly googleSheetsService: GoogleSheetsService,
     private readonly googleSheetsTemporalService: GoogleTemporalSheetsService,
   ) {}
@@ -48,6 +50,10 @@ export class DatesService {
 
   async createXDates(quantity: number): Promise<string> {
     return this.createDayUseCase.createXDates(quantity);
+  }
+
+  async ensureAgendaWindow() {
+    return this.ensureAgendaWindowUseCase.ensureAgendaWindow();
   }
 
   async createReservationWithMultipleMessages(

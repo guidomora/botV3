@@ -7,7 +7,9 @@ import {
   CreateDayUseCase,
   CreateReservationRowUseCase,
   DeleteReservationUseCase,
+  EnsureAgendaWindowUseCase,
 } from './application';
+import { AgendaSyncGuard } from './guards/agenda-sync.guard';
 
 @Module({
   controllers: [DatesController],
@@ -18,6 +20,8 @@ import {
     CreateDayUseCase,
     CreateReservationRowUseCase,
     DeleteReservationUseCase,
+    EnsureAgendaWindowUseCase,
+    AgendaSyncGuard,
   ],
   exports: [DatesService],
 })

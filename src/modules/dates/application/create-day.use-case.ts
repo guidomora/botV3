@@ -56,6 +56,29 @@ export class CreateDayUseCase {
     }
   }
 
+  async createXDatesFrom(startDate: Date, quantity: number): Promise<string> {
+    try {
+      const cursorDate = new Date(startDate);
+
+      for (let i = 0; i < quantity; i++) {
+        const currentDate = this.createCurrentDay(cursorDate);
+        const dateTime: DateTime = this.createDateTime(currentDate);
+        const currentDayWithBookings: DateTime = this.createOneDayWithBookings(currentDate);
+
+        await this.googleSheetsService.appendRow(`${SHEETS_NAMES[0]}!A:C`, dateTime);
+        await this.googleSheetsService.appendRow(`${SHEETS_NAMES[1]}!A:E`, currentDayWithBookings);
+
+        cursorDate.setDate(cursorDate.getDate() + 1);
+      }
+
+      this.logger.log(`Se agregaron ${quantity} dias desde una fecha base`, CreateDayUseCase.name);
+      return `Se agregaron ${quantity} dias`;
+    } catch (error) {
+      this.logger.error(`Error al agregar dias desde una fecha base`, error);
+      throw error;
+    }
+  }
+
   async createNextDate(): Promise<string> {
     try {
       const lastRow = await this.googleSheetsService.getLastRowValue(`${SHEETS_NAMES[0]}!A:A`);
@@ -93,5 +116,10 @@ export class CreateDayUseCase {
   public createNextDay(date: Date): string {
     const dateTime = this.generateDatetime.createNextDay(date);
     return dateTime;
+  }
+
+  private createCurrentDay(date: Date): string {
+    const currentDay = new Date(date);
+    return this.generateDatetime.createNextDay(new Date(currentDay.setDate(currentDay.getDate() - 1)));
   }
 }

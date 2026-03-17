@@ -100,6 +100,21 @@ describe('CreateDayUseCase', () => {
     await expect(useCase.createXDates(1)).rejects.toThrow('last-row-failed');
   });
 
+  it('should create multiple dates from an explicit start date', async () => {
+    generateDatetimeMock.createNextDay
+      .mockReturnValueOnce(futureReservationDateLabelMock)
+      .mockReturnValueOnce(nextReservationDateLabelMock);
+    generateDatetimeMock.createDateTime.mockReturnValue(createDayRowsMock);
+    generateDatetimeMock.createOneDayWithBookings.mockReturnValue(createDayAvailabilityRowsMock);
+
+    await expect(useCase.createXDatesFrom(new Date(2030, 2, 1), 2)).resolves.toBe(
+      'Se agregaron 2 dias',
+    );
+
+    expect(generateDatetimeMock.createNextDay).toHaveBeenCalledTimes(2);
+    expect(googleSheetsServiceMock.appendRow).toHaveBeenCalledTimes(4);
+  });
+
   it('should expose generateDatetime helper wrappers', () => {
     generateDatetimeMock.createDateTime.mockReturnValue(createDayRowsMock);
     generateDatetimeMock.createOneDayWithBookings.mockReturnValue(createDayAvailabilityRowsMock);

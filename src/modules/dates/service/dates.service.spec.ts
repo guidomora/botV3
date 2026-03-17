@@ -3,6 +3,7 @@ import {
   CreateDayUseCase,
   CreateReservationRowUseCase,
   DeleteReservationUseCase,
+  EnsureAgendaWindowUseCase,
 } from '../application';
 import { DatesService } from './dates.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
@@ -25,6 +26,7 @@ import {
   createDayUseCaseMock as buildCreateDayUseCaseMock,
   createReservationRowUseCaseMock as buildCreateReservationRowUseCaseMock,
   deleteReservationUseCaseMock as buildDeleteReservationUseCaseMock,
+  ensureAgendaWindowUseCaseMock as buildEnsureAgendaWindowUseCaseMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
   googleTemporalSheetsServiceMock as buildGoogleTemporalSheetsServiceMock,
 } from '../test/mocks/dependency-mocks';
@@ -35,6 +37,7 @@ describe('DatesService', () => {
   const createDayUseCaseMock = buildCreateDayUseCaseMock();
   const createReservationRowUseCaseMock = buildCreateReservationRowUseCaseMock();
   const deleteReservationUseCaseMock = buildDeleteReservationUseCaseMock();
+  const ensureAgendaWindowUseCaseMock = buildEnsureAgendaWindowUseCaseMock();
   const googleSheetsServiceMock = buildGoogleSheetsServiceMock();
   const googleTemporalSheetsServiceMock = buildGoogleTemporalSheetsServiceMock();
 
@@ -42,6 +45,7 @@ describe('DatesService', () => {
     Object.values(createDayUseCaseMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(createReservationRowUseCaseMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(deleteReservationUseCaseMock).forEach((mockFn) => mockFn.mockReset());
+    Object.values(ensureAgendaWindowUseCaseMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(googleSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(googleTemporalSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
 
@@ -53,6 +57,7 @@ describe('DatesService', () => {
       createDayUseCaseMock as unknown as CreateDayUseCase,
       createReservationRowUseCaseMock as unknown as CreateReservationRowUseCase,
       deleteReservationUseCaseMock as unknown as DeleteReservationUseCase,
+      ensureAgendaWindowUseCaseMock as unknown as EnsureAgendaWindowUseCase,
       googleSheetsServiceMock as unknown as GoogleSheetsService,
       googleTemporalSheetsServiceMock as unknown as GoogleTemporalSheetsService,
     );
@@ -68,10 +73,26 @@ describe('DatesService', () => {
     createDayUseCaseMock.createDate.mockResolvedValue('date-created');
     createDayUseCaseMock.createNextDate.mockResolvedValue('next-date-created');
     createDayUseCaseMock.createXDates.mockResolvedValue('x-dates-created');
+    ensureAgendaWindowUseCaseMock.ensureAgendaWindow.mockResolvedValue({
+      targetDaysAhead: 15,
+      currentCoverageDays: 15,
+      missingDays: 0,
+      createdDays: 0,
+      lastRegisteredDate: futureReservationDateLabelMock,
+      message: 'ok',
+    });
 
     await expect(service.createDate()).resolves.toBe('date-created');
     await expect(service.createNextDate()).resolves.toBe('next-date-created');
     await expect(service.createXDates(3)).resolves.toBe('x-dates-created');
+    await expect(service.ensureAgendaWindow()).resolves.toEqual({
+      targetDaysAhead: 15,
+      currentCoverageDays: 15,
+      missingDays: 0,
+      createdDays: 0,
+      lastRegisteredDate: futureReservationDateLabelMock,
+      message: 'ok',
+    });
   });
 
   it('should create reservation from temporal data when snapshot is completed', async () => {

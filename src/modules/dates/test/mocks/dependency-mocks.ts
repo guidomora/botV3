@@ -2,6 +2,7 @@ export const createDayUseCaseMock = () => ({
   createDate: jest.fn(),
   createNextDate: jest.fn(),
   createXDates: jest.fn(),
+  createXDatesFrom: jest.fn(),
 });
 
 export const createReservationRowUseCaseMock = () => ({
@@ -11,6 +12,10 @@ export const createReservationRowUseCaseMock = () => ({
 export const deleteReservationUseCaseMock = () => ({
   deleteReservation: jest.fn(),
   deleteOldRows: jest.fn(),
+});
+
+export const ensureAgendaWindowUseCaseMock = () => ({
+  ensureAgendaWindow: jest.fn(),
 });
 
 export const generateDatetimeMock = () => ({
