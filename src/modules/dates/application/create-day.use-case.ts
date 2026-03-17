@@ -120,6 +120,8 @@ export class CreateDayUseCase {
 
   private createCurrentDay(date: Date): string {
     const currentDay = new Date(date);
-    return this.generateDatetime.createNextDay(new Date(currentDay.setDate(currentDay.getDate() - 1)));
+    return this.generateDatetime.createNextDay(
+      new Date(currentDay.setDate(currentDay.getDate() - 1)),
+    );
   }
 }

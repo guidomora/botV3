@@ -42,6 +42,12 @@ Objetivo principal:
 5. **Otro / fuera de alcance**
    - Cuando la intención no corresponde a una operación soportada, responde de manera orientativa y amable.
 
+6. **Mantener agenda abierta automáticamente**
+   - El sistema puede verificar cuántos días futuros de agenda ya existen en Google Sheets.
+   - Si la cobertura es menor al objetivo configurado, crea únicamente los días faltantes.
+   - Si la agenda ya cubre la ventana objetivo, no agrega nuevas fechas.
+   - Este flujo está pensado para ser disparado externamente de forma periódica.
+
 ---
 
 ## 3) Arquitectura lógica
@@ -63,6 +69,7 @@ Objetivo principal:
 
 - **Módulo Dates**
   - Casos de uso de negocio para crear, actualizar y eliminar reservas.
+  - Sincronización de ventana de agenda futura según configuración.
   - Validaciones de duplicidad, fecha pasada, cupo, capacidad y reglas de reserva grande.
 
 - **Módulo Google Sheets**
@@ -269,6 +276,8 @@ Después de cada alta, baja o modificación:
 - `RESERVATION_DURATION_MINUTES`
 - `MAX_PEOPLE_PER_RESERVATION`
 - `LARGE_RESERVATION_CONTACT_NUMBER`
+- `AGENDA_DAYS_AHEAD` (cantidad de días, contando hoy de forma inclusiva, que deben permanecer abiertos en agenda)
+- `AGENDA_SYNC_SECRET` (token simple para proteger el endpoint manual de sincronización de agenda)
 
 ### Seguridad operativa
 
@@ -288,6 +297,7 @@ Este proyecto implementa un **asistente transaccional de reservas** por WhatsApp
 
 - procesamiento de lenguaje natural,
 - lógica de negocio de restaurante (cupos, duplicados, tiempos, reservas grandes),
+- automatización para mantener la agenda abierta la cantidad de días configurada,
 - controles de seguridad para canales webhook (firma, idempotencia, rate limit, tamaño),
 - y consistencia operativa sobre Google Sheets.
 

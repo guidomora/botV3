@@ -1,15 +1,14 @@
 import { ExecutionContext } from '@nestjs/common';
+import { AGENDA_SYNC_SECRET_HEADER } from 'src/constants';
 import { AgendaSyncGuard } from './agenda-sync.guard';
 
 describe('AgendaSyncGuard', () => {
-  const buildContext = (
-    headerValue?: string,
-  ): ExecutionContext =>
+  const buildContext = (headerValue?: string): ExecutionContext =>
     ({
       switchToHttp: () => ({
         getRequest: () => ({
           headers: {
-            'x-cron-secret': headerValue,
+            [AGENDA_SYNC_SECRET_HEADER]: headerValue,
           },
         }),
       }),

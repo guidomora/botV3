@@ -7,7 +7,6 @@ import {
 } from '../test/mocks/dependency-mocks';
 
 describe('EnsureAgendaWindowUseCase', () => {
-  const realDate = Date;
   let useCase: EnsureAgendaWindowUseCase;
 
   const createDayUseCaseMock = buildCreateDayUseCaseMock();
@@ -18,23 +17,8 @@ describe('EnsureAgendaWindowUseCase', () => {
     Object.values(googleSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
 
     process.env.AGENDA_DAYS_AHEAD = '15';
-
-    const fixedNow = new realDate('2026-03-16T12:00:00-03:00');
-
-    global.Date = class extends realDate {
-      constructor(value?: string | number | Date) {
-        if (value) {
-          super(value);
-          return;
-        }
-
-        super(fixedNow);
-      }
-
-      static now(): number {
-        return fixedNow.getTime();
-      }
-    } as DateConstructor;
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-03-16T12:00:00-03:00'));
 
     useCase = new EnsureAgendaWindowUseCase(
       createDayUseCaseMock as unknown as CreateDayUseCase,
@@ -43,7 +27,7 @@ describe('EnsureAgendaWindowUseCase', () => {
   });
 
   afterEach(() => {
-    global.Date = realDate;
+    jest.useRealTimers();
     delete process.env.AGENDA_DAYS_AHEAD;
   });
 
@@ -95,11 +79,13 @@ describe('EnsureAgendaWindowUseCase', () => {
       lastRegisteredDate: null,
     });
     expect(createDayUseCaseMock.createXDatesFrom).toHaveBeenCalledTimes(1);
-    expect(createDayUseCaseMock.createXDatesFrom.mock.calls[0][1]).toBe(15);
+    expect(createDayUseCaseMock.createXDatesFrom).toHaveBeenCalledWith(expect.any(Date), 15);
   });
 
   it('should recreate the full target window from today when last registered day is in the past', async () => {
-    googleSheetsServiceMock.getLastRowValue.mockResolvedValue('domingo 15 de marzo 2026 15/03/2026');
+    googleSheetsServiceMock.getLastRowValue.mockResolvedValue(
+      'domingo 15 de marzo 2026 15/03/2026',
+    );
     createDayUseCaseMock.createXDatesFrom.mockResolvedValue('Se agregaron 15 dias');
 
     await expect(useCase.ensureAgendaWindow()).resolves.toEqual({

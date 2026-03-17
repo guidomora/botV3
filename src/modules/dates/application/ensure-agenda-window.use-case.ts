@@ -39,9 +39,16 @@ export class EnsureAgendaWindowUseCase {
     }
 
     const parsedLastRegisteredDate = this.normalizeDate(parseDate(lastRegisteredDate));
-    const currentCoverageDays = this.calculateInclusiveCoverageDays(today, parsedLastRegisteredDate);
+    const currentCoverageDays = this.calculateInclusiveCoverageDays(
+      today,
+      parsedLastRegisteredDate,
+    );
 
     if (parsedLastRegisteredDate >= desiredLastDate) {
+      this.logger.log(
+        `La agenda ya esta cubierta. Cobertura actual=${currentCoverageDays}, objetivo=${targetDaysAhead}, ultimoDia=${lastRegisteredDate}`,
+      );
+
       return {
         targetDaysAhead,
         currentCoverageDays,

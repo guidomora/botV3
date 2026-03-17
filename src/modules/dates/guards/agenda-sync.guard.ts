@@ -5,6 +5,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { AGENDA_SYNC_SECRET_HEADER } from 'src/constants';
 
 @Injectable()
 export class AgendaSyncGuard implements CanActivate {
@@ -22,7 +23,7 @@ export class AgendaSyncGuard implements CanActivate {
       throw new ForbiddenException('Agenda sync is not configured');
     }
 
-    const receivedSecret = this.extractFirstHeaderValue(request.headers['x-cron-secret']);
+    const receivedSecret = this.extractFirstHeaderValue(request.headers[AGENDA_SYNC_SECRET_HEADER]);
 
     if (!receivedSecret || receivedSecret !== expectedSecret) {
       this.logger.warn('Endpoint de sincronizacion rechazado: secreto invalido');
