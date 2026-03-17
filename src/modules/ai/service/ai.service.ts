@@ -42,14 +42,6 @@ export class AiService {
   ): Promise<MultipleMessagesResponse> {
     const activeIntent = inferActiveIntent(messageHistory);
 
-    // const last = messageHistory.at(-1);
-    // const shouldRemoveLastFromContext =
-    //   !!last && last.role === RoleEnum.USER && last.content === message;
-
-    // const contextHistory = shouldRemoveLastFromContext
-    //   ? messageHistory.slice(0, -1)
-    //   : messageHistory;
-
     const context = serializeContext(messageHistory);
 
     const prompt = interactPrompt(context, activeIntent);

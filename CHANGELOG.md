@@ -1,17 +1,20 @@
 ### History
 
-### 16/10/25
-
-- New feature to add days: it keeps the quantity of days that a restaurant wants. If a restaurant selects 15 it will always count 15 days from the actual date and will add the quantity of days that are needed to cover the next 15 days.
-- New feature to delete days: same as add but with delete
-- envs added and Guard for the endpoint
+- New github workflows added to call the DELETE and POST endpoints for days management
+- Check if we can delete the comments from ai.service line 19 (done)
 - TODO:
-- Check if we can delete the comments from ai.service line 19
+- Complete the gh workflow in github to call the DELETE and POST endpoints for days management
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 16/10/25
+
+- New feature to add days: it keeps the quantity of days that a restaurant wants. If a restaurant selects 15 it will always count 15 days from the actual date and will add the quantity of days that are needed to cover the next 15 days.
+- New feature to delete days: same as add but with delete
+- envs added and Guard for the endpoint
 
 ### 15/10/25
 
