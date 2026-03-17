@@ -6,3 +6,4 @@ export * from './restaurant-data/restaurant-data';
 export * from './responses';
 export * from './middlewares';
 export * from './reservations';
+export * from './headers';

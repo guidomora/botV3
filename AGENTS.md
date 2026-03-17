@@ -22,7 +22,7 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 ## 3) Convenciones de código
 
 - Mantener TypeScript estricto y tipado explícito cuando agregues APIs/contratos.
-- No usar Any, salvo que sea un caso extremo.
+- Nunca usar Any, salvo que sea un caso extremo.
 - Respetar estructura por módulos de Nest (`module`, `controller`, `service`, `application`, `entities`, `utils`).
 - Reutilizar utilidades/constantes existentes en `src/constants` y `src/lib/helpers` antes de crear nuevas.
 - Las interfaces, types o enums se crean en lib > types.
