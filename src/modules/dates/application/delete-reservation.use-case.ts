@@ -4,10 +4,12 @@ import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sh
 import { DeleteReservation, GetIndexParams, UpdateParams } from 'src/lib';
 import { Logger } from '@nestjs/common';
 import { GenerateDatetime } from '../dateTime-build/generate-datetime';
+import { parseDate } from '../utils/parseDate';
 
 @Injectable()
 export class DeleteReservationUseCase {
   private readonly logger = new Logger(DeleteReservationUseCase.name);
+  private readonly rowStart = 4;
 
   constructor(
     private readonly googleSheetsService: GoogleSheetsService,
@@ -66,22 +68,39 @@ export class DeleteReservationUseCase {
   }
 
   async deleteOldRows() {
-    const rowStart = 4;
-
     try {
-      const deleteTillDate = this.generateDatetime.createPastDay(5);
+      const retentionDays = this.getRetentionDays();
+      const deleteTillDate = this.generateDatetime.createPastDay(retentionDays - 1);
+      const oldestRegisteredDate = await this.googleSheetsService.getFirstRowValue(
+        `${SHEETS_NAMES[1]}!A${this.rowStart}:A`,
+      );
+
+      if (oldestRegisteredDate === 'no hay valores') {
+        this.logger.log('No hay filas antiguas para eliminar porque la agenda esta vacia.');
+        return 'No hay filas antiguas para eliminar.';
+      }
+
+      const oldestDate = parseDate(oldestRegisteredDate);
+      const cutoffDate = parseDate(deleteTillDate);
+
+      if (oldestDate >= cutoffDate) {
+        this.logger.log(
+          `No hay filas antiguas para eliminar. La agenda ya conserva ${retentionDays} dias hacia atras.`,
+        );
+        return 'No hay filas antiguas para eliminar.';
+      }
 
       const rowEndFirstSheet = await this.googleSheetsService.getDateIndexByDate(deleteTillDate, 0);
 
       if (rowEndFirstSheet === -1) {
-        this.logger.warn('No se encontro la fecha para la hoja 1');
-        return 'No se encontro la fecha';
+        this.logger.warn('No se encontro la fecha de corte para la hoja de reservas');
+        return 'No se encontro la fecha de corte.';
       }
 
-      await this.googleSheetsService.deleteOldRows(rowStart, rowEndFirstSheet, 0);
+      await this.googleSheetsService.deleteOldRows(this.rowStart, rowEndFirstSheet, 0);
 
       this.logger.log(
-        `Filas antiguas eliminadas correctamente para la hoja 0`,
+        `Filas antiguas eliminadas correctamente para la hoja de reservas hasta ${deleteTillDate}`,
         DeleteReservationUseCase.name,
       );
 
@@ -91,19 +110,33 @@ export class DeleteReservationUseCase {
       );
 
       if (rowEndSecondSheet === -1) {
-        this.logger.warn('No se encontro la fecha para la hoja 2');
-        return 'No se encontro la fecha';
+        this.logger.warn('No se encontro la fecha de corte para la hoja de disponibilidad');
+        return 'No se encontro la fecha de corte.';
       }
 
-      await this.googleSheetsService.deleteOldRows(rowStart, rowEndSecondSheet, 1);
+      await this.googleSheetsService.deleteOldRows(this.rowStart, rowEndSecondSheet, 1);
 
       this.logger.log(
-        `Filas antiguas eliminadas correctamente para la hoja 1`,
+        `Filas antiguas eliminadas correctamente para la hoja de disponibilidad hasta ${deleteTillDate}`,
         DeleteReservationUseCase.name,
       );
+
+      return `Se eliminaron las filas anteriores a ${deleteTillDate}.`;
     } catch (error) {
       this.logger.error(`Error al eliminar las filas antiguas`, error);
       throw error;
     }
+  }
+
+  private getRetentionDays(): number {
+    const retentionDays = Number(process.env.AGENDA_DAYS_BACK_TO_KEEP);
+
+    if (!Number.isInteger(retentionDays) || retentionDays <= 0) {
+      throw new Error(
+        'La variable de entorno AGENDA_DAYS_BACK_TO_KEEP debe ser un numero entero mayor a 0.',
+      );
+    }
+
+    return retentionDays;
   }
 }

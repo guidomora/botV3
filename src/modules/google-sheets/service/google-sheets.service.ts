@@ -54,6 +54,15 @@ export class GoogleSheetsService {
     }
   }
 
+  async getFirstRowValue(range: string): Promise<string> {
+    try {
+      const data = await this.googleSheetsRepository.getFirstRowValue(range);
+      return data;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
   async getDate(
     date: string,
     time: string,

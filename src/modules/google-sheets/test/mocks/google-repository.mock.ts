@@ -5,6 +5,7 @@ export const createGoogleSheetsRepositoryMock = (): jest.Mocked<GoogleSheetsRepo
   ({
     appendRow: jest.fn(),
     getLastRowValue: jest.fn(),
+    getFirstRowValue: jest.fn(),
     getDates: jest.fn(),
     getRowValues: jest.fn(),
     createReservation: jest.fn(),
