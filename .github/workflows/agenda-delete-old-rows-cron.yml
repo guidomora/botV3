@@ -1,0 +1,24 @@
+name: Agenda - Delete Old Rows Cron
+
+on:
+  schedule:
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+jobs:
+  delete-old-rows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call delete old rows endpoint
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          AGENDA_SYNC_SECRET: ${{ secrets.AGENDA_SYNC_SECRET }}
+        run: |
+          set -euo pipefail
+
+          : "${API_BASE_URL:?Missing required secret: API_BASE_URL}"
+          : "${AGENDA_SYNC_SECRET:?Missing required secret: AGENDA_SYNC_SECRET}"
+
+          curl --fail --show-error --silent --request DELETE \
+            --url "${API_BASE_URL%/}/dates/delete-old-rows" \
+            --header "x-cron-secret: $AGENDA_SYNC_SECRET"

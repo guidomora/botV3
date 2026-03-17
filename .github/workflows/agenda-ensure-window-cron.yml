@@ -1,0 +1,24 @@
+name: Agenda - Ensure Window Cron
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  ensure-agenda-window:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call ensure agenda window endpoint
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          AGENDA_SYNC_SECRET: ${{ secrets.AGENDA_SYNC_SECRET }}
+        run: |
+          set -euo pipefail
+
+          : "${API_BASE_URL:?Missing required secret: API_BASE_URL}"
+          : "${AGENDA_SYNC_SECRET:?Missing required secret: AGENDA_SYNC_SECRET}"
+
+          curl --fail --show-error --silent --request POST \
+            --url "${API_BASE_URL%/}/dates/ensure-agenda-window" \
+            --header "x-cron-secret: $AGENDA_SYNC_SECRET"
