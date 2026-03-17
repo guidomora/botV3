@@ -3,6 +3,7 @@
 ### 16/10/25
 
 - New feature to add days: it keeps the quantity of days that a restaurant wants. If a restaurant selects 15 it will always count 15 days from the actual date and will add the quantity of days that are needed to cover the next 15 days.
+- New feature to delete days: same as add but with delete
 - envs added and Guard for the endpoint
 - TODO:
 - Check if we can delete the comments from ai.service line 19
