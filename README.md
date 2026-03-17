@@ -48,6 +48,12 @@ Objetivo principal:
    - Si la agenda ya cubre la ventana objetivo, no agrega nuevas fechas.
    - Este flujo está pensado para ser disparado externamente de forma periódica.
 
+7. **Limpiar historial viejo de agenda automáticamente**
+   - El sistema puede eliminar filas anteriores a una ventana histórica configurable.
+   - La retención se calcula hacia atrás desde la fecha actual, contando hoy de forma inclusiva.
+   - Si no hay filas viejas para borrar, no elimina nada y solo deja trazabilidad por logs.
+   - Este flujo también está pensado para ser disparado externamente de forma periódica.
+
 ---
 
 ## 3) Arquitectura lógica
@@ -277,6 +283,7 @@ Después de cada alta, baja o modificación:
 - `MAX_PEOPLE_PER_RESERVATION`
 - `LARGE_RESERVATION_CONTACT_NUMBER`
 - `AGENDA_DAYS_AHEAD` (cantidad de días, contando hoy de forma inclusiva, que deben permanecer abiertos en agenda)
+- `AGENDA_DAYS_BACK_TO_KEEP` (cantidad de días históricos, contando hoy de forma inclusiva, que deben conservarse antes de borrar filas viejas)
 - `AGENDA_SYNC_SECRET` (token simple para proteger el endpoint manual de sincronización de agenda)
 
 ### Seguridad operativa
@@ -298,6 +305,7 @@ Este proyecto implementa un **asistente transaccional de reservas** por WhatsApp
 - procesamiento de lenguaje natural,
 - lógica de negocio de restaurante (cupos, duplicados, tiempos, reservas grandes),
 - automatización para mantener la agenda abierta la cantidad de días configurada,
+- automatización para borrar filas históricas fuera de la ventana de retención configurada,
 - controles de seguridad para canales webhook (firma, idempotencia, rate limit, tamaño),
 - y consistencia operativa sobre Google Sheets.
 

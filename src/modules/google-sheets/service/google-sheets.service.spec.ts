@@ -274,12 +274,15 @@ describe('Given GoogleSheetsService', () => {
   describe('When wrappers are called', () => {
     it('Should delegate appendRow and getLastRowValue wrappers', async () => {
       repository.getLastRowValue.mockResolvedValue('42');
+      repository.getFirstRowValue.mockResolvedValue('10');
 
       await service.appendRow('Sheet1!A:E', [['dato']]);
       const last = await service.getLastRowValue('Sheet1!A:A');
+      const first = await service.getFirstRowValue('Sheet1!A4:A');
 
       expect(repository.appendRow.mock.calls[0]).toEqual(['Sheet1!A:E', [['dato']]]);
       expect(last).toBe('42');
+      expect(first).toBe('10');
     });
 
     it('Should delegate getRowValues wrapper', async () => {

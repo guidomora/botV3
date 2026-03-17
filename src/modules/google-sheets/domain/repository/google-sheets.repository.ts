@@ -157,6 +157,28 @@ export class GoogleSheetsRepository {
     }
   }
 
+  async getFirstRowValue(range: string): Promise<string> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.sheetId,
+        range,
+        majorDimension: 'COLUMNS',
+      });
+
+      const rows = (response.data.values ?? []) as string[][];
+
+      if (rows.length === 0 || rows[0].length === 0) {
+        return 'no hay valores';
+      }
+
+      const firstRowValue = rows[0][0];
+
+      return String(firstRowValue);
+    } catch (error) {
+      this.failure(error);
+    }
+  }
+
   async getReservationsByDate(date: string): Promise<DateTime> {
     const { data } = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.sheetId,

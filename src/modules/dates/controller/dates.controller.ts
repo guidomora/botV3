@@ -29,6 +29,7 @@ export class DatesController {
   }
 
   @Delete('/delete-old-rows')
+  @UseGuards(AgendaSyncGuard)
   deleteOldRows(): Promise<string | undefined> {
     return this.datesService.deleteOldRows();
   }

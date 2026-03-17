@@ -28,6 +28,7 @@ export const generateDatetimeMock = () => ({
 export const googleSheetsServiceMock = () => ({
   appendRow: jest.fn(),
   getLastRowValue: jest.fn(),
+  getFirstRowValue: jest.fn(),
   getDate: jest.fn(),
   hasReservationByDateAndPhone: jest.fn(),
   getAvailabilityFromReservations: jest.fn(),
