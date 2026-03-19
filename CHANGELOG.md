@@ -1,7 +1,7 @@
 ### History
 
-- New github workflows added to call the DELETE and POST endpoints for days management
-- Check if we can delete the comments from ai.service line 19 (done)
+- Workflows disabled at gh for now.
+- New env added -> API_BASE_URL for now it should be the url that ngrok generates
 - TODO:
 - Complete the gh workflow in github to call the DELETE and POST endpoints for days management
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -9,6 +9,10 @@
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 17/10/25
+- New github workflows added to call the DELETE and POST endpoints for days management
+- Check if we can delete the comments from ai.service line 19 (done)
 
 ### 16/10/25
 
