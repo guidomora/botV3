@@ -11,6 +11,7 @@
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 
 ### 17/10/25
+
 - New github workflows added to call the DELETE and POST endpoints for days management
 - Check if we can delete the comments from ai.service line 19 (done)
 

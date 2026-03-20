@@ -284,7 +284,10 @@ Después de cada alta, baja o modificación:
 - `LARGE_RESERVATION_CONTACT_NUMBER`
 - `AGENDA_DAYS_AHEAD` (cantidad de días, contando hoy de forma inclusiva, que deben permanecer abiertos en agenda)
 - `AGENDA_DAYS_BACK_TO_KEEP` (cantidad de días históricos, contando hoy de forma inclusiva, que deben conservarse antes de borrar filas viejas)
-- `AGENDA_SYNC_SECRET` (token simple para proteger el endpoint manual de sincronización de agenda)
+- `AGENDA_SYNC_SECRET` (clave HMAC compartida para firmar requests de sincronización de agenda)
+- `AGENDA_SYNC_MAX_TIME_SKEW_MS` (ventana máxima permitida para validar el timestamp de requests firmadas)
+- `AGENDA_SYNC_RATE_LIMIT_WINDOW_MS` (ventana de tiempo para limitar requests de sincronización de agenda)
+- `AGENDA_SYNC_RATE_LIMIT_MAX_REQUESTS` (máximo de requests permitidas por ventana para sincronización de agenda)
 
 ### Seguridad operativa
 

@@ -19,6 +19,14 @@ jobs:
           : "${API_BASE_URL:?Missing required secret: API_BASE_URL}"
           : "${AGENDA_SYNC_SECRET:?Missing required secret: AGENDA_SYNC_SECRET}"
 
-          curl --fail --show-error --silent --request DELETE \
-            --url "${API_BASE_URL%/}/dates/delete-old-rows" \
-            --header "x-cron-secret: $AGENDA_SYNC_SECRET"
+          REQUEST_METHOD="DELETE"
+          REQUEST_URL="${API_BASE_URL%/}/dates/delete-old-rows"
+          REQUEST_PATH="$(node -p "new URL(process.argv[1]).pathname" "$REQUEST_URL")"
+          REQUEST_TIMESTAMP="$(date +%s%3N)"
+          SIGNATURE_PAYLOAD="${REQUEST_METHOD}:${REQUEST_PATH}:${REQUEST_TIMESTAMP}"
+          REQUEST_SIGNATURE="$(printf '%s' "$SIGNATURE_PAYLOAD" | openssl dgst -sha256 -hmac "$AGENDA_SYNC_SECRET" -r | awk '{print $1}')"
+
+          curl --fail --show-error --silent --request "$REQUEST_METHOD" \
+            --url "$REQUEST_URL" \
+            --header "x-agenda-sync-timestamp: $REQUEST_TIMESTAMP" \
+            --header "x-agenda-sync-signature: $REQUEST_SIGNATURE"
