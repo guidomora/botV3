@@ -34,12 +34,14 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 - Seguir las mejores prácticas de desarrollo DRY, SOLID, ETC (easy to change), etc.
 - No hagas cambios donde por ejemplo que acomodes espacios, lineas vacias sin motivo o agregar "enters" innecesarios.
 - Cada interface, type, enum debe ser creado en la carpeta lib > types. Nunca deben ser creados en los archivos de los controllers, services, etc.
+- Siempre que termines de agregar codigo, ejecuta `npm run fix` para corregir errores de linting y que prettier formatee el codigo. Si esto arroja algun error corregilo y volvelo a ejecutar hasta que no arroje mas errores.
 
 ## 4) Testing y validación
 
 - Siempre ejecutar los tests existentes y los creados.
 - Siempre que termines de agregar codigo, ejecuta `npm run fix` para corregir errores de linting y que prettier formatee el codigo. Si esto arroja algun error corregilo y volvelo a ejecutar hasta que no arroje mas errores.
 - Cada vez que agregues tests, tene en cuenta de crear los mocks en la carpeta mocks del propio module (tests > mocks), a menos que sea algo muy pequeño y no reutilizable.
+- No hacer tests para los .module.ts, solo para los services, controllers, helpers, etc.
 
 ## 5) Seguridad y configuración
 
