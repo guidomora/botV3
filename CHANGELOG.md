@@ -1,15 +1,20 @@
 ### History
 
-### 20/03/26
+### 21/03/26
 
-- Hardened the security for the cronjob endpoints.
-- Complete the gh workflow in github to call the DELETE and POST endpoints for days management
+- Added tests for AI module
+- New Command to run only the tests for AI module
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 20/03/26
+
+- Hardened the security for the cronjob endpoints.
+- Complete the gh workflow in github to call the DELETE and POST endpoints for days management
 
 ### 18/03/26
 
