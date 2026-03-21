@@ -17,7 +17,7 @@ import { AgendaSyncRateLimitService } from './service/agenda-sync-rate-limit.ser
 
 @Module({
   controllers: [DatesController],
-  imports: [GoogleSheetsModule.forRoot(), CacheModule],
+  imports: [GoogleSheetsModule.forRoot(), CacheModule.register({ ttl: 0 })],
   providers: [
     DatesService,
     GenerateDatetime,
