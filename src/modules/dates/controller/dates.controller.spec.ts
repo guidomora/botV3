@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatesController } from './dates.controller';
 import { DatesService } from '../service/dates.service';
+import { AgendaSyncGuard } from '../guards/agenda-sync.guard';
 
 describe('DatesController', () => {
   let controller: DatesController;
@@ -16,7 +17,7 @@ describe('DatesController', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const module: TestingModule = await Test.createTestingModule({
+    const moduleBuilder = Test.createTestingModule({
       controllers: [DatesController],
       providers: [
         {
@@ -24,7 +25,13 @@ describe('DatesController', () => {
           useValue: datesServiceMock,
         },
       ],
-    }).compile();
+    });
+
+    moduleBuilder
+      .overrideGuard(AgendaSyncGuard)
+      .useValue({ canActivate: jest.fn().mockResolvedValue(true) });
+
+    const module: TestingModule = await moduleBuilder.compile();
 
     controller = module.get(DatesController);
   });

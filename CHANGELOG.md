@@ -1,32 +1,39 @@
 ### History
 
-- Workflows disabled at gh for now.
-- New env added -> API_BASE_URL for now it should be the url that ngrok generates
-- TODO:
+### 20/03/26
+
+- Hardened the security for the cronjob endpoints.
 - Complete the gh workflow in github to call the DELETE and POST endpoints for days management
+- TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
 
-### 17/10/25
+### 18/03/26
+
+- Workflows disabled at gh for now.
+- New env added -> API_BASE_URL for now it should be the url that ngrok generates
+
+### 17/03/26
+
 - New github workflows added to call the DELETE and POST endpoints for days management
 - Check if we can delete the comments from ai.service line 19 (done)
 
-### 16/10/25
+### 16/03/26
 
 - New feature to add days: it keeps the quantity of days that a restaurant wants. If a restaurant selects 15 it will always count 15 days from the actual date and will add the quantity of days that are needed to cover the next 15 days.
 - New feature to delete days: same as add but with delete
 - envs added and Guard for the endpoint
 
-### 15/10/25
+### 15/03/26
 
 - Test added for dates module and cache module.
 - Command added to run only the tests for dates module.
 - Command added to run only the tests for cache module.
 
-### 13/10/25
+### 13/03/26
 
 - Added tests for google module
 - Nest Skill Added
@@ -59,12 +66,12 @@
 - a user can't have more than 1 reservation in a day
 - interact prompt updated
 
-### 24/10/25
+### 24/02/26
 
 - Bug fixed at update reservation flow
 - when confirming the creation of a reservation, show the phone number in the message
 
-#### 23/10/25
+#### 23/02/26
 
 - Moved normalizeName to a helper
 - Updated prompt to ask for name and lastname
@@ -97,13 +104,13 @@
 - DTO updated
 - Idempotency guard added if payload has the same MessageSid it will not process the request
 
-#### 15/10/25
+#### 15/02/26
 
 - WhatsApp number-based rate limiting (by From) to prevent per-user spam.
 - Started with README to document few parts of the project
 - Validation of X-Twilio-Signature on every webhook request added.
 
-#### 12/10/25
+#### 12/02/26
 
 - Did some research abor deploy, twilio and server security
 
