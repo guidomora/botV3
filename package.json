@@ -22,7 +22,8 @@
     "test:ai": "jest src/modules/ai",
     "test:google": "jest src/modules/google-sheets",
     "test:dates": "jest src/modules/dates",
-    "test:cache": "jest src/modules/cache-context"
+    "test:cache": "jest src/modules/cache-context",
+    "test:whatsapp": "jest src/modules/whatsapp"
   },
   "dependencies": {
     "@googleapis/sheets": "^11.1.0",
