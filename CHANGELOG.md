@@ -3,7 +3,9 @@
 ### 21/03/26
 
 - Added tests for AI module
+- Added tests for Whatsapp module
 - New Command to run only the tests for AI module
+- New Command to run only the tests for Whatsapp module
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
