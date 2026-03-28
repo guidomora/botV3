@@ -1,17 +1,23 @@
 ### History
 
-### 21/03/26
+### 28/03/26
 
-- Added tests for AI module
-- Added tests for Whatsapp module
-- New Command to run only the tests for AI module
-- New Command to run only the tests for Whatsapp module
+- Added validation for environment variables using Joi
+- Added tests for environment validation
+- Now Jest runs tests in series
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 21/03/26
+
+- Added tests for AI module
+- Added tests for Whatsapp module
+- New Command to run only the tests for AI module
+- New Command to run only the tests for Whatsapp module
 
 ### 20/03/26
 
