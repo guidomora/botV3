@@ -2,7 +2,6 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleSheetsService } from './service/google-sheets.service';
 import { GoogleSheetsRepository } from './domain/repository/google-sheets.repository';
-import { GoogleSheetsController } from './controller/google-sheets.controller';
 import { GoogleTemporalSheetsService } from './service/google-temporal-sheet.service';
 import { GoogleTemporalSheetsRepository } from './domain/repository/google-temporal-sheet.repository';
 import { DatesModule } from '../dates/dates.module';
@@ -13,7 +12,6 @@ export class GoogleSheetsModule {
     return {
       module: GoogleSheetsModule,
       imports: [ConfigModule, DatesModule],
-      controllers: [GoogleSheetsController],
       providers: [
         {
           provide: GoogleSheetsRepository,

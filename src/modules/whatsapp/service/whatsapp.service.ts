@@ -25,8 +25,6 @@ export class WhatsAppService {
 
   async handleInboundMessage(params: SimplifiedTwilioWebhookPayload, message: string) {
     const waId = params.waId;
-    console.log('mesage!!', message);
-
     await this.sendText(waId, message);
   }
 

@@ -8,7 +8,5 @@ export const setTimeLapse = (message: string): number => {
     time = 10000;
   }
 
-  console.log(time);
-
   return time;
 };

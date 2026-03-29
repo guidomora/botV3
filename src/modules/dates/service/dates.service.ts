@@ -209,8 +209,6 @@ export class DatesService {
       };
     }
 
-    console.log(currentDate, currentTime, currentName, phone);
-
     const searchIndexObject: GetIndexParams = {
       date: currentDate,
       time: currentTime,
@@ -220,8 +218,6 @@ export class DatesService {
 
     const currentReservationIndex =
       await this.googleSheetsService.getDateIndexByData(searchIndexObject);
-
-    console.log('currentReservationIndex: ', currentReservationIndex);
 
     if (currentReservationIndex === -1) {
       return {

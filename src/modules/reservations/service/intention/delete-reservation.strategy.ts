@@ -37,7 +37,6 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
 
     if (missingFields.length > 0) {
       const history = await this.cacheService.getHistory(waId);
-      console.log('history cancel', state);
       const response = await this.aiService.getMissingDataToCancel(missingFields, history, state);
       await this.cacheService.appendEntityMessage(
         waId,

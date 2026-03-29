@@ -101,9 +101,6 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
     const { current, target } = getMissingUpdateFields(nextState);
     const history = await this.cacheService.getHistory(waId);
-    console.log('mappedState', mappedState);
-    console.log('current', current);
-    console.log('target', target);
 
     if (current.length > 0) {
       const shouldAskOnlyPhone = current.length === 1 && current[0] === 'phone';
@@ -116,7 +113,6 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
         RoleEnum.ASSISTANT,
         Intention.UPDATE,
       );
-      console.log('response', response);
       return { reply: response };
     }
 
@@ -192,14 +188,12 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
           return { reply: unavailableWithAlternativesReply };
         }
 
-        console.log('strategyReply', reply.message);
         return { reply: reply.message };
       }
       await this.cacheService.clearUpdateState(waId);
       await this.cacheService.markFlowCompleted(waId);
 
       // TODO: work on something when user enters bad data
-      console.log('strategyReply', reply.message);
       return { reply: reply.message };
     } catch (error) {
       this.logger.error('Error al actualizar la reserva', error as Error);

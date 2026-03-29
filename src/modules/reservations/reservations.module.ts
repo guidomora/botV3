@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ReservationsService } from './service/reservations.service';
-import { ReservationsController } from './controller/reservations.controller';
 import { DatesModule } from 'src/modules/dates/dates.module';
 import { AiModule } from '../ai/ai.module';
 import { GoogleSheetsModule } from 'src/modules/google-sheets/google-sheets.module';
@@ -14,7 +13,6 @@ import { OtherStrategy } from './service/intention/other.strategy';
 
 @Module({
   imports: [DatesModule, AiModule, GoogleSheetsModule.forRoot(), CacheContextModule],
-  controllers: [ReservationsController],
   providers: [
     ReservationsService,
     CreateReservationStrategy,

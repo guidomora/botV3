@@ -44,7 +44,6 @@ export class DeleteReservationUseCase {
 
       const availabilityFromReservations =
         await this.googleSheetsService.getAvailabilityFromReservations(date!, time!);
-      console.log('availabilityFromReservations', availabilityFromReservations);
 
       const updateParams: UpdateParams = {
         reservations: availabilityFromReservations.reservations,

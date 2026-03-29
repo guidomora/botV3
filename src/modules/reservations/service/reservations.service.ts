@@ -26,8 +26,6 @@ export class ReservationsService {
     message: string,
     simplifiedPayload: SimplifiedTwilioWebhookPayload,
   ): Promise<string> {
-    console.log(`Mensaje recibido: ${message}`);
-
     await this.cacheService.appendEntityMessage(simplifiedPayload.waId, message, RoleEnum.USER);
 
     try {

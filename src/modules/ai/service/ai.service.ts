@@ -47,7 +47,6 @@ export class AiService {
     const prompt = interactPrompt(context, activeIntent);
     const aiResponse = await this.openAiConfig(prompt, message, true);
     const parseResponse = parseJsonResponse<MultipleMessagesResponse>(aiResponse);
-    console.log('----', parseResponse);
 
     return parseResponse;
   }
@@ -196,8 +195,6 @@ export class AiService {
       });
 
       const aiResponse = response.choices[0].message.content!.trim();
-      console.log('AI Response:', aiResponse);
-
       return aiResponse;
     } catch (error) {
       this.logger.error(`Error al interactuar con AI`, error);

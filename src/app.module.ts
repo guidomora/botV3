@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { ConfigModule } from '@nestjs/config';
 import { validateEnvironmentVariables } from './config/env.validation';
@@ -24,7 +22,5 @@ import { CacheContextModule } from './modules/cache-context/cache.module';
     WhatsAppModule.forRootAsync(),
     CacheContextModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

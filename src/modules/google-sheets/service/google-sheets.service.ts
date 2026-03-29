@@ -114,8 +114,6 @@ export class GoogleSheetsService {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
-      console.log('data', date, time, name, formattedPhone);
-
       const index =
         data.findIndex(
           (row) =>
@@ -125,8 +123,6 @@ export class GoogleSheetsService {
             namesMatch(name, row[2]) &&
             (row[3] === formattedPhone || row[3] === phone),
         ) + 1;
-
-      console.log('index', index);
 
       if (index === -1 || index === undefined || index === 0) {
         return -1;
@@ -380,7 +376,6 @@ export class GoogleSheetsService {
     // maybe create some kind of response for errors? (reservation not found, etc)
     try {
       const oldDateData = await this.getDateData(oldDate, oldTime, `${SHEETS_NAMES[0]}!A:F`);
-      console.log(oldDateData);
 
       if (oldDateData === null) {
         return 'No se encontro la reserva';
