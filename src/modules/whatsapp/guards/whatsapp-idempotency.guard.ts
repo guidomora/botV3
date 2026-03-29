@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { TwilioWebhookPayloadDto } from 'src/lib';
+import { TwilioWebhookPayload } from 'src/lib';
 import { IdempotencyService } from '../service/idempotency.service';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class WhatsAppIdempotencyGuard implements CanActivate {
   constructor(private readonly idempotencyService: IdempotencyService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<{ body?: TwilioWebhookPayloadDto }>();
+    const request = context.switchToHttp().getRequest<{ body?: TwilioWebhookPayload }>();
 
     const accountSid = request.body?.AccountSid;
     const messageSid = request.body?.MessageSid;

@@ -1,7 +1,7 @@
-import { TwilioWebhookPayloadDto } from 'src/lib';
+import { TwilioWebhookPayload } from './webhook-payload-received.type';
 
 export type RequestWithTwilioData = {
-  body?: TwilioWebhookPayloadDto;
+  body?: TwilioWebhookPayload;
   headers: Record<string, string | string[] | undefined>;
   originalUrl: string;
   protocol?: string;

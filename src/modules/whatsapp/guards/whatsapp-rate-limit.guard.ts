@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { RATE_LIMIT_MESSAGE } from 'src/constants';
-import { TwilioWebhookPayloadDto } from 'src/lib';
+import { TwilioWebhookPayload } from 'src/lib';
 import { TwilioAdapter } from '../adapters/twilio.adapter';
 import { RateLimitService } from '../service/rate-limit.service';
 
@@ -21,7 +21,7 @@ export class WhatsAppRateLimitGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<{ body?: TwilioWebhookPayloadDto }>();
+    const request = context.switchToHttp().getRequest<{ body?: TwilioWebhookPayload }>();
     const waId = request.body?.WaId;
 
     if (!waId) {
