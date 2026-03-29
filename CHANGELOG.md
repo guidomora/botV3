@@ -2,7 +2,8 @@
 
 ### 29/03/26
 
-- added tests for reservations module
+- Added tests for reservations module
+- Added health module: Checks live and ready status (if google sheets is available)
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).

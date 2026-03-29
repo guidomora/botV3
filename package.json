@@ -23,6 +23,7 @@
     "test:google": "jest src/modules/google-sheets",
     "test:dates": "jest src/modules/dates",
     "test:cache": "jest src/modules/cache-context",
+    "test:health": "jest src/modules/health --runInBand",
     "test:reservations": "jest src/modules/reservations --runInBand",
     "test:whatsapp": "jest src/modules/whatsapp"
   },

@@ -10,6 +10,7 @@ describe('validateEnvironmentVariables', () => {
     TWILIO_AUTH_TOKEN: 'auth-token',
     TWILIO_WHATSAPP_FROM: 'whatsapp:+14155238886',
     MAX_CAPACITY_TOTAL: '50',
+    HEALTH_CHECK_SECRET: 'super-secret',
   };
 
   it('debería aceptar una configuración válida y aplicar defaults', () => {
@@ -19,6 +20,7 @@ describe('validateEnvironmentVariables', () => {
     expect(result.GPT_MODEL).toBe('gpt-5-mini');
     expect(result.MAX_CAPACITY_TOTAL).toBe(50);
     expect(result.RESERVATION_DURATION_MINUTES).toBe(120);
+    expect(result.HEALTH_CHECK_RATE_LIMIT_MAX_REQUESTS).toBe(15);
   });
 
   it('debería fallar cuando falta una variable requerida', () => {
