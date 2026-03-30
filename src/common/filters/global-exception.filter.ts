@@ -8,14 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PROVIDER_TEMPORARY_ERROR_MESSAGE } from 'src/constants';
-import { ProviderError } from 'src/lib';
-
-type ErrorResponseBody = {
-  message: string;
-  path: string;
-  statusCode: number;
-  timestamp: string;
-};
+import { ErrorResponseBody, ProviderError } from 'src/lib';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
