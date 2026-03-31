@@ -11,6 +11,7 @@ import {
   EnsureAgendaWindowUseCase,
 } from './application';
 import { AgendaSyncGuard } from './guards/agenda-sync.guard';
+import { DatesManualGuard } from './guards/dates-manual.guard';
 import { AgendaSyncSecurityService } from './service/agenda-sync-security.service';
 import { AgendaSyncReplayService } from './service/agenda-sync-replay.service';
 import { AgendaSyncRateLimitService } from './service/agenda-sync-rate-limit.service';
@@ -26,6 +27,7 @@ import { AgendaSyncRateLimitService } from './service/agenda-sync-rate-limit.ser
     DeleteReservationUseCase,
     EnsureAgendaWindowUseCase,
     AgendaSyncGuard,
+    DatesManualGuard,
     AgendaSyncSecurityService,
     AgendaSyncReplayService,
     AgendaSyncRateLimitService,

@@ -1,5 +1,6 @@
 import { ExecutionContext } from '@nestjs/common';
 import { AgendaSyncGuard } from './agenda-sync.guard';
+import { DatesManualGuard } from './dates-manual.guard';
 import { AgendaSyncRateLimitService } from '../service/agenda-sync-rate-limit.service';
 import { AgendaSyncReplayService } from '../service/agenda-sync-replay.service';
 import { AgendaSyncSecurityService } from '../service/agenda-sync-security.service';
@@ -95,5 +96,38 @@ describe('AgendaSyncGuard', () => {
         }),
       ),
     ).rejects.toThrow('Expired agenda sync request');
+  });
+
+  it('should use manual dates scope for manual endpoints guard', async () => {
+    agendaSyncSecurityServiceMock.getExpectedSecret.mockReturnValue('dev-secret');
+    agendaSyncSecurityServiceMock.normalizePath.mockReturnValue('/bot/dates/x-dates');
+    agendaSyncSecurityServiceMock.isTimestampWithinAllowedWindow.mockReturnValue(true);
+    agendaSyncSecurityServiceMock.isValidSignature.mockReturnValue(true);
+    agendaSyncSecurityServiceMock.getMaxTimeSkewMs.mockReturnValue(300000);
+    agendaSyncReplayServiceMock.isReplayRequest.mockResolvedValue(false);
+    agendaSyncRateLimitServiceMock.isLimitExceeded.mockResolvedValue(false);
+
+    const guard = new DatesManualGuard(
+      agendaSyncSecurityServiceMock as never as AgendaSyncSecurityService,
+      agendaSyncReplayServiceMock as never as AgendaSyncReplayService,
+      agendaSyncRateLimitServiceMock as never as AgendaSyncRateLimitService,
+    );
+
+    await expect(
+      guard.canActivate(
+        buildContext(
+          {
+            [AGENDA_SYNC_TIMESTAMP_HEADER]: '1710000000',
+            [AGENDA_SYNC_SIGNATURE_HEADER]: 'signed-request',
+          },
+          'POST',
+          '/bot/dates/x-dates',
+        ),
+      ),
+    ).resolves.toBe(true);
+
+    expect(agendaSyncRateLimitServiceMock.isLimitExceeded).toHaveBeenCalledWith(
+      'dates-manual:/bot/dates/x-dates',
+    );
   });
 });

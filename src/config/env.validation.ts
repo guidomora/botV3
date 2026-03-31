@@ -35,6 +35,8 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     AGENDA_SYNC_MAX_TIME_SKEW_MS: positiveInteger.default(300000),
     AGENDA_SYNC_RATE_LIMIT_WINDOW_MS: positiveInteger.default(300000),
     AGENDA_SYNC_RATE_LIMIT_MAX_REQUESTS: positiveInteger.default(6),
+    DATES_MANUAL_RATE_LIMIT_WINDOW_MS: positiveInteger.default(60000),
+    DATES_MANUAL_RATE_LIMIT_MAX_REQUESTS: positiveInteger.default(1),
     HEALTH_CHECK_SECRET: requiredString,
     HEALTH_CHECK_RATE_LIMIT_MAX_REQUESTS: positiveInteger.default(15),
 

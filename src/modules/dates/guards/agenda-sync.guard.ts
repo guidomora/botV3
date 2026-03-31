@@ -24,9 +24,10 @@ export class AgendaSyncGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AgendaSyncRequest>();
     const expectedSecret = this.agendaSyncSecurityService.getExpectedSecret();
+    const endpointLabel = this.getEndpointLabel();
 
     if (!expectedSecret) {
-      this.logger.warn('Endpoint de sincronizacion rechazado: AGENDA_SYNC_SECRET no configurado');
+      this.logger.warn(`Endpoint ${endpointLabel} rechazado: AGENDA_SYNC_SECRET no configurado`);
       throw new ForbiddenException('Agenda sync is not configured');
     }
 
@@ -39,12 +40,12 @@ export class AgendaSyncGuard implements CanActivate {
     const requestPath = this.agendaSyncSecurityService.normalizePath(request.originalUrl);
 
     if (!receivedTimestamp || !receivedSignature) {
-      this.logger.warn('Endpoint de sincronizacion rechazado: headers de firma ausentes');
+      this.logger.warn(`Endpoint ${endpointLabel} rechazado: headers de firma ausentes`);
       throw new ForbiddenException('Missing agenda sync authentication headers');
     }
 
     if (!this.agendaSyncSecurityService.isTimestampWithinAllowedWindow(receivedTimestamp)) {
-      this.logger.warn('Endpoint de sincronizacion rechazado: timestamp fuera de ventana');
+      this.logger.warn(`Endpoint ${endpointLabel} rechazado: timestamp fuera de ventana`);
       throw new ForbiddenException('Expired agenda sync request');
     }
 
@@ -57,7 +58,7 @@ export class AgendaSyncGuard implements CanActivate {
     });
 
     if (!isValidSignature) {
-      this.logger.warn('Endpoint de sincronizacion rechazado: firma invalida');
+      this.logger.warn(`Endpoint ${endpointLabel} rechazado: firma invalida`);
       throw new ForbiddenException('Invalid agenda sync signature');
     }
 
@@ -71,15 +72,29 @@ export class AgendaSyncGuard implements CanActivate {
       throw new ForbiddenException('Replay agenda sync request');
     }
 
-    const isRateLimitExceeded =
-      await this.agendaSyncRateLimitService.isLimitExceeded('agenda-sync');
+    const isRateLimitExceeded = await this.agendaSyncRateLimitService.isLimitExceeded(
+      this.buildRateLimitScope(requestPath),
+    );
 
     if (isRateLimitExceeded) {
-      this.logger.warn('Endpoint de sincronizacion rechazado: rate limit excedido');
-      throw new ForbiddenException('Agenda sync rate limit exceeded');
+      this.logger.warn(`Endpoint ${endpointLabel} rechazado: rate limit excedido`);
+      throw new ForbiddenException(this.getRateLimitExceededMessage());
     }
 
     return true;
+  }
+
+  protected getEndpointLabel(): string {
+    return 'de sincronizacion';
+  }
+
+  protected buildRateLimitScope(requestPath: string): string {
+    void requestPath;
+    return 'agenda-sync';
+  }
+
+  protected getRateLimitExceededMessage(): string {
+    return 'Agenda sync rate limit exceeded';
   }
 
   private extractFirstHeaderValue(headerValue: string | string[] | undefined): string | undefined {

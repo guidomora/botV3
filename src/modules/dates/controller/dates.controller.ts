@@ -2,22 +2,26 @@ import { Controller, Post, Body, Delete, UseGuards } from '@nestjs/common';
 import { EnsureAgendaWindowResult } from 'src/lib';
 import { DatesService } from '../service/dates.service';
 import { AgendaSyncGuard } from '../guards/agenda-sync.guard';
+import { DatesManualGuard } from '../guards/dates-manual.guard';
 
 @Controller('dates')
 export class DatesController {
   constructor(private readonly datesService: DatesService) {}
 
   @Post()
+  @UseGuards(DatesManualGuard)
   create(): Promise<string> {
     return this.datesService.createDate();
   }
 
   @Post('/next-date')
+  @UseGuards(DatesManualGuard)
   createNextDate(): Promise<string> {
     return this.datesService.createNextDate();
   }
 
   @Post('/x-dates')
+  @UseGuards(DatesManualGuard)
   createXDates(@Body('quantity') quantity: number): Promise<string> {
     return this.datesService.createXDates(quantity);
   }
