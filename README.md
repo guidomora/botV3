@@ -1,10 +1,10 @@
 # botV3 · Bot de reservas por WhatsApp
 
-## 1) ¿Qué es este proyecto?
+## 1) Que es este proyecto
 
-**botV3** es un backend en **NestJS + TypeScript** para gestionar reservas de restaurante desde WhatsApp.
+`botV3` es un backend en `NestJS + TypeScript` para gestionar reservas de restaurante desde WhatsApp.
 
-El sistema recibe mensajes entrantes desde **Twilio**, interpreta la intención del usuario con **OpenAI**, orquesta la lógica de negocio de reservas y persiste los datos operativos en **Google Sheets**.
+El sistema recibe mensajes entrantes desde `Twilio`, interpreta la intencion del usuario con `OpenAI`, ejecuta la logica de reservas y persiste los datos operativos en `Google Sheets`.
 
 Objetivo principal:
 
@@ -13,7 +13,7 @@ Objetivo principal:
   - consultar disponibilidad,
   - modificar una reserva,
   - cancelar una reserva,
-  - o recibir una respuesta cuando el pedido está fuera del alcance del bot.
+  - o recibir una respuesta cuando el pedido esta fuera del alcance del bot.
 
 ---
 
@@ -22,93 +22,99 @@ Objetivo principal:
 ### Flujos principales
 
 1. **Crear reserva**
-   - El bot identifica los datos necesarios: fecha, hora, nombre, teléfono y cantidad de personas.
-   - Si faltan datos, los solicita de forma progresiva.
-   - Cuando están completos, intenta crear la reserva en la hoja principal.
+   - El bot identifica fecha, hora, nombre, telefono y cantidad de personas.
+   - Si faltan datos, los pide de forma progresiva.
+   - Cuando estan completos, intenta crear la reserva en la hoja principal.
 
 2. **Consultar disponibilidad**
-   - Puede responder disponibilidad por día completo o por franja horaria puntual.
+   - Puede responder disponibilidad por dia completo o por franja horaria puntual.
    - Si no hay lugar exacto, puede sugerir horarios cercanos.
 
 3. **Modificar reserva**
-   - Primero identifica la reserva original (nombre + teléfono + fecha + hora).
-   - Luego solicita y aplica los cambios (nuevo horario, fecha, nombre y/o cantidad).
+   - Primero identifica la reserva original.
+   - Luego solicita y aplica los cambios.
    - Revalida capacidad antes de confirmar.
 
 4. **Cancelar reserva**
-   - Recolecta los datos mínimos para ubicar la reserva.
-   - Elimina o limpia la fila según corresponda y recalcula disponibilidad.
+   - Recolecta los datos minimos para ubicar la reserva.
+   - Elimina o limpia la fila segun corresponda y recalcula disponibilidad.
 
 5. **Otro / fuera de alcance**
-   - Cuando la intención no corresponde a una operación soportada, responde de manera orientativa y amable.
+   - Cuando la intencion no corresponde a una operacion soportada, responde de manera orientativa.
 
-6. **Mantener agenda abierta automáticamente**
-   - El sistema puede verificar cuántos días futuros de agenda ya existen en Google Sheets.
-   - Si la cobertura es menor al objetivo configurado, crea únicamente los días faltantes.
-   - Si la agenda ya cubre la ventana objetivo, no agrega nuevas fechas.
-   - Este flujo está pensado para ser disparado externamente de forma periódica.
+6. **Mantener agenda abierta automaticamente**
+   - Verifica cuantos dias futuros de agenda ya existen en Google Sheets.
+   - Si la cobertura es menor al objetivo configurado, crea unicamente los dias faltantes.
 
-7. **Limpiar historial viejo de agenda automáticamente**
-   - El sistema puede eliminar filas anteriores a una ventana histórica configurable.
-   - La retención se calcula hacia atrás desde la fecha actual, contando hoy de forma inclusiva.
-   - Si no hay filas viejas para borrar, no elimina nada y solo deja trazabilidad por logs.
-   - Este flujo también está pensado para ser disparado externamente de forma periódica.
+7. **Limpiar historial viejo de agenda automaticamente**
+   - Elimina filas anteriores a una ventana historica configurable.
+   - Si no hay filas viejas para borrar, no elimina nada y deja trazabilidad por logs.
 
 ---
 
-## 3) Arquitectura lógica
+## 3) Arquitectura logica
 
 ### Componentes clave
 
-- **Módulo WhatsApp**
-  - Endpoint webhook `POST /communication/queue`.
-  - Guards de seguridad (firma Twilio, idempotencia, rate limit).
-  - Buffer de mensajes para agrupar texto enviado en ráfaga y procesarlo como una intención unificada.
+- **Modulo WhatsApp**
+  - Endpoint webhook `POST /bot/communication/queue`.
+  - Guards de seguridad: firma Twilio, idempotencia y rate limit.
+  - Buffer de mensajes para agrupar texto enviado en rafaga y procesarlo como una sola intencion.
 
-- **Módulo Reservations**
+- **Modulo Reservations**
   - Orquestador conversacional.
-  - Router de intenciones con estrategia por flujo (`create`, `update`, `cancel`, `availability`, `other`).
+  - Router de intenciones con estrategia por flujo: `create`, `update`, `cancel`, `availability`, `other`.
 
-- **Módulo AI**
-  - Clasificación de intención y generación de respuestas en lenguaje natural.
+- **Modulo AI**
+  - Clasificacion de intencion y generacion de respuestas.
   - Prompts especializados por caso de uso.
 
-- **Módulo Dates**
+- **Modulo Dates**
   - Casos de uso de negocio para crear, actualizar y eliminar reservas.
-  - Sincronización de ventana de agenda futura según configuración.
-  - Validaciones de duplicidad, fecha pasada, cupo, capacidad y reglas de reserva grande.
+  - Sincronizacion de ventana de agenda futura.
+  - Endpoints manuales protegidos para operacion.
 
-- **Módulo Google Sheets**
+- **Modulo Google Sheets**
   - Persistencia de reservas y disponibilidad en hojas.
-  - Cálculo de capacidad real por solapamiento temporal de reservas.
+  - Calculo de capacidad real por solapamiento temporal de reservas.
 
-- **Módulo Cache Context**
+- **Modulo Cache Context**
   - Historial conversacional por usuario.
-  - Estado temporal por flujo (create/cancel/update).
-  - Expiración automática y limpieza de conversaciones incompletas.
+  - Estado temporal por flujo.
+  - Expiracion automatica y limpieza de conversaciones incompletas.
+
+- **Modulo Health**
+  - Endpoints protegidos `GET /bot/health/live` y `GET /bot/health/ready`.
+  - Validacion de secret y rate limit para monitoreo operativo.
 
 ---
 
-## 4) Flujo end-to-end (de punta a punta)
+## 4) Flujo end-to-end
 
-1. Twilio envía un webhook al endpoint del bot.
+1. Twilio envia un webhook al endpoint del bot.
 2. Se valida seguridad de ingreso:
    - firma Twilio,
-   - deduplicación por reintentos,
-   - límite de frecuencia de mensajes,
-   - tamaño máximo de request.
-3. Si el mensaje es multimedia no soportado (audio/imagen), se responde con instrucción de enviar texto.
-4. Los mensajes de un mismo usuario se agregan en un buffer breve para reducir fragmentación.
-5. Se envía al orquestador:
+   - deduplicacion por reintentos,
+   - limite de frecuencia,
+   - tamano maximo de request.
+3. Si el mensaje es multimedia no soportado, se responde pidiendo texto.
+4. Los mensajes de un mismo usuario se agregan en un buffer breve.
+5. Se envia al orquestador:
    - guarda contexto en cache,
-   - detecta intención con IA,
-   - ejecuta estrategia de negocio correspondiente.
-6. La estrategia interactúa con Google Sheets para leer/escribir reservas y disponibilidad.
-7. Se genera respuesta final y se envía por Twilio al usuario.
+   - detecta intencion con IA,
+   - ejecuta estrategia de negocio.
+6. La estrategia interactua con Google Sheets para leer o escribir reservas y disponibilidad.
+7. Se genera respuesta final y se envia por Twilio al usuario.
+
+Nota operativa:
+
+- Todas las rutas HTTP publicas estan bajo el prefijo global `/bot`.
+- Para Twilio, la URL del webhook debe apuntar a `https://<tu-dominio-o-ngrok>/bot/communication/queue`.
+- Para los workflows operativos de agenda, `API_BASE_URL` debe incluir el prefijo global. Ejemplo: `https://<tu-dominio-o-ngrok>/bot`.
 
 ---
 
-## 5) Lógica de negocio de reservas
+## 5) Logica de negocio de reservas
 
 ### 5.1 Datos requeridos para crear
 
@@ -117,15 +123,15 @@ Para una reserva completa se necesitan:
 - fecha,
 - hora,
 - nombre,
-- teléfono,
+- telefono,
 - cantidad de personas,
-- tipo de servicio/intención.
+- tipo de servicio o intencion.
 
-Si faltan campos, la reserva queda temporalmente en estado parcial y el bot continúa solicitando únicamente lo faltante.
+Si faltan campos, la reserva queda temporalmente en estado parcial y el bot continua solicitando unicamente lo faltante.
 
-### 5.2 Regla de duplicidad por día
+### 5.2 Regla de duplicidad por dia
 
-Un mismo teléfono no puede tener más de una reserva para el mismo día (regla anti-duplicado de jornada).
+Un mismo telefono no puede tener mas de una reserva para el mismo dia.
 
 - Si detecta duplicado, no crea una nueva y sugiere modificar la existente.
 
@@ -133,73 +139,67 @@ Un mismo teléfono no puede tener más de una reserva para el mismo día (regla 
 
 No se permite:
 
-- crear reservas en fecha/hora ya pasada,
-- mover una reserva a una fecha/hora pasada,
-- modificar una reserva cuya fecha/hora original ya pasó.
+- crear reservas en fecha u hora pasada,
+- mover una reserva a fecha u hora pasada,
+- modificar una reserva cuya fecha u hora original ya paso.
 
 ### 5.4 Capacidad y disponibilidad
 
-La disponibilidad no depende solo de una celda fija, sino de capacidad efectiva:
+La disponibilidad depende de capacidad efectiva:
 
-- Se calcula una **capacidad máxima online** usando:
-  - `MAX_CAPACITY_TOTAL` (capacidad total del local),
-  - `ONLINE_BUFFER_PERCENT` (porcentaje reservado fuera del canal online).
-- Fórmula:
-  - `capacidad_online = floor(MAX_CAPACITY_TOTAL * (1 - buffer))`.
-- Al evaluar una reserva, se consideran reservas **solapadas** en una ventana temporal de duración configurable (`RESERVATION_DURATION_MINUTES`, default 120).
-- Solo se confirma si:
-  - `ocupación_solapada + personas_solicitadas <= capacidad_online`.
+- `MAX_CAPACITY_TOTAL`
+- `ONLINE_BUFFER_PERCENT`
+- `RESERVATION_DURATION_MINUTES`
 
-Esto evita sobreventa cuando dos turnos se superponen en el tiempo.
+Formula:
 
-### 5.5 Límite por tamaño de grupo
+- `capacidad_online = floor(MAX_CAPACITY_TOTAL * (1 - buffer))`
+
+Solo se confirma si:
+
+- `ocupacion_solapada + personas_solicitadas <= capacidad_online`
+
+### 5.5 Limite por tamano de grupo
 
 Existe un umbral para reservas grandes:
 
-- `MAX_PEOPLE_PER_RESERVATION` (default 12).
-- Si la cantidad solicitada supera ese valor:
-  - la reserva no se gestiona automáticamente,
-  - se deriva a atención directa,
-  - opcionalmente se muestra `LARGE_RESERVATION_CONTACT_NUMBER`.
+- `MAX_PEOPLE_PER_RESERVATION` default `12`
 
-### 5.6 Hoja temporal de conversación
+Si la cantidad supera ese valor:
 
-Durante la creación, los datos parciales se guardan en una hoja temporal.
-Cuando la reserva se completa y se confirma:
+- la reserva no se gestiona automaticamente,
+- se deriva a atencion directa,
+- opcionalmente se muestra `LARGE_RESERVATION_CONTACT_NUMBER`.
+
+### 5.6 Hoja temporal de conversacion
+
+Durante la creacion, los datos parciales se guardan en una hoja temporal.
+Cuando la reserva se completa:
 
 - se migra a la hoja principal,
 - se elimina la fila temporal.
-
-Esto permite continuidad en conversaciones multi-turno sin perder contexto.
 
 ---
 
 ## 6) Seguridad y resiliencia
 
-### 6.1 Verificación de firma Twilio
+### 6.1 Verificacion de firma Twilio
 
-Todo webhook entrante valida `x-twilio-signature` contra la URL pública y parámetros recibidos.
-Si la firma no es válida, se rechaza la solicitud.
+Todo webhook entrante valida `x-twilio-signature` contra la URL publica y los parametros recibidos.
 
 ### 6.2 Idempotencia de webhooks
 
-Twilio puede reintentar envíos. Para evitar doble procesamiento:
+Twilio puede reintentar envios. Para evitar doble procesamiento:
 
 - se deduplica por `AccountSid + MessageSid`,
-- si ya se procesó, se responde `200 { ok: true }` sin reprocesar.
-- TTL configurable: `IDEMPOTENCY_MESSAGE_SID_TTL_MS` (default 24h).
+- si ya se proceso, se responde `200 { ok: true }`,
+- TTL configurable: `IDEMPOTENCY_MESSAGE_SID_TTL_MS`.
 
-### 6.3 Rate limit (anti-spam)
+### 6.3 Rate limit anti-spam
 
-El control se aplica por `waId` con historial en cache.
-Reglas por defecto:
+Control por `waId` con historial en cache.
 
-- **10 mensajes en 30 segundos** → bloqueo temporal.
-- **30 mensajes en 10 minutos** → bloqueo temporal.
-- Duración de bloqueo: **3 minutos**.
-- Cooldown de notificación al usuario: **60 segundos** (evita repetir aviso constantemente).
-
-Todos los valores son configurables:
+Variables principales:
 
 - `RATE_LIMIT_SHORT_WINDOW_MS`
 - `RATE_LIMIT_SHORT_WINDOW_LIMIT`
@@ -208,50 +208,51 @@ Todos los valores son configurables:
 - `RATE_LIMIT_BLOCK_WINDOW_MS`
 - `RATE_LIMIT_NOTIFY_COOLDOWN_MS`
 
-### 6.4 Límite de tamaño de request
+### 6.4 Tamano maximo de request
 
-Para proteger el webhook:
-
-- alerta al acercarse al límite,
-- rechaza requests por encima de `MAX_REQUEST_BODY_SIZE_BYTES` (100 KB default).
+El webhook rechaza requests por encima del limite configurado.
 
 ### 6.5 Manejo de errores de proveedores
 
-Errores temporales de OpenAI o Google Sheets se encapsulan como errores de proveedor y el usuario recibe un mensaje de contingencia, evitando exponer trazas internas.
+Errores temporales de OpenAI o Google Sheets se encapsulan como errores de proveedor y el usuario recibe un mensaje de contingencia.
+
+### 6.6 Endpoints operativos protegidos
+
+- Los endpoints manuales del modulo `dates` estan protegidos.
+- Los endpoints de agenda automatica requieren firma HMAC con `AGENDA_SYNC_SECRET`.
+- Los health checks requieren header secreto y tienen rate limit.
 
 ---
 
-## 7) Gestión de contexto conversacional
+## 7) Gestion de contexto conversacional
 
-El bot mantiene historial por usuario para mejorar comprensión de contexto e intención activa.
+El bot mantiene historial por usuario para mejorar la comprension de contexto e intencion activa.
 
 TTL de ciclo conversacional:
 
-- **flujo en progreso**: 3h,
-- **flujo completado**: 2h,
-- **límite duro total**: 6h.
+- flujo en progreso: `3h`
+- flujo completado: `2h`
+- limite duro total: `6h`
 
 Al expirar:
 
 - limpia estado de cache,
-- si había flujo incompleto, elimina la reserva temporal incompleta,
-- opcionalmente notifica al usuario por WhatsApp que la conversación expiró.
-
-También se limita el tamaño del historial conversacional para mantener contexto útil y controlado.
+- si habia flujo incompleto, elimina la reserva temporal incompleta,
+- opcionalmente notifica al usuario por WhatsApp.
 
 ---
 
-## 8) Estructura de datos en Google Sheets (visión funcional)
+## 8) Estructura de datos en Google Sheets
 
 El sistema trabaja con tres vistas principales:
 
-1. **Hoja de reservas**: reservas confirmadas (fecha, hora, nombre, teléfono, cantidad).
-2. **Hoja de disponibilidad**: disponibilidad por franja (ocupados/disponibles).
-3. **Hoja temporal**: estado parcial de reservas en construcción.
+1. **Hoja de reservas**: reservas confirmadas.
+2. **Hoja de disponibilidad**: disponibilidad por franja.
+3. **Hoja temporal**: estado parcial de reservas en construccion.
 
-Después de cada alta, baja o modificación:
+Despues de cada alta, baja o modificacion:
 
-- se recalcula ocupación,
+- se recalcula ocupacion,
 - se actualizan cupos disponibles,
 - se mantiene consistencia entre reservas y disponibilidad.
 
@@ -268,29 +269,36 @@ Después de cada alta, baja o modificación:
 ### OpenAI
 
 - `OPEN_AI`
-- `PROJECT_ID` (opcional)
-- `GPT_MODEL` (default `gpt-5-mini`)
+- `PROJECT_ID` opcional
+- `GPT_MODEL`
 
 ### Google Sheets
 
-- credenciales de service account + spreadsheet id (según provider del módulo)
+- `SPREADSHEET_ID`
+- `GOOGLE_CLIENT_EMAIL`
+- `GOOGLE_PRIVATE_KEY`
 
-### Reglas de negocio y capacidad
+### Reglas de negocio y agenda
 
 - `MAX_CAPACITY_TOTAL`
 - `ONLINE_BUFFER_PERCENT`
 - `RESERVATION_DURATION_MINUTES`
+- `SLOT_INTERVAL_MINUTES`
 - `MAX_PEOPLE_PER_RESERVATION`
 - `LARGE_RESERVATION_CONTACT_NUMBER`
-- `AGENDA_DAYS_AHEAD` (cantidad de días, contando hoy de forma inclusiva, que deben permanecer abiertos en agenda)
-- `AGENDA_DAYS_BACK_TO_KEEP` (cantidad de días históricos, contando hoy de forma inclusiva, que deben conservarse antes de borrar filas viejas)
-- `AGENDA_SYNC_SECRET` (clave HMAC compartida para firmar requests de sincronización de agenda)
-- `AGENDA_SYNC_MAX_TIME_SKEW_MS` (ventana máxima permitida para validar el timestamp de requests firmadas)
-- `AGENDA_SYNC_RATE_LIMIT_WINDOW_MS` (ventana de tiempo para limitar requests de sincronización de agenda)
-- `AGENDA_SYNC_RATE_LIMIT_MAX_REQUESTS` (máximo de requests permitidas por ventana para sincronización de agenda)
+- `AGENDA_DAYS_AHEAD`
+- `AGENDA_DAYS_BACK_TO_KEEP`
+- `AGENDA_SYNC_SECRET`
+- `AGENDA_SYNC_MAX_TIME_SKEW_MS`
+- `AGENDA_SYNC_RATE_LIMIT_WINDOW_MS`
+- `AGENDA_SYNC_RATE_LIMIT_MAX_REQUESTS`
+- `DATES_MANUAL_RATE_LIMIT_WINDOW_MS`
+- `DATES_MANUAL_RATE_LIMIT_MAX_REQUESTS`
 
 ### Seguridad operativa
 
+- `HEALTH_CHECK_SECRET`
+- `HEALTH_CHECK_RATE_LIMIT_MAX_REQUESTS`
 - `IDEMPOTENCY_MESSAGE_SID_TTL_MS`
 - `RATE_LIMIT_SHORT_WINDOW_MS`
 - `RATE_LIMIT_SHORT_WINDOW_LIMIT`
@@ -299,17 +307,42 @@ Después de cada alta, baja o modificación:
 - `RATE_LIMIT_BLOCK_WINDOW_MS`
 - `RATE_LIMIT_NOTIFY_COOLDOWN_MS`
 
+### Deploy
+
+- `PORT`
+- `NODE_ENV`
+- `API_BASE_URL` base publica del despliegue incluyendo `/bot` para workflows operativos
+
 ---
 
-## 10) Resumen ejecutivo
+## 10) Endpoints operativos
 
-Este proyecto implementa un **asistente transaccional de reservas** por WhatsApp con:
+- `POST /bot/communication/queue`
+  - Webhook de Twilio para mensajes entrantes.
+- `GET /bot/health/live`
+  - Liveness check protegido por secret.
+- `GET /bot/health/ready`
+  - Readiness check protegido por secret.
+- `POST /bot/dates/ensure-agenda-window`
+  - Endpoint firmado para mantener abierta la ventana de agenda.
+- `DELETE /bot/dates/delete-old-rows`
+  - Endpoint firmado para borrar filas historicas fuera de retencion.
+- `POST /bot/dates`
+- `POST /bot/dates/next-date`
+- `POST /bot/dates/x-dates`
+  - Endpoints manuales protegidos para operacion y mantenimiento.
+
+---
+
+## 11) Resumen ejecutivo
+
+Este proyecto implementa un asistente transaccional de reservas por WhatsApp con:
 
 - procesamiento de lenguaje natural,
-- lógica de negocio de restaurante (cupos, duplicados, tiempos, reservas grandes),
-- automatización para mantener la agenda abierta la cantidad de días configurada,
-- automatización para borrar filas históricas fuera de la ventana de retención configurada,
-- controles de seguridad para canales webhook (firma, idempotencia, rate limit, tamaño),
+- logica de negocio de restaurante,
+- automatizacion para mantener la agenda abierta,
+- automatizacion para borrar filas historicas,
+- controles de seguridad para webhooks y endpoints operativos,
 - y consistencia operativa sobre Google Sheets.
 
-Es una solución orientada a operación real: robusta ante reintentos, resistente al spam y diseñada para mantener una conversación útil hasta completar (o cerrar) cada flujo.
+Es una solucion orientada a operacion real en entorno controlado: robusta ante reintentos, resistente al spam y preparada para pruebas integradas con Twilio y un despliegue publico.
