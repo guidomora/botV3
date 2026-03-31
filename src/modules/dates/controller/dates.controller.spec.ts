@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DatesController } from './dates.controller';
 import { DatesService } from '../service/dates.service';
 import { AgendaSyncGuard } from '../guards/agenda-sync.guard';
+import { DatesManualGuard } from '../guards/dates-manual.guard';
 
 describe('DatesController', () => {
   let controller: DatesController;
@@ -29,6 +30,9 @@ describe('DatesController', () => {
 
     moduleBuilder
       .overrideGuard(AgendaSyncGuard)
+      .useValue({ canActivate: jest.fn().mockResolvedValue(true) });
+    moduleBuilder
+      .overrideGuard(DatesManualGuard)
       .useValue({ canActivate: jest.fn().mockResolvedValue(true) });
 
     const module: TestingModule = await moduleBuilder.compile();

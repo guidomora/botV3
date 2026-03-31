@@ -1,16 +1,20 @@
 ### History
 
-### 29/03/26
+### 30/03/26
 
-- Added tests for reservations module
-- Added health module: Checks live and ready status (if google sheets is available)
-- Exception filter added to handle errors globally
+- Added rate limiting for endpoints that set dates manually
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 29/03/26
+
+- Added tests for reservations module
+- Added health module: Checks live and ready status (if google sheets is available)
+- Exception filter added to handle errors globally
 
 ### 28/03/26
 

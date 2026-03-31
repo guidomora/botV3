@@ -20,6 +20,8 @@ describe('validateEnvironmentVariables', () => {
     expect(result.GPT_MODEL).toBe('gpt-5-mini');
     expect(result.MAX_CAPACITY_TOTAL).toBe(50);
     expect(result.RESERVATION_DURATION_MINUTES).toBe(120);
+    expect(result.DATES_MANUAL_RATE_LIMIT_WINDOW_MS).toBe(60000);
+    expect(result.DATES_MANUAL_RATE_LIMIT_MAX_REQUESTS).toBe(1);
     expect(result.HEALTH_CHECK_RATE_LIMIT_MAX_REQUESTS).toBe(15);
   });
 
