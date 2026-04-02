@@ -1,0 +1,15 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, Min } from 'class-validator';
+
+export class CreateXDatesDto {
+  @ApiProperty({
+    description: 'Cantidad de dias nuevos que se deben generar en la agenda.',
+    example: 3,
+    minimum: 1,
+  })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  quantity!: number;
+}

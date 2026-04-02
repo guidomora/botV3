@@ -59,7 +59,7 @@ describe('DatesController', () => {
   it('should delegate createXDates with requested quantity', async () => {
     datesServiceMock.createXDates.mockResolvedValue('Se agregaron 3 dias');
 
-    await expect(controller.createXDates(3)).resolves.toBe('Se agregaron 3 dias');
+    await expect(controller.createXDates({ quantity: 3 })).resolves.toBe('Se agregaron 3 dias');
     expect(datesServiceMock.createXDates).toHaveBeenCalledWith(3);
   });
 
