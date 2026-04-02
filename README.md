@@ -334,6 +334,17 @@ Despues de cada alta, baja o modificacion:
 
 ---
 
+## 10.1) Swagger / OpenAPI
+
+- La API expone documentacion interactiva en `GET /bot/docs`.
+- El documento OpenAPI en JSON queda disponible en `GET /bot/docs-json`.
+- La documentacion incluye:
+  - payload del webhook de Twilio,
+  - headers de seguridad requeridos para health checks y endpoints operativos,
+  - respuestas principales y errores mas relevantes.
+
+---
+
 ## 11) Resumen ejecutivo
 
 Este proyecto implementa un asistente transaccional de reservas por WhatsApp con:
