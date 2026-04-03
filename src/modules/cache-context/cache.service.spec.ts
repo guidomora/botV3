@@ -181,6 +181,26 @@ describe('CacheService', () => {
     expect(cacheManager.store.has(updateKey)).toBe(false);
   });
 
+  it('should expose monitoring snapshot with active conversations and total cached messages', async () => {
+    const anotherWaId = '5491198765432';
+
+    await service.appendEntityMessage(waId, 'hola', RoleEnum.USER);
+    await service.appendEntityMessage(waId, 'como va', RoleEnum.ASSISTANT);
+    await service.appendEntityMessage(anotherWaId, 'necesito reservar', RoleEnum.USER);
+
+    expect(service.getMonitoringSnapshot()).toEqual({
+      activeConversations: 2,
+      totalMessagesInCache: 3,
+    });
+
+    await service.clearHistory(waId, CacheTypeEnum.DATA);
+
+    expect(service.getMonitoringSnapshot()).toEqual({
+      activeConversations: 2,
+      totalMessagesInCache: 1,
+    });
+  });
+
   it('should expire an in-progress conversation, clear cache and delete temporal reservation', async () => {
     await service.appendEntityMessage(waId, 'hola', RoleEnum.USER);
     await service.setCancelState(waId, {
