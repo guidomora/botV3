@@ -1,14 +1,19 @@
 ### History
 
-### 30/03/26
+### 03/04/26
 
-- Added rate limiting for endpoints that set dates manually
+- .env variables cleaned up
+- API documentation updated
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 30/03/26
+
+- Added rate limiting for endpoints that set dates manually
 
 ### 29/03/26
 
