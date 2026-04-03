@@ -9,6 +9,7 @@ import {
   UpdateReservationType,
   ConversationLifecycleState,
   FlowLifecycleStatus,
+  CacheMonitorSnapshot,
 } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { ConversationExpirationNotifierService } from './conversation-expiration-notifier.service';
@@ -29,6 +30,8 @@ export class CacheService {
   private readonly HARD_LIMIT_TTL_MS = 6 * 60 * 60 * 1000;
   private readonly lifecyclePrefix = 'lifecycle:';
   private readonly expirationTimers = new Map<string, NodeJS.Timeout>();
+  private readonly messageCountByConversation = new Map<string, number>();
+  private totalMessagesInCache = 0;
 
   private key(waId: string, prefix: string) {
     return `${prefix}${waId}`;
@@ -59,6 +62,18 @@ export class CacheService {
       clearTimeout(activeTimer);
       this.expirationTimers.delete(waId);
     }
+  }
+
+  private updateMessageCount(waId: string, nextCount: number): void {
+    const previousCount = this.messageCountByConversation.get(waId) ?? 0;
+    this.totalMessagesInCache += nextCount - previousCount;
+
+    if (nextCount === 0) {
+      this.messageCountByConversation.delete(waId);
+      return;
+    }
+
+    this.messageCountByConversation.set(waId, nextCount);
   }
 
   private scheduleExpiration(state: ConversationLifecycleState): void {
@@ -121,6 +136,7 @@ export class CacheService {
     ]);
 
     this.clearExpirationTimer(waId);
+    this.updateMessageCount(waId, 0);
   }
 
   private async handleConversationExpiration(waId: string): Promise<void> {
@@ -179,8 +195,16 @@ export class CacheService {
     const ttl = await this.getHistoryTtlMs(waId);
 
     await this.cacheManager.set(key, trimmed, ttl);
+    this.updateMessageCount(waId, trimmed.length);
 
     return trimmed;
+  }
+
+  getMonitoringSnapshot(): CacheMonitorSnapshot {
+    return {
+      activeConversations: this.expirationTimers.size,
+      totalMessagesInCache: this.totalMessagesInCache,
+    };
   }
 
   private async getUpdateData(waId: string): Promise<UpdateReservationType> {
@@ -252,6 +276,9 @@ export class CacheService {
 
   async clearHistory(waId: string, type: CacheTypeEnum) {
     await this.cacheManager.del(this.key(waId, type));
+    if (type === CacheTypeEnum.DATA) {
+      this.updateMessageCount(waId, 0);
+    }
     this.logger.log(`Cache clear history for ${waId}`, CacheService.name);
   }
 
