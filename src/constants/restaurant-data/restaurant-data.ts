@@ -1,1 +1,2 @@
-export const RESTAURANT_NAME = 'Nombre del restaurante';
+export const RESTAURANT_NAME = 'El restaurante de la IA';
+

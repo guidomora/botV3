@@ -28,6 +28,7 @@ import {
 } from '../utils';
 import { SHEETS_NAMES } from 'src/constants';
 import { parseDateTime } from '../utils/parseDate';
+import { TemporalDataRows } from 'src/constants/tables-info/temporal-data-rows';
 
 @Injectable()
 export class DatesService {
@@ -61,6 +62,13 @@ export class DatesService {
   ): Promise<AddMissingFieldOutput> {
     const reservation =
       await this.googleSheetsTemporalService.addMissingField(createReservationDto);
+
+    const progressiveValidationResult =
+      await this.validateProgressiveReservationAvailability(reservation);
+
+    if (progressiveValidationResult) {
+      return progressiveValidationResult;
+    }
 
     const { date, time, name, phone, quantity } = reservation.snapshot;
     const formattedPhone = formatPhoneNumber(phone);
@@ -103,6 +111,135 @@ export class DatesService {
       missingFields: reservation.missingFields,
       reservationData: reservation.snapshot,
     };
+  }
+
+  private async validateProgressiveReservationAvailability(
+    reservation: TemporalDataRows,
+  ): Promise<AddMissingFieldOutput | null> {
+    const { snapshot, previousSnapshot } = reservation;
+    const date = this.normalizeTemporalValue(snapshot.date);
+    const time = this.normalizeTemporalValue(snapshot.time);
+    const quantity = this.parseTemporalQuantity(snapshot.quantity);
+    const waId = snapshot.waId;
+    const dateWasCompletedNow = this.didTemporalFieldBecomeCompleted(
+      previousSnapshot?.date,
+      snapshot.date,
+    );
+    const timeWasCompletedNow = this.didTemporalFieldBecomeCompleted(
+      previousSnapshot?.time,
+      snapshot.time,
+    );
+    const quantityWasCompletedNow = this.didTemporalFieldBecomeCompleted(
+      previousSnapshot?.quantity,
+      snapshot.quantity,
+    );
+
+    if (!waId) {
+      return null;
+    }
+
+    if (dateWasCompletedNow && date) {
+      const availabilitySheetIndex = 1;
+      const dateIndex = await this.googleSheetsService.getDateIndexByDate(
+        date,
+        availabilitySheetIndex,
+      );
+
+      if (dateIndex === -1) {
+        const cleanedReservation = await this.googleSheetsTemporalService.clearFields(waId, [
+          'date',
+          'time',
+        ]);
+
+        return {
+          status: TemporalStatusEnum.IN_PROGRESS,
+          missingFields: cleanedReservation.missingFields,
+          reservationData: cleanedReservation.snapshot,
+          message: 'Esa fecha todavia no esta disponible en la agenda. Por favor elegi otra fecha.',
+          errorStatus: StatusEnum.NO_DATE_FOUND,
+        };
+      }
+
+      const dayAvailability = await this.getDayAvailability(date);
+
+      if (dayAvailability.slots.length === 0) {
+        const cleanedReservation = await this.googleSheetsTemporalService.clearFields(waId, [
+          'date',
+          'time',
+        ]);
+
+        return {
+          status: TemporalStatusEnum.IN_PROGRESS,
+          missingFields: cleanedReservation.missingFields,
+          reservationData: cleanedReservation.snapshot,
+          message: 'No hay disponibilidad para esa fecha. Por favor elegi otra fecha.',
+          errorStatus: StatusEnum.NO_AVAILABILITY,
+        };
+      }
+    }
+
+    if (timeWasCompletedNow && date && time) {
+      const requestedTimeAvailability = await this.getDayAndTimeAvailability(date, time);
+      const exactSlotAvailable = requestedTimeAvailability.slots.some((slot) => slot.time === time);
+
+      if (!exactSlotAvailable) {
+        await this.googleSheetsTemporalService.clearFields(waId, ['time']);
+
+        return {
+          status: TemporalStatusEnum.FAILED,
+          missingFields: reservation.missingFields,
+          reservationData: snapshot,
+          message: 'Ese horario no esta disponible. Te comparto horarios cercanos.',
+          errorStatus: StatusEnum.NO_AVAILABILITY,
+        };
+      }
+    }
+
+    if ((timeWasCompletedNow || quantityWasCompletedNow) && date && time && quantity) {
+      const availability = await this.googleSheetsService.getAvailabilityFromReservations(
+        date,
+        time,
+        quantity,
+      );
+
+      if (!availability.isAvailable) {
+        await this.googleSheetsTemporalService.clearFields(waId, ['time']);
+
+        return {
+          status: TemporalStatusEnum.FAILED,
+          missingFields: reservation.missingFields,
+          reservationData: snapshot,
+          message:
+            'No hay lugar para esa cantidad de personas en ese horario. Proba con una hora cercana y te ayudo a encontrar lugar.',
+          errorStatus: StatusEnum.NO_AVAILABILITY,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  private normalizeTemporalValue(value?: string): string | null {
+    const normalized = value?.trim();
+    return normalized && normalized !== ' ' ? normalized : null;
+  }
+
+  private didTemporalFieldBecomeCompleted(previousValue?: string, nextValue?: string): boolean {
+    const normalizedPreviousValue = this.normalizeTemporalValue(previousValue);
+    const normalizedNextValue = this.normalizeTemporalValue(nextValue);
+
+    return !normalizedPreviousValue && !!normalizedNextValue;
+  }
+
+  private parseTemporalQuantity(quantity?: string): number | null {
+    const normalizedQuantity = this.normalizeTemporalValue(quantity);
+
+    if (!normalizedQuantity) {
+      return null;
+    }
+
+    const parsedQuantity = Number(normalizedQuantity);
+    return Number.isNaN(parsedQuantity) ? null : parsedQuantity;
   }
 
   async deleteIncompleteTemporalReservationByWaId(waId: string): Promise<boolean> {

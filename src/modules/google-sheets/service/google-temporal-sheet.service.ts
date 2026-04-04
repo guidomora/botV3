@@ -63,6 +63,7 @@ export class GoogleTemporalSheetsService {
       missingFields,
       rowIndex,
       snapshot: next,
+      previousSnapshot: current,
       changedFields,
     };
   }
@@ -70,6 +71,43 @@ export class GoogleTemporalSheetsService {
   async findTemporalRowIndexByWaId(waId: string): Promise<number> {
     const sheetName = SHEETS_NAMES[2];
     return this.googleTemporalSheetsRepository.findRowIndexByWaId(sheetName, waId);
+  }
+
+  async clearFields(waId: string, fields: (keyof TemporalDataType)[]): Promise<TemporalDataRows> {
+    const sheetName = SHEETS_NAMES[2];
+    const rowIndex = await this.googleTemporalSheetsRepository.findRowIndexByWaId(sheetName, waId);
+
+    if (rowIndex === -1) {
+      throw new Error(`No se pudo localizar la fila temporal para ${waId}`);
+    }
+
+    const currentRow = await this.googleTemporalSheetsRepository.readRowByIndex(
+      sheetName,
+      rowIndex,
+    );
+    const next = this.rowArrayToObject(currentRow, waId);
+
+    for (const field of fields) {
+      next[field] = ' ';
+    }
+
+    const { status, missingFields } = computeStatus(next);
+    next.status = status;
+
+    await this.googleTemporalSheetsRepository.updateFullRow(
+      sheetName,
+      rowIndex,
+      objectToRowArray(next),
+    );
+
+    return {
+      status,
+      missingFields,
+      rowIndex,
+      snapshot: next,
+      previousSnapshot: currentRow ? this.rowArrayToObject(currentRow, waId) : undefined,
+      changedFields: [...fields],
+    };
   }
 
   private rowArrayToObject(row: string[], waIdFallback: string) {
