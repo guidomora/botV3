@@ -12,8 +12,10 @@ import { buildUpdateReservationMock } from '../test/builders/update-reservation.
 import {
   deleteReservationRequestMock,
   temporalCompletedRowMock,
+  temporalDateClearedRowMock,
   temporalCompletedSnapshotMock,
   temporalInProgressRowMock,
+  temporalTimeClearedRowMock,
 } from '../test/mocks/reservation-scenarios.mock';
 import {
   availabilityRowsMock,
@@ -97,6 +99,13 @@ describe('DatesService', () => {
 
   it('should create reservation from temporal data when snapshot is completed', async () => {
     googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue(temporalCompletedRowMock);
+    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 10,
+      available: 32,
+    });
     createReservationRowUseCaseMock.createReservation.mockResolvedValue({
       error: false,
       status: StatusEnum.SUCCESS,
@@ -125,6 +134,13 @@ describe('DatesService', () => {
 
   it('should keep temporal conversation in progress when final reservation date already passed', async () => {
     googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue(temporalCompletedRowMock);
+    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 10,
+      available: 32,
+    });
     createReservationRowUseCaseMock.createReservation.mockResolvedValue({
       error: true,
       status: StatusEnum.DATE_ALREADY_PASSED,
@@ -150,6 +166,13 @@ describe('DatesService', () => {
       ...temporalCompletedRowMock,
       missingFields: ['service'],
     });
+    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 10,
+      available: 32,
+    });
     createReservationRowUseCaseMock.createReservation.mockResolvedValue({
       error: true,
       status: StatusEnum.NO_AVAILABILITY,
@@ -172,6 +195,8 @@ describe('DatesService', () => {
 
   it('should return temporal snapshot as-is when data is still incomplete', async () => {
     googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue(temporalInProgressRowMock);
+    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
 
     await expect(
       service.createReservationWithMultipleMessages({
@@ -183,6 +208,200 @@ describe('DatesService', () => {
       missingFields: ['time'],
       reservationData: temporalInProgressRowMock.snapshot,
     });
+  });
+
+  it('should stop the flow early when the selected date is not loaded in agenda', async () => {
+    googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue({
+      ...temporalInProgressRowMock,
+      changedFields: ['date'],
+      snapshot: {
+        ...temporalInProgressRowMock.snapshot,
+        waId: '5491154916243',
+      },
+    });
+    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(-1);
+    googleTemporalSheetsServiceMock.clearFields.mockResolvedValue(temporalDateClearedRowMock);
+
+    await expect(
+      service.createReservationWithMultipleMessages({
+        waId: '5491154916243',
+        values: { date: futureReservationDateLabelMock },
+      }),
+    ).resolves.toEqual({
+      status: TemporalStatusEnum.IN_PROGRESS,
+      missingFields: temporalDateClearedRowMock.missingFields,
+      reservationData: temporalDateClearedRowMock.snapshot,
+      message: 'Esa fecha todavia no esta disponible en la agenda. Por favor elegi otra fecha.',
+      errorStatus: StatusEnum.NO_DATE_FOUND,
+    });
+
+    expect(googleTemporalSheetsServiceMock.clearFields).toHaveBeenCalledWith('5491154916243', [
+      'date',
+      'time',
+    ]);
+  });
+
+  it('should stop the flow early when the selected date has no availability', async () => {
+    googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue({
+      ...temporalInProgressRowMock,
+      changedFields: ['date'],
+      snapshot: {
+        ...temporalInProgressRowMock.snapshot,
+        waId: '5491154916243',
+      },
+    });
+    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue([]);
+    googleTemporalSheetsServiceMock.clearFields.mockResolvedValue(temporalDateClearedRowMock);
+
+    await expect(
+      service.createReservationWithMultipleMessages({
+        waId: '5491154916243',
+        values: { date: futureReservationDateLabelMock },
+      }),
+    ).resolves.toEqual({
+      status: TemporalStatusEnum.IN_PROGRESS,
+      missingFields: temporalDateClearedRowMock.missingFields,
+      reservationData: temporalDateClearedRowMock.snapshot,
+      message: 'No hay disponibilidad para esa fecha. Por favor elegi otra fecha.',
+      errorStatus: StatusEnum.NO_AVAILABILITY,
+    });
+  });
+
+  it('should suggest a new time early when the selected time is not available', async () => {
+    googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue({
+      ...temporalInProgressRowMock,
+      changedFields: ['time'],
+      snapshot: {
+        ...temporalCompletedSnapshotMock,
+        waId: '5491154916243',
+      },
+      missingFields: [],
+    });
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock.slice(0, 2));
+    googleTemporalSheetsServiceMock.clearFields.mockResolvedValue(temporalTimeClearedRowMock);
+
+    await expect(
+      service.createReservationWithMultipleMessages({
+        waId: '5491154916243',
+        values: { time: '20:00' },
+      }),
+    ).resolves.toEqual({
+      status: TemporalStatusEnum.FAILED,
+      missingFields: [],
+      reservationData: {
+        ...temporalCompletedSnapshotMock,
+        waId: '5491154916243',
+      },
+      message: 'Ese horario no esta disponible. Te comparto horarios cercanos.',
+      errorStatus: StatusEnum.NO_AVAILABILITY,
+    });
+
+    expect(googleTemporalSheetsServiceMock.clearFields).toHaveBeenCalledWith('5491154916243', [
+      'time',
+    ]);
+  });
+
+  it('should stop early when quantity makes the selected slot unavailable', async () => {
+    googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue({
+      ...temporalCompletedRowMock,
+      changedFields: ['quantity'],
+      snapshot: {
+        ...temporalCompletedSnapshotMock,
+        waId: '5491154916243',
+      },
+      previousSnapshot: {
+        ...temporalCompletedSnapshotMock,
+        quantity: ' ',
+        waId: '5491154916243',
+      },
+    });
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: false,
+      reservations: 42,
+      available: 0,
+    });
+    googleTemporalSheetsServiceMock.clearFields.mockResolvedValue(temporalTimeClearedRowMock);
+
+    await expect(
+      service.createReservationWithMultipleMessages({
+        waId: '5491154916243',
+        values: { quantity: '4' },
+      }),
+    ).resolves.toEqual({
+      status: TemporalStatusEnum.FAILED,
+      missingFields: [],
+      reservationData: {
+        ...temporalCompletedSnapshotMock,
+        waId: '5491154916243',
+      },
+      message:
+        'No hay lugar para esa cantidad de personas en ese horario. Proba con una hora cercana y te ayudo a encontrar lugar.',
+      errorStatus: StatusEnum.NO_AVAILABILITY,
+    });
+
+    expect(createReservationRowUseCaseMock.createReservation).not.toHaveBeenCalled();
+  });
+
+  it('should not clear date again when only time was newly completed in temporal row', async () => {
+    googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue({
+      status: TemporalStatusEnum.IN_PROGRESS,
+      missingFields: ['quantity', 'phone'],
+      rowIndex: 9,
+      snapshot: {
+        date: futureReservationDateLabelMock,
+        time: '21:00',
+        name: 'guido',
+        phone: ' ',
+        quantity: ' ',
+        service: 'Food',
+        waId: '5491154916243',
+        intent: 'create',
+      },
+      previousSnapshot: {
+        date: futureReservationDateLabelMock,
+        time: ' ',
+        name: 'guido',
+        phone: ' ',
+        quantity: ' ',
+        service: 'Food',
+        waId: '5491154916243',
+        intent: 'create',
+      },
+      changedFields: ['date', 'time'],
+    });
+    googleSheetsServiceMock.getDayAvailability.mockResolvedValue([
+      [futureReservationDateLabelMock, '20:00', '0', '42'],
+      [futureReservationDateLabelMock, '21:00', '0', '40'],
+    ]);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 10,
+      available: 32,
+    });
+
+    await expect(
+      service.createReservationWithMultipleMessages({
+        waId: '5491154916243',
+        values: { time: '21:00' },
+      }),
+    ).resolves.toEqual({
+      status: TemporalStatusEnum.IN_PROGRESS,
+      missingFields: ['quantity', 'phone'],
+      reservationData: {
+        date: futureReservationDateLabelMock,
+        time: '21:00',
+        name: 'guido',
+        phone: ' ',
+        quantity: ' ',
+        service: 'Food',
+        waId: '5491154916243',
+        intent: 'create',
+      },
+    });
+
+    expect(googleSheetsServiceMock.getDateIndexByDate).not.toHaveBeenCalled();
+    expect(googleTemporalSheetsServiceMock.clearFields).not.toHaveBeenCalled();
   });
 
   it('should delete incomplete temporal reservation by waId when it exists', async () => {

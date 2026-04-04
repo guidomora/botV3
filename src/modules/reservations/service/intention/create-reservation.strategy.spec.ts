@@ -64,6 +64,29 @@ describe('CreateReservationStrategy', () => {
     ]);
   });
 
+  it('should pass early availability validation message when date must be chosen again', async () => {
+    datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue({
+      ...temporalInProgressResponseMock,
+      missingFields: ['date', 'time'],
+      message: 'Esa fecha todavia no esta disponible en la agenda. Por favor elegi otra fecha.',
+      errorStatus: StatusEnum.NO_DATE_FOUND,
+    });
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    aiServiceMock.getMissingData.mockResolvedValue('No tengo ese dia cargado. Decime otra fecha.');
+
+    await expect(
+      strategy.execute({ intent: Intention.CREATE, useCurrentPhone: true }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: 'No tengo ese dia cargado. Decime otra fecha.',
+    });
+
+    expect(aiServiceMock.getMissingData.mock.calls[0]).toEqual([
+      ['date', 'time'],
+      [],
+      'Esa fecha todavia no esta disponible en la agenda. Por favor elegi otra fecha.',
+    ]);
+  });
+
   it('should complete reservation and mark flow as completed', async () => {
     datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue(
       temporalCompletedResponseMock,

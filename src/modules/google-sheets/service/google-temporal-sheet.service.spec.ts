@@ -99,4 +99,29 @@ describe('Given GoogleTemporalSheetsService', () => {
       expect(repository.findRowIndexByWaId.mock.calls).toHaveLength(1);
     });
   });
+
+  describe('When clearFields is called', () => {
+    it('Should blank requested fields and persist the updated temporal row', async () => {
+      repository.findRowIndexByWaId.mockResolvedValue(5);
+      repository.readRowByIndex.mockResolvedValue(temporalRowMock);
+
+      const result = await service.clearFields('wa-123', ['date', 'time']);
+
+      expect(repository.updateFullRow.mock.calls[0]).toEqual([
+        expect.any(String),
+        5,
+        expect.arrayContaining([' ', ' ']),
+      ]);
+      expect(result.status).toBe(TemporalStatusEnum.IN_PROGRESS);
+      expect(result.missingFields).toEqual(expect.arrayContaining(['date', 'time']));
+    });
+
+    it('Should throw when temporal row does not exist', async () => {
+      repository.findRowIndexByWaId.mockResolvedValue(-1);
+
+      await expect(service.clearFields('wa-missing', ['date'])).rejects.toThrow(
+        'No se pudo localizar la fila temporal para wa-missing',
+      );
+    });
+  });
 });

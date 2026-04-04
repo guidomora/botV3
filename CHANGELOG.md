@@ -1,15 +1,20 @@
 ### History
 
-### 03/04/26
+### 04/04/26
 
-- .env variables cleaned up
-- API documentation updated
+- Restaurant name changed to "El restaurante de la IA"
+- The Date avaialbility is checked before continuing with the reservation process and if there is no availability it will ask the user if he wants to try another date.
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 03/04/26
+
+- .env variables cleaned up
+- API documentation updated
 
 ### 30/03/26
 

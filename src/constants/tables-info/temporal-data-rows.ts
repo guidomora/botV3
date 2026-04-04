@@ -41,5 +41,6 @@ export interface TemporalDataRows {
   missingFields: (keyof TemporalDataType)[];
   rowIndex: number;
   snapshot: TemporalDataType;
+  previousSnapshot?: TemporalDataType;
   changedFields: string[];
 }
