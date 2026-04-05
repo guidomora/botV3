@@ -242,7 +242,7 @@ export class DatesService {
     const rowIndex = await this.googleSheetsTemporalService.findTemporalRowIndexByWaId(waId);
 
     if (rowIndex === -1) {
-      this.logger.log(`No se encontrÃ³ fila temporal para limpiar en waId ${waId}`);
+      this.logger.log(`No se encontró fila temporal para limpiar en waId ${waId}`);
       return false;
     }
 

@@ -16,13 +16,11 @@ export function getMissingUpdateFields(state: UpdateReservationType): UpdateMiss
   if (!state.currentTime) current.push('currentTime');
 
   const target: UpdateField[] = [];
+  const hasCurrentReservationData = current.length === 0;
+  const hasTarget = state.newDate || state.newTime || state.newName || state.newQuantity;
 
-  if (state.stage === 'reschedule') {
-    const hasTarget = state.newDate || state.newTime || state.newName || state.newQuantity;
-
-    if (!hasTarget) {
-      target.push('changeTarget');
-    }
+  if (hasCurrentReservationData && !hasTarget) {
+    target.push('changeTarget');
   }
 
   return { current, target };

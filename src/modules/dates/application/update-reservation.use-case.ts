@@ -49,7 +49,7 @@ export class UpdateReservationUseCase {
     if (currentReservationIndex === -1) {
       return {
         status: StatusEnum.NO_DATE_FOUND,
-        message: 'No se encontrÃ³ la reserva con los datos proporcionados.',
+        message: 'No se encontró la reserva con los datos proporcionados.',
         error: true,
       };
     }
@@ -151,11 +151,11 @@ export class UpdateReservationUseCase {
   ): ServiceResponse | null {
     if (context.targetReservationDateTime.getTime() < Date.now()) {
       this.logger.warn(
-        'La nueva fecha u horario ya pasaron. Por favor elegÃ­ otra fecha u horario.',
+        'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.',
       );
       return {
         status: StatusEnum.DATE_ALREADY_PASSED,
-        message: 'La nueva fecha u horario ya pasaron. Por favor elegÃ­ otra fecha u horario.',
+        message: 'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.',
         error: true,
       };
     }
@@ -227,12 +227,12 @@ export class UpdateReservationUseCase {
     const largeReservationValidation = getLargeReservationValidation(resolvedQuantity);
     if (largeReservationValidation.isLargeReservation) {
       const contactInstruction = largeReservationValidation.contactNumber
-        ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte con la modificaciÃ³n, ya que este tipo de reserva requiere atenciÃ³n directa.`
-        : 'Por favor escribinos o llamanos para ayudarte con la modificaciÃ³n, ya que este tipo de reserva requiere atenciÃ³n directa.';
+        ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.`
+        : 'Por favor escribinos o llamanos para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.';
 
       return {
         status: StatusEnum.RESERVATION_ERROR,
-        message: `Para reservas de mÃ¡s de ${largeReservationValidation.maxPeoplePerReservation} personas necesitamos gestionarlo por atenciÃ³n directa. ${contactInstruction}`,
+        message: `Para reservas de más de ${largeReservationValidation.maxPeoplePerReservation} personas necesitamos gestionarlo por atención directa. ${contactInstruction}`,
         error: true,
       };
     }
@@ -249,7 +249,7 @@ export class UpdateReservationUseCase {
       return {
         status: StatusEnum.NO_AVAILABILITY,
         message:
-          'No hay lugar para esa cantidad de personas en ese horario. ProbÃ¡ con una hora cercana y te ayudamos a encontrar lugar.',
+          'No hay lugar para esa cantidad de personas en ese horario. Probá con una hora cercana y te ayudamos a encontrar lugar.',
         error: true,
       };
     }
@@ -266,7 +266,7 @@ export class UpdateReservationUseCase {
 
     return {
       status: StatusEnum.SUCCESS,
-      message: `Tu reserva a nombre de ${context.currentName} se actualizÃ³ a nombre de ${context.targetName} para ${resolvedReservation.resolvedQuantity} personas el ${context.currentDate} a las ${context.currentTime}.
+      message: `Tu reserva a nombre de ${context.currentName} se actualizó a nombre de ${context.targetName} para ${resolvedReservation.resolvedQuantity} personas el ${context.currentDate} a las ${context.currentTime}.
         Muchas gracias!`,
       error: false,
     };
@@ -281,7 +281,7 @@ export class UpdateReservationUseCase {
       return {
         status: StatusEnum.NO_AVAILABILITY,
         message:
-          'No hay lugar para esa cantidad de personas en el nuevo horario. ProbÃ¡ con una hora cercana y te ayudamos a encontrar lugar.',
+          'No hay lugar para esa cantidad de personas en el nuevo horario. Probá con una hora cercana y te ayudamos a encontrar lugar.',
         error: true,
       };
     }
@@ -292,6 +292,7 @@ export class UpdateReservationUseCase {
       name: context.targetName.toLowerCase(),
       phone: context.formattedPhone,
       quantity: resolvedReservation.resolvedQuantity,
+      excludedRowIndex: resolvedReservation.currentReservationIndex,
     };
 
     const creationResult = await this.createReservationRowUseCase.createReservation(createObject);
@@ -299,7 +300,7 @@ export class UpdateReservationUseCase {
     if (creationResult.error) {
       return {
         status: StatusEnum.RESERVATION_ERROR,
-        message: 'Hubo un problema al procesar la reserva, por favor intentÃ¡ nuevamente.',
+        message: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.',
         error: true,
       };
     }
@@ -320,7 +321,7 @@ export class UpdateReservationUseCase {
 
     return {
       status: StatusEnum.SUCCESS,
-      message: `Tu reserva a nombre de ${context.currentName} se moviÃ³ del ${context.currentDate} a las ${context.currentTime} al ${context.targetDate} a las ${context.targetTime} para ${resolvedReservation.resolvedQuantity} personas a nombre de ${context.targetName}.
+      message: `Tu reserva a nombre de ${context.currentName} se movió del ${context.currentDate} a las ${context.currentTime} al ${context.targetDate} a las ${context.targetTime} para ${resolvedReservation.resolvedQuantity} personas a nombre de ${context.targetName}.
       Muchas gracias!`,
       error: false,
     };

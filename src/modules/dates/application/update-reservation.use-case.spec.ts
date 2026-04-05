@@ -270,6 +270,7 @@ describe('UpdateReservationUseCase', () => {
       name: 'guido nuevo',
       phone: '54-9-1154916243',
       quantity: 5,
+      excludedRowIndex: 27,
     });
     expect(deleteReservationUseCaseMock.deleteReservation).toHaveBeenCalledWith({
       date: futureReservationDateLabelMock,
@@ -320,6 +321,14 @@ describe('UpdateReservationUseCase', () => {
     expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledWith(
       futureReservationDateLabelMock,
     );
+    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith({
+      date: futureReservationDateLabelMock,
+      time: '21:00',
+      name: 'guido noche',
+      phone: '54-9-1154916243',
+      quantity: 4,
+      excludedRowIndex: 27,
+    });
   });
 
   it('should use normalized name to find the current reservation', async () => {

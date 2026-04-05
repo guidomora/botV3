@@ -67,7 +67,6 @@ describe('UpdateReservationStrategy', () => {
     const result = await strategy.execute({ intent: Intention.UPDATE }, simplifiedPayloadMock);
 
     expect(result.reply).toContain('No se encontr');
-
     expect(cacheServiceMock.appendEntityMessage.mock.calls[0]?.[0]).toBe(
       simplifiedPayloadMock.waId,
     );
@@ -93,6 +92,47 @@ describe('UpdateReservationStrategy', () => {
       [],
       updateStateReadyToRescheduleMock,
     ]);
+  });
+
+  it('should ask what to change after identifying the reservation without any new target data', async () => {
+    cacheServiceMock.getUpdateState.mockResolvedValue({
+      ...updateStateIdentifyMock,
+      currentDate: 'domingo 29 de marzo 2026 29/03/2026',
+      currentTime: '21:00',
+    });
+    cacheServiceMock.updateUpdateState
+      .mockResolvedValueOnce({
+        ...updateStateIdentifyMock,
+        currentName: 'guido',
+        phone: '5491112345678',
+        currentDate: 'domingo 29 de marzo 2026 29/03/2026',
+        currentTime: '21:00',
+        stage: 'identify',
+      })
+      .mockResolvedValueOnce(updateStateReadyToRescheduleMock);
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    datesServiceMock.getReservationIndexByData.mockResolvedValue(12);
+    aiServiceMock.askUpdateReservationData.mockResolvedValue('¿Qué querés cambiar?');
+
+    await expect(
+      strategy.execute(
+        {
+          intent: Intention.UPDATE,
+          name: 'guido',
+          phone: '5491112345678',
+        },
+        simplifiedPayloadMock,
+      ),
+    ).resolves.toEqual({
+      reply: '¿Qué querés cambiar?',
+    });
+
+    expect(aiServiceMock.askUpdateReservationData.mock.calls[0]).toEqual([
+      ['changeTarget'],
+      [],
+      updateStateReadyToRescheduleMock,
+    ]);
+    expect(datesServiceMock.updateReservation.mock.calls).toHaveLength(0);
   });
 
   it('should suggest alternative availability when update fails due to no availability', async () => {
