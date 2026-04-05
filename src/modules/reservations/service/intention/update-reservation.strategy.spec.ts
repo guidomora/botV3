@@ -135,6 +135,33 @@ describe('UpdateReservationStrategy', () => {
     expect(datesServiceMock.updateReservation.mock.calls).toHaveLength(0);
   });
 
+  it('should ask what to change when AI repeats the same date and time as current reservation', async () => {
+    const stateWithRepeatedTarget = {
+      ...updateStateReadyToRescheduleMock,
+      newDate: updateStateReadyToRescheduleMock.currentDate,
+      newTime: updateStateReadyToRescheduleMock.currentTime,
+    };
+
+    cacheServiceMock.getUpdateState.mockResolvedValue(stateWithRepeatedTarget);
+    cacheServiceMock.updateUpdateState.mockResolvedValue(stateWithRepeatedTarget);
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    datesServiceMock.getReservationIndexByData.mockResolvedValue(12);
+    aiServiceMock.askUpdateReservationData.mockResolvedValue('¿Qué querés cambiar?');
+
+    await expect(
+      strategy.execute({ intent: Intention.UPDATE }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: '¿Qué querés cambiar?',
+    });
+
+    expect(aiServiceMock.askUpdateReservationData.mock.calls[0]).toEqual([
+      ['changeTarget'],
+      [],
+      stateWithRepeatedTarget,
+    ]);
+    expect(datesServiceMock.updateReservation.mock.calls).toHaveLength(0);
+  });
+
   it('should suggest alternative availability when update fails due to no availability', async () => {
     const nextState = {
       ...updateStateReadyToRescheduleMock,
