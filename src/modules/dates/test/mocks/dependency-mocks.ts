@@ -18,6 +18,10 @@ export const ensureAgendaWindowUseCaseMock = () => ({
   ensureAgendaWindow: jest.fn(),
 });
 
+export const updateReservationUseCaseMock = () => ({
+  updateReservation: jest.fn(),
+});
+
 export const generateDatetimeMock = () => ({
   createDateTime: jest.fn(),
   createOneDayWithBookings: jest.fn(),
