@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IntentionStrategyInterface, StrategyResult } from './intention-strategy.interface';
 import {
   Intention,
@@ -10,20 +10,20 @@ import {
 } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
-import { Logger } from '@nestjs/common';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { getMissingUpdateFields } from '../helpers/get-missing-update-fields.helper';
+
 @Injectable()
 export class UpdateReservationStrategy implements IntentionStrategyInterface {
   readonly intent = Intention.UPDATE;
   private readonly logger = new Logger(UpdateReservationStrategy.name);
+
   constructor(
     private readonly datesService: DatesService,
     private readonly aiService: AiService,
     private readonly cacheService: CacheService,
   ) {}
 
-  // the state must come from the conversation context (cache)
   private mapAiResponseToUpdateReservation(
     aiResponse: MultipleMessagesResponse,
     updateState: UpdateReservationType,
@@ -51,22 +51,38 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
       }
     }
 
-    if (aiResponse.phone) updateData.phone = aiResponse.phone;
+    if (aiResponse.phone) {
+      updateData.phone = aiResponse.phone;
+    }
 
     if (updateState.stage === 'identify') {
-      if (!updateState.currentDate && aiResponse.date) updateData.currentDate = aiResponse.date;
-      if (!updateState.currentTime && aiResponse.time) updateData.currentTime = aiResponse.time;
+      if (!updateState.currentDate && aiResponse.date) {
+        updateData.currentDate = aiResponse.date;
+      }
+      if (!updateState.currentTime && aiResponse.time) {
+        updateData.currentTime = aiResponse.time;
+      }
 
       if (updateState.currentDate && updateState.currentTime) {
-        if (aiResponse.date) updateData.newDate = aiResponse.date;
-        if (aiResponse.time) updateData.newTime = aiResponse.time;
+        if (aiResponse.date) {
+          updateData.newDate = aiResponse.date;
+        }
+        if (aiResponse.time) {
+          updateData.newTime = aiResponse.time;
+        }
       }
     }
 
     if (updateState.stage === 'reschedule') {
-      if (aiResponse.date) updateData.newDate = aiResponse.date;
-      if (aiResponse.time) updateData.newTime = aiResponse.time;
-      if (aiResponse.name) updateData.newName = aiResponse.name;
+      if (aiResponse.date) {
+        updateData.newDate = aiResponse.date;
+      }
+      if (aiResponse.time) {
+        updateData.newTime = aiResponse.time;
+      }
+      if (aiResponse.name) {
+        updateData.newName = aiResponse.name;
+      }
     }
 
     if (aiResponse.quantity && (updateState.stage === 'reschedule' || hasCurrentReservationData)) {
@@ -107,6 +123,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
       const response = shouldAskOnlyPhone
         ? await this.aiService.askUpdateReservationPhone(history, nextState)
         : await this.aiService.askUpdateReservationData(current, history, nextState);
+
       await this.cacheService.appendEntityMessage(
         waId,
         response,
@@ -190,10 +207,10 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
         return { reply: reply.message };
       }
+
       await this.cacheService.clearUpdateState(waId);
       await this.cacheService.markFlowCompleted(waId);
 
-      // TODO: work on something when user enters bad data
       return { reply: reply.message };
     } catch (error) {
       this.logger.error('Error al actualizar la reserva', error as Error);

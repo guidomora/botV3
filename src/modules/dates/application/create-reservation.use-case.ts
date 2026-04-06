@@ -18,7 +18,7 @@ export class CreateReservationRowUseCase {
   constructor(private readonly googleSheetsService: GoogleSheetsService) {}
 
   async createReservation(createReservation: CreateReservationType): Promise<ServiceResponse> {
-    const { date, time, name, phone, quantity } = createReservation;
+    const { date, time, name, phone, quantity, excludedRowIndex } = createReservation;
 
     try {
       const reservationDateTime = parseDateTime(date!, time);
@@ -44,6 +44,7 @@ export class CreateReservationRowUseCase {
       const hasReservationSameDay = await this.googleSheetsService.hasReservationByDateAndPhone(
         date!,
         phone,
+        excludedRowIndex,
       );
 
       if (hasReservationSameDay) {

@@ -26,7 +26,6 @@ ${context && context.length ? context : '(sin mensajes previos)'}
 - Teléfono: ${known.phone ?? 'desconocido'}
 - Cantidad original: ${known.currentQuantity ?? 'desconocida'}
 
-
 [Datos nuevos solicitados]
 - Nueva fecha: ${known.newDate ?? 'sin definir'}
 - Nuevo horario: ${known.newTime ?? 'sin definir'}

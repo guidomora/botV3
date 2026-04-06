@@ -9,6 +9,7 @@ import {
   CreateReservationRowUseCase,
   DeleteReservationUseCase,
   EnsureAgendaWindowUseCase,
+  UpdateReservationUseCase,
 } from './application';
 import { AgendaSyncGuard } from './guards/agenda-sync.guard';
 import { DatesManualGuard } from './guards/dates-manual.guard';
@@ -26,6 +27,7 @@ import { AgendaSyncRateLimitService } from './service/agenda-sync-rate-limit.ser
     CreateReservationRowUseCase,
     DeleteReservationUseCase,
     EnsureAgendaWindowUseCase,
+    UpdateReservationUseCase,
     AgendaSyncGuard,
     DatesManualGuard,
     AgendaSyncSecurityService,

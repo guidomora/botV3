@@ -4,6 +4,7 @@ import {
   CreateReservationRowUseCase,
   DeleteReservationUseCase,
   EnsureAgendaWindowUseCase,
+  UpdateReservationUseCase,
 } from '../application';
 import { DatesService } from './dates.service';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
@@ -21,8 +22,6 @@ import {
   availabilityRowsMock,
   existingReservationDateLabelMock,
   futureReservationDateLabelMock,
-  nextReservationDateLabelMock,
-  updateCurrentRowValuesMock,
 } from '../test/mocks/sheets-data.mock';
 import {
   createDayUseCaseMock as buildCreateDayUseCaseMock,
@@ -31,6 +30,7 @@ import {
   ensureAgendaWindowUseCaseMock as buildEnsureAgendaWindowUseCaseMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
   googleTemporalSheetsServiceMock as buildGoogleTemporalSheetsServiceMock,
+  updateReservationUseCaseMock as buildUpdateReservationUseCaseMock,
 } from '../test/mocks/dependency-mocks';
 
 describe('DatesService', () => {
@@ -40,6 +40,7 @@ describe('DatesService', () => {
   const createReservationRowUseCaseMock = buildCreateReservationRowUseCaseMock();
   const deleteReservationUseCaseMock = buildDeleteReservationUseCaseMock();
   const ensureAgendaWindowUseCaseMock = buildEnsureAgendaWindowUseCaseMock();
+  const updateReservationUseCaseMock = buildUpdateReservationUseCaseMock();
   const googleSheetsServiceMock = buildGoogleSheetsServiceMock();
   const googleTemporalSheetsServiceMock = buildGoogleTemporalSheetsServiceMock();
 
@@ -48,6 +49,7 @@ describe('DatesService', () => {
     Object.values(createReservationRowUseCaseMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(deleteReservationUseCaseMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(ensureAgendaWindowUseCaseMock).forEach((mockFn) => mockFn.mockReset());
+    Object.values(updateReservationUseCaseMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(googleSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(googleTemporalSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
 
@@ -60,6 +62,7 @@ describe('DatesService', () => {
       createReservationRowUseCaseMock as unknown as CreateReservationRowUseCase,
       deleteReservationUseCaseMock as unknown as DeleteReservationUseCase,
       ensureAgendaWindowUseCaseMock as unknown as EnsureAgendaWindowUseCase,
+      updateReservationUseCaseMock as unknown as UpdateReservationUseCase,
       googleSheetsServiceMock as unknown as GoogleSheetsService,
       googleTemporalSheetsServiceMock as unknown as GoogleTemporalSheetsService,
     );
@@ -517,283 +520,16 @@ describe('DatesService', () => {
     });
   });
 
-  it('should reject reservation update when original data is incomplete', async () => {
-    await expect(
-      service.updateReservation(buildUpdateReservationMock({ currentDate: '' })),
-    ).resolves.toEqual({
-      status: StatusEnum.MISSING_DATA_UPDATE,
-      message: 'Faltan datos de la reserva original',
-      error: true,
-    });
-  });
-
-  it('should reject reservation update when original reservation is in the past', async () => {
-    await expect(
-      service.updateReservation(
-        buildUpdateReservationMock({ currentDate: 'domingo 01 de marzo 2020 01/03/2020' }),
-      ),
-    ).resolves.toMatchObject({
-      status: StatusEnum.DATE_ALREADY_PASSED,
-      error: true,
-    });
-  });
-
-  it('should reject reservation update when target reservation is in the past', async () => {
-    await expect(
-      service.updateReservation(
-        buildUpdateReservationMock({
-          newDate: 'domingo 01 de marzo 2020 01/03/2020',
-          newTime: '21:00',
-        }),
-      ),
-    ).resolves.toMatchObject({
-      status: StatusEnum.DATE_ALREADY_PASSED,
-      error: true,
-    });
-  });
-
-  it('should return no date found when current reservation does not exist', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(-1);
-
-    const result = await service.updateReservation(buildUpdateReservationMock());
-
-    expect(result.status).toBe(StatusEnum.NO_DATE_FOUND);
-    expect(result.error).toBe(true);
-    expect(result.message).toContain('reserva con los datos proporcionados');
-  });
-
-  it('should return duplicate same day response when phone already has another booking that day', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(true);
-
-    await expect(service.updateReservation(buildUpdateReservationMock())).resolves.toMatchObject({
-      status: StatusEnum.DUPLICATE_RESERVATION_SAME_DAY,
-      error: true,
-    });
-  });
-
-  it('should reject update when resulting quantity becomes a large reservation', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-
-    await expect(
-      service.updateReservation(buildUpdateReservationMock({ newQuantity: '13' })),
-    ).resolves.toMatchObject({
-      status: StatusEnum.RESERVATION_ERROR,
-      error: true,
-    });
-  });
-
-  it('should reject same-slot updates when there is no remaining availability', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: false,
-      reservations: 42,
-      available: 0,
-    });
-
-    const result = await service.updateReservation(
-      buildUpdateReservationMock({ newName: 'Guido M' }),
-    );
-
-    expect(result.status).toBe(StatusEnum.NO_AVAILABILITY);
-    expect(result.error).toBe(true);
-    expect(result.message).toContain('No hay lugar para esa cantidad de personas');
-  });
-
-  it('should update reservation in place when date and time do not change', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: true,
-      reservations: 10,
-      available: 32,
-    });
-
-    await expect(
-      service.updateReservation(
-        buildUpdateReservationMock({ newName: 'Guido Modificado', newQuantity: '5' }),
-      ),
-    ).resolves.toMatchObject({
+  it('should delegate updateReservation to its use case', async () => {
+    const response = {
       status: StatusEnum.SUCCESS,
+      message: 'ok',
       error: false,
-    });
+    };
+    const updateReservation = buildUpdateReservationMock();
+    updateReservationUseCaseMock.updateReservation.mockResolvedValue(response);
 
-    expect(googleSheetsServiceMock.createReservation).toHaveBeenCalledWith('Reservas!C27:F27', {
-      customerData: {
-        name: 'guido modificado',
-        phone: '54-9-1154916243',
-        quantity: 5,
-      },
-    });
-    expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledWith(
-      futureReservationDateLabelMock,
-    );
-  });
-
-  it('should use current row quantity when newQuantity is not numeric', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: true,
-      reservations: 10,
-      available: 32,
-    });
-
-    await expect(
-      service.updateReservation(
-        buildUpdateReservationMock({ newName: 'Guido Fallback', newQuantity: 'muchas' }),
-      ),
-    ).resolves.toMatchObject({
-      status: StatusEnum.SUCCESS,
-      error: false,
-    });
-
-    expect(googleSheetsServiceMock.createReservation).toHaveBeenCalledWith('Reservas!C27:F27', {
-      customerData: {
-        name: 'guido fallback',
-        phone: '54-9-1154916243',
-        quantity: 4,
-      },
-    });
-  });
-
-  it('should reject moved reservation when target slot has no availability', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: false,
-      reservations: 42,
-      available: 0,
-    });
-
-    const result = await service.updateReservation(
-      buildUpdateReservationMock({ newTime: '21:00' }),
-    );
-
-    expect(result.status).toBe(StatusEnum.NO_AVAILABILITY);
-    expect(result.error).toBe(true);
-    expect(result.message).toContain('en el nuevo horario');
-  });
-
-  it('should return generic error when moving reservation and creation fails', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: true,
-      reservations: 10,
-      available: 32,
-    });
-    createReservationRowUseCaseMock.createReservation.mockResolvedValue({
-      error: true,
-      status: StatusEnum.RESERVATION_ERROR,
-    });
-
-    const result = await service.updateReservation(
-      buildUpdateReservationMock({
-        newDate: nextReservationDateLabelMock,
-        newTime: '21:00',
-      }),
-    );
-
-    expect(result.status).toBe(StatusEnum.RESERVATION_ERROR);
-    expect(result.error).toBe(true);
-    expect(result.message).toContain('Hubo un problema al procesar la reserva');
-  });
-
-  it('should move reservation to another date and refresh both dates', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: true,
-      reservations: 10,
-      available: 32,
-    });
-    createReservationRowUseCaseMock.createReservation.mockResolvedValue({
-      error: false,
-      status: StatusEnum.SUCCESS,
-    });
-    deleteReservationUseCaseMock.deleteReservation.mockResolvedValue(
-      'Su reserva ha sido cancelada correctamente.',
-    );
-
-    await expect(
-      service.updateReservation(
-        buildUpdateReservationMock({
-          newDate: nextReservationDateLabelMock,
-          newTime: '21:00',
-          newName: 'guido nuevo',
-          newQuantity: '5',
-        }),
-      ),
-    ).resolves.toMatchObject({
-      status: StatusEnum.SUCCESS,
-      error: false,
-    });
-
-    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith({
-      date: nextReservationDateLabelMock,
-      time: '21:00',
-      name: 'guido nuevo',
-      phone: '54-9-1154916243',
-      quantity: 5,
-    });
-    expect(deleteReservationUseCaseMock.deleteReservation).toHaveBeenCalledWith({
-      date: futureReservationDateLabelMock,
-      time: '20:00',
-      name: 'guido',
-      phone: '54-9-1154916243',
-    });
-    expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenNthCalledWith(
-      1,
-      futureReservationDateLabelMock,
-    );
-    expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenNthCalledWith(
-      2,
-      nextReservationDateLabelMock,
-    );
-  });
-
-  it('should move reservation within the same date and refresh availability once', async () => {
-    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
-    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
-    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: true,
-      reservations: 10,
-      available: 32,
-    });
-    createReservationRowUseCaseMock.createReservation.mockResolvedValue({
-      error: false,
-      status: StatusEnum.SUCCESS,
-    });
-    deleteReservationUseCaseMock.deleteReservation.mockResolvedValue(
-      'Su reserva ha sido cancelada correctamente.',
-    );
-
-    await expect(
-      service.updateReservation(
-        buildUpdateReservationMock({
-          newTime: '21:00',
-          newName: 'guido noche',
-        }),
-      ),
-    ).resolves.toMatchObject({
-      status: StatusEnum.SUCCESS,
-      error: false,
-    });
-
-    expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledTimes(1);
-    expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledWith(
-      futureReservationDateLabelMock,
-    );
+    await expect(service.updateReservation(updateReservation)).resolves.toEqual(response);
+    expect(updateReservationUseCaseMock.updateReservation).toHaveBeenCalledWith(updateReservation);
   });
 });

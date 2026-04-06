@@ -111,6 +111,28 @@ describe('CreateReservationRowUseCase', () => {
     expect(result.status).toBe(StatusEnum.DUPLICATE_RESERVATION_SAME_DAY);
   });
 
+  it('should exclude the current reservation row when creating from an update flow', async () => {
+    googleSheetsServiceMock.getDate.mockResolvedValue(27);
+    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 8,
+      available: 34,
+    });
+    googleSheetsServiceMock.getRowValues.mockResolvedValue(minimalSlotRowValuesMock);
+
+    await useCase.createReservation({
+      ...createReservationRequestMock,
+      excludedRowIndex: 27,
+    });
+
+    expect(googleSheetsServiceMock.hasReservationByDateAndPhone).toHaveBeenCalledWith(
+      createReservationRequestMock.date,
+      createReservationRequestMock.phone,
+      27,
+    );
+  });
+
   it('should reject large reservations that require manual handling', async () => {
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);

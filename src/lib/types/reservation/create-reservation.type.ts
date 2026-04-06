@@ -4,6 +4,7 @@ export interface CreateReservationType {
   name: string;
   phone: string;
   quantity: number;
+  excludedRowIndex?: number;
 }
 
 export interface CreateReservationTemporalType {

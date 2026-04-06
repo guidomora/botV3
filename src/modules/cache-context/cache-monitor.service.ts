@@ -3,7 +3,7 @@ import { CacheService } from './cache.service';
 
 @Injectable()
 export class CacheMonitorService implements OnModuleInit, OnModuleDestroy {
-  private static readonly MONITOR_INTERVAL_MS = 120_000;
+  private static readonly MONITOR_INTERVAL_MS = 300_000;
   private static readonly BYTES_IN_MB = 1024 * 1024;
 
   private readonly logger = new Logger(CacheMonitorService.name);

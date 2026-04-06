@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
-import { CreateReservationType } from 'src/lib/types/reservation/create-reservation.type';
 import {
   AddMissingFieldInput,
   AddMissingFieldOutput,
@@ -8,7 +7,6 @@ import {
   DeleteReservation,
   formatPhoneNumber,
   GetIndexParams,
-  getLargeReservationValidation,
   ServiceResponse,
   StatusEnum,
   TemporalStatusEnum,
@@ -19,28 +17,26 @@ import {
   CreateReservationRowUseCase,
   DeleteReservationUseCase,
   EnsureAgendaWindowUseCase,
+  UpdateReservationUseCase,
 } from '../application';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
-import {
-  pickAvailabilityForTime,
-  formatAvailabilityResponse,
-  getDuplicateSameDayReservationResponse,
-} from '../utils';
-import { SHEETS_NAMES } from 'src/constants';
-import { parseDateTime } from '../utils/parseDate';
+import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
 import { TemporalDataRows } from 'src/constants/tables-info/temporal-data-rows';
 
 @Injectable()
 export class DatesService {
   private readonly logger = new Logger(DatesService.name);
+
   constructor(
     private readonly createDayUseCase: CreateDayUseCase,
     private readonly createReservationRowUseCase: CreateReservationRowUseCase,
     private readonly deleteReservationUseCase: DeleteReservationUseCase,
     private readonly ensureAgendaWindowUseCase: EnsureAgendaWindowUseCase,
+    private readonly updateReservationUseCase: UpdateReservationUseCase,
     private readonly googleSheetsService: GoogleSheetsService,
     private readonly googleSheetsTemporalService: GoogleTemporalSheetsService,
   ) {}
+
   async createDate(): Promise<string> {
     return this.createDayUseCase.createDate();
   }
@@ -303,193 +299,6 @@ export class DatesService {
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {
     this.logger.log('Updating reservation', DatesService.name);
-
-    const { currentDate, currentTime, newDate, newTime, currentName, phone, newQuantity, newName } =
-      updateReservation;
-
-    if (!currentDate || !currentTime || !currentName || !phone) {
-      return {
-        status: StatusEnum.MISSING_DATA_UPDATE,
-        message: 'Faltan datos de la reserva original',
-        error: true,
-      };
-    }
-
-    const formattedPhone = formatPhoneNumber(phone) ?? phone;
-
-    const targetDate = newDate ?? currentDate;
-    const targetTime = newTime ?? currentTime;
-    const targetName = newName ?? currentName;
-
-    const currentReservationDateTime = parseDateTime(currentDate, currentTime);
-    if (currentReservationDateTime.getTime() < Date.now()) {
-      this.logger.warn(
-        'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada.',
-      );
-      return {
-        status: StatusEnum.DATE_ALREADY_PASSED,
-        message:
-          'La fecha u horario de la reserva ya pasaron. No se puede modificar una reserva pasada. Se puede crear una reserva con los datos solicitados',
-        error: true,
-      };
-    }
-
-    const targetReservationDateTime = parseDateTime(targetDate, targetTime);
-    if (targetReservationDateTime.getTime() < Date.now()) {
-      this.logger.warn(
-        'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.',
-      );
-      return {
-        status: StatusEnum.DATE_ALREADY_PASSED,
-        message: 'La nueva fecha u horario ya pasaron. Por favor elegí otra fecha u horario.',
-        error: true,
-      };
-    }
-
-    const searchIndexObject: GetIndexParams = {
-      date: currentDate,
-      time: currentTime,
-      name: currentName.toLowerCase(),
-      phone: formattedPhone,
-    };
-
-    const currentReservationIndex =
-      await this.googleSheetsService.getDateIndexByData(searchIndexObject);
-
-    if (currentReservationIndex === -1) {
-      return {
-        status: StatusEnum.NO_DATE_FOUND,
-        message: 'No se encontró la reserva con los datos proporcionados.',
-        error: true,
-      };
-    }
-
-    const hasReservationSameDay = await this.googleSheetsService.hasReservationByDateAndPhone(
-      targetDate,
-      formattedPhone,
-      currentReservationIndex,
-    );
-
-    if (hasReservationSameDay) {
-      return getDuplicateSameDayReservationResponse();
-    }
-
-    const currentRow = await this.googleSheetsService.getRowValues(
-      `${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`,
-    );
-
-    const parseValue = (value: unknown): unknown => {
-      if (!Array.isArray(value)) {
-        return value;
-      }
-
-      const [firstValue] = value as unknown[];
-      return firstValue;
-    };
-
-    const quantity = Number(parseValue(currentRow?.[5])) || 1;
-
-    const resolvedQuantity =
-      newQuantity && !Number.isNaN(Number(newQuantity)) ? Number(newQuantity) : quantity;
-
-    const largeReservationValidation = getLargeReservationValidation(resolvedQuantity);
-    if (largeReservationValidation.isLargeReservation) {
-      const contactInstruction = largeReservationValidation.contactNumber
-        ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.`
-        : 'Por favor escribinos o llamanos para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.';
-
-      return {
-        status: StatusEnum.RESERVATION_ERROR,
-        message: `Para reservas de más de ${largeReservationValidation.maxPeoplePerReservation} personas necesitamos gestionarlo por atención directa. ${contactInstruction}`,
-        error: true,
-      };
-    }
-
-    const createRange = `${SHEETS_NAMES[0]}!C${currentReservationIndex}:F${currentReservationIndex}`;
-
-    const availability = await this.googleSheetsService.getAvailabilityFromReservations(
-      targetDate,
-      targetTime,
-      resolvedQuantity,
-      currentReservationIndex,
-    );
-
-    if (targetReservationDateTime.getTime() === currentReservationDateTime.getTime()) {
-      if (!availability.isAvailable) {
-        return {
-          status: StatusEnum.NO_AVAILABILITY,
-          message:
-            'No hay lugar para esa cantidad de personas en ese horario. Probá con una hora cercana y te ayudamos a encontrar lugar.',
-          error: true,
-        };
-      }
-
-      await this.googleSheetsService.createReservation(createRange, {
-        customerData: {
-          name: targetName.toLowerCase(),
-          phone: formattedPhone,
-          quantity: resolvedQuantity,
-        },
-      });
-
-      await this.googleSheetsService.refreshAvailabilityForDate(currentDate);
-
-      this.logger.log('Reservation updated', DatesService.name);
-      return {
-        status: StatusEnum.SUCCESS,
-        message: `Tu reserva a nombre de ${currentName} se actualizó a nombre de ${targetName} para ${resolvedQuantity} personas el ${currentDate} a las ${currentTime}.
-        Muchas gracias!`,
-        error: false,
-      };
-    }
-
-    if (!availability.isAvailable) {
-      return {
-        status: StatusEnum.NO_AVAILABILITY,
-        message:
-          'No hay lugar para esa cantidad de personas en el nuevo horario. Probá con una hora cercana y te ayudamos a encontrar lugar.',
-        error: true,
-      };
-    }
-
-    const createObject: CreateReservationType = {
-      date: targetDate,
-      time: targetTime,
-      name: targetName.toLowerCase(),
-      phone: formattedPhone,
-      quantity: resolvedQuantity,
-    };
-
-    const creationResult: ServiceResponse =
-      await this.createReservationRowUseCase.createReservation(createObject);
-
-    if (creationResult.error) {
-      return {
-        status: StatusEnum.RESERVATION_ERROR,
-        message: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.',
-        error: true,
-      };
-    }
-
-    const deleteObject: DeleteReservation = {
-      date: currentDate,
-      time: currentTime,
-      name: currentName,
-      phone: formattedPhone,
-    };
-
-    await this.deleteReservationUseCase.deleteReservation(deleteObject);
-
-    await this.googleSheetsService.refreshAvailabilityForDate(currentDate);
-    if (targetDate !== currentDate) {
-      await this.googleSheetsService.refreshAvailabilityForDate(targetDate);
-    }
-
-    return {
-      status: StatusEnum.SUCCESS,
-      message: `Tu reserva a nombre de ${currentName} se movió del ${currentDate} a las ${currentTime} al ${targetDate} a las ${targetTime} para ${resolvedQuantity} personas a nombre de ${targetName}.
-      Muchas gracias!`,
-      error: false,
-    };
+    return this.updateReservationUseCase.updateReservation(updateReservation);
   }
 }

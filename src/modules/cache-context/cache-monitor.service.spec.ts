@@ -50,10 +50,10 @@ describe('CacheMonitorService', () => {
     jest.useRealTimers();
   });
 
-  it('should log cache usage every 120 seconds', async () => {
+  it('should log cache usage every 300 seconds', async () => {
     service.onModuleInit();
 
-    await jest.advanceTimersByTimeAsync(120_000);
+    await jest.advanceTimersByTimeAsync(300_000);
 
     expect(cacheService.getMonitoringSnapshot).toHaveBeenCalledTimes(1);
     expect(memoryUsageSpy).toHaveBeenCalledTimes(1);
@@ -66,7 +66,7 @@ describe('CacheMonitorService', () => {
     service.onModuleInit();
     service.onModuleDestroy();
 
-    await jest.advanceTimersByTimeAsync(120_000);
+    await jest.advanceTimersByTimeAsync(300_000);
 
     expect(cacheService.getMonitoringSnapshot).not.toHaveBeenCalled();
     expect(loggerLogSpy).not.toHaveBeenCalled();
