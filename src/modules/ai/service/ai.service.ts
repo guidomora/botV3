@@ -1,5 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { OpenAiConfig } from '../config/openai.config';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   askDateAvailabilityPrompt,
   availabilityReplyPrompt,
@@ -25,6 +24,8 @@ import {
   ProviderError,
   ProviderName,
 } from 'src/lib';
+import { AI_CLIENT_PORT } from '../ai.tokens';
+import { AiClientPort } from '../ports';
 import { inferActiveIntent, parseJsonResponse, serializeContext } from '../utils';
 
 interface SocialCourtesyClassificationResponse {
@@ -34,7 +35,8 @@ interface SocialCourtesyClassificationResponse {
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  constructor(private readonly openAi: OpenAiConfig) {}
+
+  constructor(@Inject(AI_CLIENT_PORT) private readonly openAiClient: AiClientPort) {}
 
   async interactWithAi(
     message: string,
@@ -158,7 +160,7 @@ export class AiService {
 
       return parsed.isSocialCourtesy === true;
     } catch {
-      this.logger.warn('No se pudo clasificar mensaje social con AI, se continúa flujo normal.');
+      this.logger.warn('No se pudo clasificar mensaje social con AI, se continua flujo normal.');
       return false;
     }
   }
@@ -184,18 +186,13 @@ export class AiService {
 
   async openAiConfig(prompt: string, userMessage?: string, json?: boolean): Promise<string> {
     try {
-      const response = await this.openAi.getClient().chat.completions.create({
+      return await this.openAiClient.createChatCompletion({
         model: process.env.GPT_MODEL || 'gpt-5-mini',
-        response_format: { type: json ? 'json_object' : 'text' },
+        responseFormat: json ? 'json_object' : 'text',
         temperature: 1,
-        messages: [
-          { role: 'system', content: prompt },
-          { role: 'user', content: userMessage || 'Generá el mensaje ahora.' },
-        ],
+        systemPrompt: prompt,
+        userMessage: userMessage || 'Genera el mensaje ahora.',
       });
-
-      const aiResponse = response.choices[0].message.content!.trim();
-      return aiResponse;
     } catch (error) {
       this.logger.error(`Error al interactuar con AI`, error);
       throw new ProviderError(ProviderName.OPEN_AI, 'Error al interactuar con OpenAI', error);
