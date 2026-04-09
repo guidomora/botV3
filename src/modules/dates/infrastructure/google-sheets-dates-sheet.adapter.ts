@@ -74,7 +74,7 @@ export class GoogleSheetsDatesSheetAdapter implements DatesSheetPort {
   }
 
   updateAvailabilityFromReservations(updateParams: UpdateParams): Promise<void> {
-    return this.googleSheetsService.updateAvailabilityFromReservations(updateParams);
+    return this.googleSheetsService.updateAvailabilityFromReservations(updateParams).then(() => {});
   }
 
   refreshAvailabilityForDate(date: string): Promise<void> {
