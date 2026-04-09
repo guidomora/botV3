@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AiService } from './ai.service';
-import { OpenAiConfig } from '../config/openai.config';
 import {
   AvailabilityResponse,
   DeleteReservation,
@@ -12,11 +11,12 @@ import {
   type ChatMessage,
   type UpdateReservationType,
 } from 'src/lib';
-import { createOpenAiConfigMock } from '../test/mocks/dependency-mocks';
+import { AI_CLIENT_PORT } from '../ai.tokens';
+import { createOpenAiClientMock } from '../test/mocks/dependency-mocks';
 
 describe('AiService', () => {
   let service: AiService;
-  let openAiConfigMock = createOpenAiConfigMock();
+  let openAiClientMock = createOpenAiClientMock();
 
   const history: ChatMessage[] = [
     {
@@ -30,7 +30,7 @@ describe('AiService', () => {
     },
     {
       role: RoleEnum.USER,
-      content: 'Mañana a las 21',
+      content: 'Manana a las 21',
       intention: Intention.AVAILABILITY,
     },
   ];
@@ -74,14 +74,14 @@ describe('AiService', () => {
   };
 
   beforeEach(async () => {
-    openAiConfigMock = createOpenAiConfigMock();
+    openAiClientMock = createOpenAiClientMock();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AiService,
         {
-          provide: OpenAiConfig,
-          useValue: openAiConfigMock,
+          provide: AI_CLIENT_PORT,
+          useValue: openAiClientMock,
         },
       ],
     }).compile();
@@ -95,34 +95,24 @@ describe('AiService', () => {
   });
 
   it('should call OpenAI with json response format and parse interaction response', async () => {
-    openAiConfigMock.create.mockResolvedValue({
-      choices: [
-        {
-          message: {
-            content: JSON.stringify({
-              intent: Intention.AVAILABILITY,
-              date: 'domingo 16 de marzo 2026 16/03/2026',
-            }),
-          },
-        },
-      ],
-    });
+    openAiClientMock.createChatCompletion.mockResolvedValue(
+      JSON.stringify({
+        intent: Intention.AVAILABILITY,
+        date: 'domingo 16 de marzo 2026 16/03/2026',
+      }),
+    );
 
-    await expect(service.interactWithAi('Quiero mesa mañana', history)).resolves.toEqual({
+    await expect(service.interactWithAi('Quiero mesa manana', history)).resolves.toEqual({
       intent: Intention.AVAILABILITY,
       date: 'domingo 16 de marzo 2026 16/03/2026',
     });
 
-    const createCall = openAiConfigMock.create.mock.calls[0]?.[0];
+    const createCall = openAiClientMock.createChatCompletion.mock.calls[0]?.[0];
 
     expect(createCall).toBeDefined();
-    expect(createCall?.response_format).toEqual({ type: 'json_object' });
-    expect(createCall?.messages[0]?.role).toBe('system');
-    expect(createCall?.messages[0]?.content).toContain('[user:availability] Mañana a las 21');
-    expect(createCall?.messages[1]).toEqual({
-      role: 'user',
-      content: 'Quiero mesa mañana',
-    });
+    expect(createCall?.responseFormat).toBe('json_object');
+    expect(createCall?.systemPrompt).toContain('[user:availability] Manana a las 21');
+    expect(createCall?.userMessage).toBe('Quiero mesa manana');
   });
 
   it('should ask OpenAI for missing data and include optional user message in prompt', async () => {
@@ -131,11 +121,11 @@ describe('AiService', () => {
       .mockResolvedValue('Decime la hora.');
 
     await expect(
-      service.getMissingData(['time'], history, 'Todavía no te dije la hora'),
+      service.getMissingData(['time'], history, 'Todavia no te dije la hora'),
     ).resolves.toBe('Decime la hora.');
 
     expect(openAiConfigSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Todavía no te dije la hora'),
+      expect.stringContaining('Todavia no te dije la hora'),
     );
   });
 
@@ -216,10 +206,10 @@ describe('AiService', () => {
   it('should build update reservation phone prompt', async () => {
     const openAiConfigSpy = jest
       .spyOn(service, 'openAiConfig')
-      .mockResolvedValue('Decime el teléfono.');
+      .mockResolvedValue('Decime el telefono.');
 
     await expect(service.askUpdateReservationPhone(history, updateReservationData)).resolves.toBe(
-      'Decime el teléfono.',
+      'Decime el telefono.',
     );
 
     expect(openAiConfigSpy).toHaveBeenCalledWith(
@@ -230,10 +220,10 @@ describe('AiService', () => {
   it('should build availability date prompt', async () => {
     const openAiConfigSpy = jest
       .spyOn(service, 'openAiConfig')
-      .mockResolvedValue('¿Para qué día querés consultar?');
+      .mockResolvedValue('Para que dia queres consultar?');
 
     await expect(service.askDateForAvailabilityAi(history)).resolves.toBe(
-      '¿Para qué día querés consultar?',
+      'Para que dia queres consultar?',
     );
 
     expect(openAiConfigSpy).toHaveBeenCalledWith(
@@ -285,60 +275,40 @@ describe('AiService', () => {
     expect(openAiConfigSpy).toHaveBeenCalledWith(expect.stringContaining('Reserva eliminada'));
   });
 
-  it('should use env model and trim OpenAI content', async () => {
+  it('should use env model and pass OpenAI params through port', async () => {
     process.env.GPT_MODEL = 'gpt-test-model';
-    openAiConfigMock.create.mockResolvedValue({
-      choices: [
-        {
-          message: {
-            content: '  respuesta final  ',
-          },
-        },
-      ],
-    });
+    openAiClientMock.createChatCompletion.mockResolvedValue('respuesta final');
 
     await expect(service.openAiConfig('prompt del sistema', 'mensaje usuario')).resolves.toBe(
       'respuesta final',
     );
 
-    expect(openAiConfigMock.create).toHaveBeenCalledWith({
+    expect(openAiClientMock.createChatCompletion).toHaveBeenCalledWith({
       model: 'gpt-test-model',
-      response_format: { type: 'text' },
+      responseFormat: 'text',
       temperature: 1,
-      messages: [
-        { role: 'system', content: 'prompt del sistema' },
-        { role: 'user', content: 'mensaje usuario' },
-      ],
+      systemPrompt: 'prompt del sistema',
+      userMessage: 'mensaje usuario',
     });
   });
 
   it('should fallback to gpt-5-mini and default user message', async () => {
     delete process.env.GPT_MODEL;
-    openAiConfigMock.create.mockResolvedValue({
-      choices: [
-        {
-          message: {
-            content: 'respuesta',
-          },
-        },
-      ],
-    });
+    openAiClientMock.createChatCompletion.mockResolvedValue('respuesta');
 
     await expect(service.openAiConfig('prompt del sistema')).resolves.toBe('respuesta');
 
-    expect(openAiConfigMock.create).toHaveBeenCalledWith(
+    expect(openAiClientMock.createChatCompletion).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'gpt-5-mini',
-        messages: [
-          { role: 'system', content: 'prompt del sistema' },
-          { role: 'user', content: 'Generá el mensaje ahora.' },
-        ],
+        systemPrompt: 'prompt del sistema',
+        userMessage: 'Genera el mensaje ahora.',
       }),
     );
   });
 
   it('should wrap provider errors in ProviderError', async () => {
-    openAiConfigMock.create.mockRejectedValue(new Error('sdk failed'));
+    openAiClientMock.createChatCompletion.mockRejectedValue(new Error('sdk failed'));
 
     await expect(service.openAiConfig('prompt')).rejects.toEqual(
       expect.objectContaining<Partial<ProviderError>>({

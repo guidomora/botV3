@@ -1,24 +1,15 @@
-export type OpenAiCreateParams = {
+export type CreateChatCompletionParams = {
   model: string;
-  response_format: { type: 'json_object' | 'text' };
+  responseFormat: 'json_object' | 'text';
   temperature: number;
-  messages: Array<{ role: 'system' | 'user'; content: string }>;
+  systemPrompt: string;
+  userMessage: string;
 };
 
-export const createOpenAiConfigMock = () => {
-  const create = jest.fn<
-    Promise<{ choices: Array<{ message: { content: string } }> }>,
-    [OpenAiCreateParams]
-  >();
+export const createOpenAiClientMock = () => {
+  const createChatCompletion = jest.fn<Promise<string>, [CreateChatCompletionParams]>();
 
   return {
-    getClient: jest.fn(() => ({
-      chat: {
-        completions: {
-          create,
-        },
-      },
-    })),
-    create,
+    createChatCompletion,
   };
 };

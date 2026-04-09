@@ -1,15 +1,20 @@
 ### History
 
-### 08/04/26
+### 09/04/26
 
-- Ports added to the dates module
-- Adapters folder added to the dates module
+- Added ports to ai module
 - TODO:
+- Fix time bug
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 08/04/26
+
+- Ports added to the dates module
+- Adapters folder added to the dates module
 
 ### 05/04/26
 
