@@ -1,17 +1,22 @@
 ### History
 
-### 05/04/26
+### 08/04/26
 
-- Refactored updateReservation method in reservations.service.ts to improve code organization and readability. Now we have an update-reservation.use-case
-- Logic improved to handle update data
-- Bug: When the user wants to update the reservation, the system blocked the update because the phone number alredy existed in the database. Solved
-- Cache check updated to every 5 minutes
+- Ports added to the dates module
+- Adapters folder added to the dates module
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 05/04/26
+
+- Refactored updateReservation method in reservations.service.ts to improve code organization and readability. Now we have an update-reservation.use-case
+- Logic improved to handle update data
+- Bug: When the user wants to update the reservation, the system blocked the update because the phone number alredy existed in the database. Solved
+- Cache check updated to every 5 minutes
 
 ### 04/04/26
 

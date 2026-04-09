@@ -7,8 +7,6 @@ import {
   UpdateReservationUseCase,
 } from '../application';
 import { DatesService } from './dates.service';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
-import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { buildUpdateReservationMock } from '../test/builders/update-reservation.builder';
 import {
   deleteReservationRequestMock,
@@ -32,6 +30,7 @@ import {
   googleTemporalSheetsServiceMock as buildGoogleTemporalSheetsServiceMock,
   updateReservationUseCaseMock as buildUpdateReservationUseCaseMock,
 } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort, DatesTemporalSheetPort } from '../ports';
 
 describe('DatesService', () => {
   let service: DatesService;
@@ -63,8 +62,8 @@ describe('DatesService', () => {
       deleteReservationUseCaseMock as unknown as DeleteReservationUseCase,
       ensureAgendaWindowUseCaseMock as unknown as EnsureAgendaWindowUseCase,
       updateReservationUseCaseMock as unknown as UpdateReservationUseCase,
-      googleSheetsServiceMock as unknown as GoogleSheetsService,
-      googleTemporalSheetsServiceMock as unknown as GoogleTemporalSheetsService,
+      googleSheetsServiceMock as unknown as DatesSheetPort,
+      googleTemporalSheetsServiceMock as unknown as DatesTemporalSheetPort,
     );
   });
 

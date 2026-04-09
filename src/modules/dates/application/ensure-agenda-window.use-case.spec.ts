@@ -1,10 +1,10 @@
 import { CreateDayUseCase } from './create-day.use-case';
 import { EnsureAgendaWindowUseCase } from './ensure-agenda-window.use-case';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import {
   createDayUseCaseMock as buildCreateDayUseCaseMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
 } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort } from '../ports';
 
 describe('EnsureAgendaWindowUseCase', () => {
   let useCase: EnsureAgendaWindowUseCase;
@@ -22,7 +22,7 @@ describe('EnsureAgendaWindowUseCase', () => {
 
     useCase = new EnsureAgendaWindowUseCase(
       createDayUseCaseMock as unknown as CreateDayUseCase,
-      googleSheetsServiceMock as unknown as GoogleSheetsService,
+      googleSheetsServiceMock as unknown as DatesSheetPort,
     );
   });
 

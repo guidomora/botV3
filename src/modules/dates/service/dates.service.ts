@@ -1,5 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   AddMissingFieldInput,
   AddMissingFieldOutput,
@@ -19,9 +18,10 @@ import {
   EnsureAgendaWindowUseCase,
   UpdateReservationUseCase,
 } from '../application';
-import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
 import { TemporalDataRows } from 'src/constants/tables-info/temporal-data-rows';
+import { DATES_SHEET_PORT, DATES_TEMPORAL_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort, DatesTemporalSheetPort } from '../ports';
 
 @Injectable()
 export class DatesService {
@@ -33,8 +33,9 @@ export class DatesService {
     private readonly deleteReservationUseCase: DeleteReservationUseCase,
     private readonly ensureAgendaWindowUseCase: EnsureAgendaWindowUseCase,
     private readonly updateReservationUseCase: UpdateReservationUseCase,
-    private readonly googleSheetsService: GoogleSheetsService,
-    private readonly googleSheetsTemporalService: GoogleTemporalSheetsService,
+    @Inject(DATES_SHEET_PORT) private readonly datesSheetPort: DatesSheetPort,
+    @Inject(DATES_TEMPORAL_SHEET_PORT)
+    private readonly datesTemporalSheetPort: DatesTemporalSheetPort,
   ) {}
 
   async createDate(): Promise<string> {
@@ -56,8 +57,7 @@ export class DatesService {
   async createReservationWithMultipleMessages(
     createReservationDto: AddMissingFieldInput,
   ): Promise<AddMissingFieldOutput> {
-    const reservation =
-      await this.googleSheetsTemporalService.addMissingField(createReservationDto);
+    const reservation = await this.datesTemporalSheetPort.addMissingField(createReservationDto);
 
     const progressiveValidationResult =
       await this.validateProgressiveReservationAvailability(reservation);
@@ -98,7 +98,7 @@ export class DatesService {
       }
       this.logger.log('Reserva trasladada a hoja de reservas');
 
-      await this.googleSheetsService.deleteRow(reservation.rowIndex, 2);
+      await this.datesSheetPort.deleteRow(reservation.rowIndex, 2);
 
       this.logger.log('Fila eliminada de la hoja temporal');
     }
@@ -136,13 +136,10 @@ export class DatesService {
 
     if (dateWasCompletedNow && date) {
       const availabilitySheetIndex = 1;
-      const dateIndex = await this.googleSheetsService.getDateIndexByDate(
-        date,
-        availabilitySheetIndex,
-      );
+      const dateIndex = await this.datesSheetPort.getDateIndexByDate(date, availabilitySheetIndex);
 
       if (dateIndex === -1) {
-        const cleanedReservation = await this.googleSheetsTemporalService.clearFields(waId, [
+        const cleanedReservation = await this.datesTemporalSheetPort.clearFields(waId, [
           'date',
           'time',
         ]);
@@ -159,7 +156,7 @@ export class DatesService {
       const dayAvailability = await this.getDayAvailability(date);
 
       if (dayAvailability.slots.length === 0) {
-        const cleanedReservation = await this.googleSheetsTemporalService.clearFields(waId, [
+        const cleanedReservation = await this.datesTemporalSheetPort.clearFields(waId, [
           'date',
           'time',
         ]);
@@ -179,7 +176,7 @@ export class DatesService {
       const exactSlotAvailable = requestedTimeAvailability.slots.some((slot) => slot.time === time);
 
       if (!exactSlotAvailable) {
-        await this.googleSheetsTemporalService.clearFields(waId, ['time']);
+        await this.datesTemporalSheetPort.clearFields(waId, ['time']);
 
         return {
           status: TemporalStatusEnum.FAILED,
@@ -192,14 +189,14 @@ export class DatesService {
     }
 
     if ((timeWasCompletedNow || quantityWasCompletedNow) && date && time && quantity) {
-      const availability = await this.googleSheetsService.getAvailabilityFromReservations(
+      const availability = await this.datesSheetPort.getAvailabilityFromReservations(
         date,
         time,
         quantity,
       );
 
       if (!availability.isAvailable) {
-        await this.googleSheetsTemporalService.clearFields(waId, ['time']);
+        await this.datesTemporalSheetPort.clearFields(waId, ['time']);
 
         return {
           status: TemporalStatusEnum.FAILED,
@@ -239,14 +236,14 @@ export class DatesService {
   }
 
   async deleteIncompleteTemporalReservationByWaId(waId: string): Promise<boolean> {
-    const rowIndex = await this.googleSheetsTemporalService.findTemporalRowIndexByWaId(waId);
+    const rowIndex = await this.datesTemporalSheetPort.findTemporalRowIndexByWaId(waId);
 
     if (rowIndex === -1) {
       this.logger.log(`No se encontró fila temporal para limpiar en waId ${waId}`);
       return false;
     }
 
-    await this.googleSheetsService.deleteRow(rowIndex, 2);
+    await this.datesSheetPort.deleteRow(rowIndex, 2);
     this.logger.log(`Fila temporal incompleta eliminada para waId ${waId}`);
 
     return true;
@@ -261,13 +258,13 @@ export class DatesService {
   }
 
   async getDayAvailability(date: string): Promise<AvailabilityResponse> {
-    const dates = await this.googleSheetsService.getDayAvailability(date);
+    const dates = await this.datesSheetPort.getDayAvailability(date);
     this.logger.log('Day availability checked');
     return formatAvailabilityResponse(dates);
   }
 
   async getDayAndTimeAvailability(date: string, time: string): Promise<AvailabilityResponse> {
-    const dates = await this.googleSheetsService.getDayAvailability(date);
+    const dates = await this.datesSheetPort.getDayAvailability(date);
 
     const formatedDayAvailability = formatAvailabilityResponse(dates);
 
@@ -294,7 +291,7 @@ export class DatesService {
       phone,
     };
 
-    return this.googleSheetsService.getDateIndexByData(searchIndexObject);
+    return this.datesSheetPort.getDateIndexByData(searchIndexObject);
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {

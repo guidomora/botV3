@@ -16,6 +16,7 @@ import { DatesManualGuard } from './guards/dates-manual.guard';
 import { AgendaSyncSecurityService } from './service/agenda-sync-security.service';
 import { AgendaSyncReplayService } from './service/agenda-sync-replay.service';
 import { AgendaSyncRateLimitService } from './service/agenda-sync-rate-limit.service';
+import { datesProviders } from './dates.providers';
 
 @Module({
   controllers: [DatesController],
@@ -33,6 +34,7 @@ import { AgendaSyncRateLimitService } from './service/agenda-sync-rate-limit.ser
     AgendaSyncSecurityService,
     AgendaSyncReplayService,
     AgendaSyncRateLimitService,
+    ...datesProviders,
   ],
   exports: [DatesService],
 })

@@ -1,5 +1,4 @@
 import { StatusEnum } from 'src/lib';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { UpdateReservationUseCase } from './update-reservation.use-case';
 import { CreateReservationRowUseCase } from './create-reservation.use-case';
 import { DeleteReservationUseCase } from './delete-reservation.use-case';
@@ -14,6 +13,7 @@ import {
   deleteReservationUseCaseMock as buildDeleteReservationUseCaseMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
 } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort } from '../ports';
 
 describe('UpdateReservationUseCase', () => {
   let useCase: UpdateReservationUseCase;
@@ -31,7 +31,7 @@ describe('UpdateReservationUseCase', () => {
     process.env.LARGE_RESERVATION_CONTACT_NUMBER = '11-5555-0000';
 
     useCase = new UpdateReservationUseCase(
-      googleSheetsServiceMock as unknown as GoogleSheetsService,
+      googleSheetsServiceMock as unknown as DatesSheetPort,
       createReservationRowUseCaseMock as unknown as CreateReservationRowUseCase,
       deleteReservationUseCaseMock as unknown as DeleteReservationUseCase,
     );

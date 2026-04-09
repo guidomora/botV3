@@ -1,5 +1,4 @@
 import { DeleteReservationUseCase } from './delete-reservation.use-case';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { GenerateDatetime } from '../dateTime-build/generate-datetime';
 import { deleteReservationRequestMock } from '../test/mocks/reservation-scenarios.mock';
 import {
@@ -10,6 +9,7 @@ import {
   generateDatetimeMock as buildGenerateDatetimeMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
 } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort } from '../ports';
 
 describe('DeleteReservationUseCase', () => {
   let useCase: DeleteReservationUseCase;
@@ -23,7 +23,7 @@ describe('DeleteReservationUseCase', () => {
     process.env.AGENDA_DAYS_BACK_TO_KEEP = '15';
 
     useCase = new DeleteReservationUseCase(
-      googleSheetsServiceMock as unknown as GoogleSheetsService,
+      googleSheetsServiceMock as unknown as DatesSheetPort,
       generateDatetimeMock as unknown as GenerateDatetime,
     );
   });

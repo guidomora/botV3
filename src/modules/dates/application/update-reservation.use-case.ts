@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SHEETS_NAMES } from 'src/constants';
 import {
   CreateReservationType,
@@ -12,18 +12,19 @@ import {
   UpdateReservationResolvedType,
   UpdateReservationType,
 } from 'src/lib';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { getDuplicateSameDayReservationResponse } from '../utils';
 import { parseDateTime } from '../utils/parseDate';
 import { CreateReservationRowUseCase } from './create-reservation.use-case';
 import { DeleteReservationUseCase } from './delete-reservation.use-case';
+import { DATES_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort } from '../ports';
 
 @Injectable()
 export class UpdateReservationUseCase {
   private readonly logger = new Logger(UpdateReservationUseCase.name);
 
   constructor(
-    private readonly googleSheetsService: GoogleSheetsService,
+    @Inject(DATES_SHEET_PORT) private readonly datesSheetPort: DatesSheetPort,
     private readonly createReservationRowUseCase: CreateReservationRowUseCase,
     private readonly deleteReservationUseCase: DeleteReservationUseCase,
   ) {}
@@ -70,7 +71,7 @@ export class UpdateReservationUseCase {
       return largeReservationValidation;
     }
 
-    const availability = await this.googleSheetsService.getAvailabilityFromReservations(
+    const availability = await this.datesSheetPort.getAvailabilityFromReservations(
       context.targetDate,
       context.targetTime,
       resolvedReservation.resolvedQuantity,
@@ -173,14 +174,14 @@ export class UpdateReservationUseCase {
       phone: context.formattedPhone,
     };
 
-    return this.googleSheetsService.getDateIndexByData(searchIndexObject);
+    return this.datesSheetPort.getDateIndexByData(searchIndexObject);
   }
 
   private async validateNoSameDayDuplicate(
     context: UpdateReservationContextType,
     currentReservationIndex: number,
   ): Promise<ServiceResponse | null> {
-    const hasReservationSameDay = await this.googleSheetsService.hasReservationByDateAndPhone(
+    const hasReservationSameDay = await this.datesSheetPort.hasReservationByDateAndPhone(
       context.targetDate,
       context.formattedPhone,
       currentReservationIndex,
@@ -197,7 +198,7 @@ export class UpdateReservationUseCase {
     context: UpdateReservationContextType,
     currentReservationIndex: number,
   ): Promise<UpdateReservationResolvedType> {
-    const currentRow = await this.googleSheetsService.getRowValues(
+    const currentRow = await this.datesSheetPort.getRowValues(
       `${SHEETS_NAMES[0]}!A${currentReservationIndex}:F${currentReservationIndex}`,
     );
 
@@ -254,7 +255,7 @@ export class UpdateReservationUseCase {
       };
     }
 
-    await this.googleSheetsService.createReservation(resolvedReservation.createRange, {
+    await this.datesSheetPort.createReservation(resolvedReservation.createRange, {
       customerData: {
         name: context.targetName.toLowerCase(),
         phone: context.formattedPhone,
@@ -262,7 +263,7 @@ export class UpdateReservationUseCase {
       },
     });
 
-    await this.googleSheetsService.refreshAvailabilityForDate(context.currentDate);
+    await this.datesSheetPort.refreshAvailabilityForDate(context.currentDate);
 
     return {
       status: StatusEnum.SUCCESS,
@@ -314,9 +315,9 @@ export class UpdateReservationUseCase {
 
     await this.deleteReservationUseCase.deleteReservation(deleteObject);
 
-    await this.googleSheetsService.refreshAvailabilityForDate(context.currentDate);
+    await this.datesSheetPort.refreshAvailabilityForDate(context.currentDate);
     if (context.targetDate !== context.currentDate) {
-      await this.googleSheetsService.refreshAvailabilityForDate(context.targetDate);
+      await this.datesSheetPort.refreshAvailabilityForDate(context.targetDate);
     }
 
     return {
