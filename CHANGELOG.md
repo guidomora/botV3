@@ -3,6 +3,7 @@
 ### 09/04/26
 
 - Added ports to ai module
+- Added ports to whatsapp module
 - TODO:
 - Fix time bug
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed

@@ -3,13 +3,15 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
 import { RATE_LIMIT_MESSAGE } from 'src/constants';
 import { TwilioWebhookPayloadDto } from 'src/lib';
-import { TwilioAdapter } from '../adapters/twilio.adapter';
+import { WhatsAppClientPort } from '../ports';
 import { RateLimitService } from '../service/rate-limit.service';
+import { WHATSAPP_CLIENT_PORT } from '../whatsapp.tokens';
 
 @Injectable()
 export class WhatsAppRateLimitGuard implements CanActivate {
@@ -17,7 +19,8 @@ export class WhatsAppRateLimitGuard implements CanActivate {
 
   constructor(
     private readonly rateLimitService: RateLimitService,
-    private readonly twilioAdapter: TwilioAdapter,
+    @Inject(WHATSAPP_CLIENT_PORT)
+    private readonly whatsappClient: WhatsAppClientPort,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -36,7 +39,7 @@ export class WhatsAppRateLimitGuard implements CanActivate {
 
     if (rateLimitDecision.shouldNotify) {
       try {
-        await this.twilioAdapter.sendText(waId, RATE_LIMIT_MESSAGE);
+        await this.whatsappClient.sendText(waId, RATE_LIMIT_MESSAGE);
       } catch (error) {
         this.logger.error(
           `No se pudo enviar notificación de rate limit para ${waId}`,

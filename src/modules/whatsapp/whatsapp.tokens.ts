@@ -1,0 +1,1 @@
+export const WHATSAPP_CLIENT_PORT = Symbol('WHATSAPP_CLIENT_PORT');
