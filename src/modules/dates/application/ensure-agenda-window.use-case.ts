@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { EnsureAgendaWindowResult } from 'src/lib';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { DatesSheetPort, EnsureAgendaWindowResult } from 'src/lib';
 import { SHEETS_NAMES } from 'src/constants';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import { parseDate } from '../utils/parseDate';
 import { CreateDayUseCase } from './create-day.use-case';
+import { DATES_SHEET_PORT } from '../dates.tokens';
 
 @Injectable()
 export class EnsureAgendaWindowUseCase {
@@ -12,7 +12,7 @@ export class EnsureAgendaWindowUseCase {
 
   constructor(
     private readonly createDayUseCase: CreateDayUseCase,
-    private readonly googleSheetsService: GoogleSheetsService,
+    @Inject(DATES_SHEET_PORT) private readonly datesSheetPort: DatesSheetPort,
   ) {}
 
   async ensureAgendaWindow(): Promise<EnsureAgendaWindowResult> {
@@ -21,9 +21,7 @@ export class EnsureAgendaWindowUseCase {
     const desiredLastDate = new Date(today);
     desiredLastDate.setDate(desiredLastDate.getDate() + targetDaysAhead - 1);
 
-    const lastRegisteredDate = await this.googleSheetsService.getLastRowValue(
-      `${SHEETS_NAMES[1]}!A:A`,
-    );
+    const lastRegisteredDate = await this.datesSheetPort.getLastRowValue(`${SHEETS_NAMES[1]}!A:A`);
 
     if (lastRegisteredDate === 'no hay valores') {
       await this.createDayUseCase.createXDatesFrom(today, targetDaysAhead);

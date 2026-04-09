@@ -1,5 +1,4 @@
-import { StatusEnum } from 'src/lib';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
+import { DatesSheetPort, StatusEnum } from 'src/lib';
 import { CreateReservationRowUseCase } from './create-reservation.use-case';
 import { createReservationRequestMock } from '../test/mocks/reservation-scenarios.mock';
 import {
@@ -18,9 +17,7 @@ describe('CreateReservationRowUseCase', () => {
     Object.values(googleSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
     process.env.MAX_PEOPLE_PER_RESERVATION = '12';
     process.env.LARGE_RESERVATION_CONTACT_NUMBER = '11-5555-0000';
-    useCase = new CreateReservationRowUseCase(
-      googleSheetsServiceMock as unknown as GoogleSheetsService,
-    );
+    useCase = new CreateReservationRowUseCase(googleSheetsServiceMock as unknown as DatesSheetPort);
   });
 
   afterEach(() => {

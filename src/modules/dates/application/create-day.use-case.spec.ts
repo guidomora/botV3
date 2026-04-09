@@ -1,6 +1,6 @@
 import { CreateDayUseCase } from './create-day.use-case';
 import { GenerateDatetime } from '../dateTime-build/generate-datetime';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
+import { DatesSheetPort } from 'src/lib';
 import {
   createDayAvailabilityRowsMock,
   createDayRowsMock,
@@ -24,7 +24,7 @@ describe('CreateDayUseCase', () => {
 
     useCase = new CreateDayUseCase(
       generateDatetimeMock as unknown as GenerateDatetime,
-      googleSheetsServiceMock as unknown as GoogleSheetsService,
+      googleSheetsServiceMock as unknown as DatesSheetPort,
     );
   });
 

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SHEETS_NAMES } from 'src/constants';
-import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
 import {
   CreateReservationType,
+  DatesSheetPort,
   getLargeReservationValidation,
   ServiceResponse,
   StatusEnum,
@@ -11,11 +11,12 @@ import {
 import { Logger } from '@nestjs/common';
 import { parseDateTime } from '../utils/parseDate';
 import { getDuplicateSameDayReservationResponse } from '../utils';
+import { DATES_SHEET_PORT } from '../dates.tokens';
 
 @Injectable()
 export class CreateReservationRowUseCase {
   private readonly logger = new Logger(CreateReservationRowUseCase.name);
-  constructor(private readonly googleSheetsService: GoogleSheetsService) {}
+  constructor(@Inject(DATES_SHEET_PORT) private readonly datesSheetPort: DatesSheetPort) {}
 
   async createReservation(createReservation: CreateReservationType): Promise<ServiceResponse> {
     const { date, time, name, phone, quantity, excludedRowIndex } = createReservation;
@@ -29,7 +30,7 @@ export class CreateReservationRowUseCase {
           status: StatusEnum.DATE_ALREADY_PASSED,
         };
       }
-      const index = await this.googleSheetsService.getDate(date!, time!);
+      const index = await this.datesSheetPort.getDate(date!, time!);
 
       if (index === -1) {
         this.logger.warn('No se encontro la fecha');
@@ -41,7 +42,7 @@ export class CreateReservationRowUseCase {
         };
       }
 
-      const hasReservationSameDay = await this.googleSheetsService.hasReservationByDateAndPhone(
+      const hasReservationSameDay = await this.datesSheetPort.hasReservationByDateAndPhone(
         date!,
         phone,
         excludedRowIndex,
@@ -52,7 +53,7 @@ export class CreateReservationRowUseCase {
         return getDuplicateSameDayReservationResponse();
       }
 
-      const availability = await this.googleSheetsService.getAvailabilityFromReservations(
+      const availability = await this.datesSheetPort.getAvailabilityFromReservations(
         date!,
         time!,
         quantity,
@@ -83,7 +84,7 @@ export class CreateReservationRowUseCase {
         };
       }
 
-      const currentRow = await this.googleSheetsService.getRowValues(
+      const currentRow = await this.datesSheetPort.getRowValues(
         `${SHEETS_NAMES[0]}!A${index}:F${index}`,
       );
 
@@ -104,7 +105,7 @@ export class CreateReservationRowUseCase {
         await this.createReservationAndRow(index, newRowData);
       } else {
         const customerData = { name, phone, quantity };
-        await this.googleSheetsService.createReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`, {
+        await this.datesSheetPort.createReservation(`${SHEETS_NAMES[0]}!C${index}:F${index}`, {
           customerData,
         });
       }
@@ -116,8 +117,8 @@ export class CreateReservationRowUseCase {
         time: time!,
       };
 
-      await this.googleSheetsService.updateAvailabilityFromReservations(updateParams);
-      await this.googleSheetsService.refreshAvailabilityForDate(date!);
+      await this.datesSheetPort.updateAvailabilityFromReservations(updateParams);
+      await this.datesSheetPort.refreshAvailabilityForDate(date!);
 
       return {
         error: false,
@@ -131,12 +132,12 @@ export class CreateReservationRowUseCase {
   }
 
   async createReservationAndRow(index: number, newRowData: CreateReservationType): Promise<void> {
-    const newRowIndex = await this.googleSheetsService.insertRow(
+    const newRowIndex = await this.datesSheetPort.insertRow(
       `${SHEETS_NAMES[0]}!A${index}:F${index}`,
       index,
     );
 
-    await this.googleSheetsService.createReservation(
+    await this.datesSheetPort.createReservation(
       `${SHEETS_NAMES[0]}!A${newRowIndex}:F${newRowIndex}`,
       { customerData: newRowData },
     );
