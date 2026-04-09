@@ -1,4 +1,4 @@
-import { DatesSheetPort, StatusEnum } from 'src/lib';
+import { StatusEnum } from 'src/lib';
 import { CreateReservationRowUseCase } from './create-reservation.use-case';
 import { createReservationRequestMock } from '../test/mocks/reservation-scenarios.mock';
 import {
@@ -7,6 +7,7 @@ import {
   occupiedSlotRowValuesMock,
 } from '../test/mocks/sheets-data.mock';
 import { googleSheetsServiceMock as buildGoogleSheetsServiceMock } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort } from '../ports';
 
 describe('CreateReservationRowUseCase', () => {
   let useCase: CreateReservationRowUseCase;

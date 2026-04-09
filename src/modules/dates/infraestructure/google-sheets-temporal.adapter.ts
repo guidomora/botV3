@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AddMissingFieldInput, DatesTemporalSheetPort, TemporalDataType } from 'src/lib';
 import { TemporalDataRows } from 'src/constants/tables-info/temporal-data-rows';
+import { AddMissingFieldInput, TemporalDataType } from 'src/lib/types/google-sheet';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
+import { DatesTemporalSheetPort } from '../ports';
 
 @Injectable()
 export class GoogleSheetsTemporalAdapter implements DatesTemporalSheetPort {

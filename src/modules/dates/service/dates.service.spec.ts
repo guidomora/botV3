@@ -1,4 +1,4 @@
-import { DatesSheetPort, DatesTemporalSheetPort, StatusEnum, TemporalStatusEnum } from 'src/lib';
+import { StatusEnum, TemporalStatusEnum } from 'src/lib';
 import {
   CreateDayUseCase,
   CreateReservationRowUseCase,
@@ -30,6 +30,7 @@ import {
   googleTemporalSheetsServiceMock as buildGoogleTemporalSheetsServiceMock,
   updateReservationUseCaseMock as buildUpdateReservationUseCaseMock,
 } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort, DatesTemporalSheetPort } from '../ports';
 
 describe('DatesService', () => {
   let service: DatesService;

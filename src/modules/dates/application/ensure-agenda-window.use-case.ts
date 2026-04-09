@@ -1,9 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { DatesSheetPort, EnsureAgendaWindowResult } from 'src/lib';
+import { EnsureAgendaWindowResult } from 'src/lib';
 import { SHEETS_NAMES } from 'src/constants';
 import { parseDate } from '../utils/parseDate';
 import { CreateDayUseCase } from './create-day.use-case';
 import { DATES_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort } from '../ports';
 
 @Injectable()
 export class EnsureAgendaWindowUseCase {

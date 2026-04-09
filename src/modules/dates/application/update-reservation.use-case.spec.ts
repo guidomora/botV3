@@ -1,4 +1,4 @@
-import { DatesSheetPort, StatusEnum } from 'src/lib';
+import { StatusEnum } from 'src/lib';
 import { UpdateReservationUseCase } from './update-reservation.use-case';
 import { CreateReservationRowUseCase } from './create-reservation.use-case';
 import { DeleteReservationUseCase } from './delete-reservation.use-case';
@@ -13,6 +13,7 @@ import {
   deleteReservationUseCaseMock as buildDeleteReservationUseCaseMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
 } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort } from '../ports';
 
 describe('UpdateReservationUseCase', () => {
   let useCase: UpdateReservationUseCase;

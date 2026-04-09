@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SHEETS_NAMES } from 'src/constants';
 import {
   CreateReservationType,
-  DatesSheetPort,
   getLargeReservationValidation,
   ServiceResponse,
   StatusEnum,
@@ -12,6 +11,7 @@ import { Logger } from '@nestjs/common';
 import { parseDateTime } from '../utils/parseDate';
 import { getDuplicateSameDayReservationResponse } from '../utils';
 import { DATES_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort } from '../ports';
 
 @Injectable()
 export class CreateReservationRowUseCase {

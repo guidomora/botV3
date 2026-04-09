@@ -1,10 +1,10 @@
 import { CreateDayUseCase } from './create-day.use-case';
 import { EnsureAgendaWindowUseCase } from './ensure-agenda-window.use-case';
-import { DatesSheetPort } from 'src/lib';
 import {
   createDayUseCaseMock as buildCreateDayUseCaseMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
 } from '../test/mocks/dependency-mocks';
+import { DatesSheetPort } from '../ports';
 
 describe('EnsureAgendaWindowUseCase', () => {
   let useCase: EnsureAgendaWindowUseCase;

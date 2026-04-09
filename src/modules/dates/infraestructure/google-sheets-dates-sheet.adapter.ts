@@ -4,8 +4,8 @@ import { Availability } from 'src/lib/types/availability/availability.type';
 import { UpdateParams } from 'src/lib/types/availability/update-params.type';
 import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { GetIndexParams } from 'src/lib/types/datetime/get-index-params.type';
-import { DatesSheetPort } from 'src/lib/types/dates/ports/dates-sheet.port.interface';
 import { GoogleSheetsService } from 'src/modules/google-sheets/service/google-sheets.service';
+import { DatesSheetPort } from '../ports';
 
 @Injectable()
 export class GoogleSheetsDatesSheetAdapter implements DatesSheetPort {

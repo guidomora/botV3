@@ -3,8 +3,6 @@ import {
   AddMissingFieldInput,
   AddMissingFieldOutput,
   AvailabilityResponse,
-  DatesSheetPort,
-  DatesTemporalSheetPort,
   DeleteReservation,
   formatPhoneNumber,
   GetIndexParams,
@@ -23,6 +21,7 @@ import {
 import { pickAvailabilityForTime, formatAvailabilityResponse } from '../utils';
 import { TemporalDataRows } from 'src/constants/tables-info/temporal-data-rows';
 import { DATES_SHEET_PORT, DATES_TEMPORAL_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort, DatesTemporalSheetPort } from '../ports';
 
 @Injectable()
 export class DatesService {

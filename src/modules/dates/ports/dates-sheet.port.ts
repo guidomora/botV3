@@ -1,7 +1,8 @@
-import { AddDataType } from '../../add-data.type';
-import { DateTime } from '../../datetime';
-import { Availability, UpdateParams } from '../../availability';
-import { GetIndexParams } from '../../datetime';
+import { AddDataType } from 'src/lib/types/add-data.type';
+import { Availability } from 'src/lib/types/availability/availability.type';
+import { UpdateParams } from 'src/lib/types/availability/update-params.type';
+import { DateTime } from 'src/lib/types/datetime/datetime.type';
+import { GetIndexParams } from 'src/lib/types/datetime/get-index-params.type';
 
 export interface DatesSheetPort {
   appendRow(range: string, values: DateTime): Promise<void>;

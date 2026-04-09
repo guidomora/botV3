@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SHEETS_NAMES } from 'src/constants';
 import {
   CreateReservationType,
-  DatesSheetPort,
   DeleteReservation,
   formatPhoneNumber,
   GetIndexParams,
@@ -18,6 +17,7 @@ import { parseDateTime } from '../utils/parseDate';
 import { CreateReservationRowUseCase } from './create-reservation.use-case';
 import { DeleteReservationUseCase } from './delete-reservation.use-case';
 import { DATES_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort } from '../ports';
 
 @Injectable()
 export class UpdateReservationUseCase {

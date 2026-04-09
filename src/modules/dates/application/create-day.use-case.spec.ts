@@ -1,12 +1,12 @@
 import { CreateDayUseCase } from './create-day.use-case';
 import { GenerateDatetime } from '../dateTime-build/generate-datetime';
-import { DatesSheetPort } from 'src/lib';
 import {
   createDayAvailabilityRowsMock,
   createDayRowsMock,
   futureReservationDateLabelMock,
   nextReservationDateLabelMock,
 } from '../test/mocks/sheets-data.mock';
+import { DatesSheetPort } from '../ports';
 import {
   generateDatetimeMock as buildGenerateDatetimeMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,

@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SHEETS_NAMES } from 'src/constants';
-import { DatesSheetPort, DeleteReservation, GetIndexParams, UpdateParams } from 'src/lib';
+import { DeleteReservation, GetIndexParams, UpdateParams } from 'src/lib';
 import { Logger } from '@nestjs/common';
 import { GenerateDatetime } from '../dateTime-build/generate-datetime';
 import { parseDate } from '../utils/parseDate';
 import { DATES_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort } from '../ports';
 
 @Injectable()
 export class DeleteReservationUseCase {
