@@ -2,22 +2,22 @@ import { UNSUPPORTED_MESSAGE } from 'src/constants';
 import { WhatsAppService } from './whatsapp.service';
 import {
   createReservationsServiceMock,
-  createWhatsAppClientMock,
+  createTwilioPortMock,
   simplifiedPayloadMock,
 } from '../test/mocks/dependency-mocks';
 
 describe('WhatsAppService', () => {
   let service: WhatsAppService;
-  let whatsappClientMock = createWhatsAppClientMock();
+  let twilioPortMock = createTwilioPortMock();
   let reservationsServiceMock = createReservationsServiceMock();
 
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
 
-    whatsappClientMock = createWhatsAppClientMock();
+    twilioPortMock = createTwilioPortMock();
     reservationsServiceMock = createReservationsServiceMock();
-    service = new WhatsAppService(whatsappClientMock, reservationsServiceMock);
+    service = new WhatsAppService(twilioPortMock, reservationsServiceMock);
   });
 
   afterEach(() => {
@@ -26,10 +26,10 @@ describe('WhatsAppService', () => {
   });
 
   it('should delegate sendText to Twilio adapter', async () => {
-    whatsappClientMock.sendText.mockResolvedValue({ sid: 'SM999' } as never);
+    twilioPortMock.sendText.mockResolvedValue({ sid: 'SM999' } as never);
 
     await expect(service.sendText('5491112345678', 'Hola')).resolves.toEqual({ sid: 'SM999' });
-    expect(whatsappClientMock.sendText.mock.calls[0]).toEqual(['5491112345678', 'Hola']);
+    expect(twilioPortMock.sendText.mock.calls[0]).toEqual(['5491112345678', 'Hola']);
   });
 
   it('should return unsupported message constant', () => {
@@ -47,12 +47,12 @@ describe('WhatsAppService', () => {
   });
 
   it('should delegate signature verification to adapter', () => {
-    whatsappClientMock.verifySignature.mockReturnValue(true);
+    twilioPortMock.verifySignature.mockReturnValue(true);
 
     expect(
       service.verifySignature('https://host/communication/queue', { Body: 'Hola' }, 'sig'),
     ).toBe(true);
-    expect(whatsappClientMock.verifySignature.mock.calls[0]).toEqual([
+    expect(twilioPortMock.verifySignature.mock.calls[0]).toEqual([
       'https://host/communication/queue',
       { Body: 'Hola' },
       'sig',

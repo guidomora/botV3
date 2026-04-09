@@ -1,4 +1,4 @@
-export interface WhatsAppClientPort {
+export interface TwilioPort {
   sendText(toE164: string, body: string): Promise<unknown>;
   verifySignature(
     url: string,

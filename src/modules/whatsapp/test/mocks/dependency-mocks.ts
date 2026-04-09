@@ -2,7 +2,7 @@ import { Cache } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitDecision, SimplifiedTwilioWebhookPayload } from 'src/lib';
 import { ReservationsService } from 'src/modules/reservations/service/reservations.service';
-import { WhatsAppClientPort } from '../../ports';
+import { TwilioPort } from '../../ports';
 import { IdempotencyService } from '../../service/idempotency.service';
 import { RateLimitService } from '../../service/rate-limit.service';
 import { WhatsAppService } from '../../service/whatsapp.service';
@@ -46,11 +46,11 @@ export const createConfigServiceMock = (
     get: jest.fn((key: string) => values[key]),
   }) as unknown as jest.Mocked<ConfigService>;
 
-export const createWhatsAppClientMock = () =>
+export const createTwilioPortMock = () =>
   ({
     sendText: jest.fn(),
     verifySignature: jest.fn(),
-  }) as unknown as jest.Mocked<WhatsAppClientPort>;
+  }) as unknown as jest.Mocked<TwilioPort>;
 
 export const createReservationsServiceMock = () =>
   ({

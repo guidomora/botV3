@@ -1,16 +1,13 @@
 import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { RATE_LIMIT_MESSAGE } from 'src/constants';
-import { WhatsAppClientPort } from '../ports';
+import { TwilioPort } from '../ports';
 import { WhatsAppRateLimitGuard } from './whatsapp-rate-limit.guard';
 import { RateLimitService } from '../service/rate-limit.service';
-import {
-  createRateLimitServiceMock,
-  createWhatsAppClientMock,
-} from '../test/mocks/dependency-mocks';
+import { createRateLimitServiceMock, createTwilioPortMock } from '../test/mocks/dependency-mocks';
 
 describe('WhatsAppRateLimitGuard', () => {
   let rateLimitServiceMock = createRateLimitServiceMock();
-  let whatsappClientMock = createWhatsAppClientMock();
+  let twilioPortMock = createTwilioPortMock();
 
   const buildContext = (waId?: string): ExecutionContext =>
     ({
@@ -23,14 +20,14 @@ describe('WhatsAppRateLimitGuard', () => {
 
   beforeEach(() => {
     rateLimitServiceMock = createRateLimitServiceMock();
-    whatsappClientMock = createWhatsAppClientMock();
+    twilioPortMock = createTwilioPortMock();
     jest.clearAllMocks();
   });
 
   it('should allow request when waId is missing', async () => {
     const guard = new WhatsAppRateLimitGuard(
       rateLimitServiceMock as unknown as RateLimitService,
-      whatsappClientMock as unknown as WhatsAppClientPort,
+      twilioPortMock as unknown as TwilioPort,
     );
 
     await expect(guard.canActivate(buildContext())).resolves.toBe(true);
@@ -45,7 +42,7 @@ describe('WhatsAppRateLimitGuard', () => {
     });
     const guard = new WhatsAppRateLimitGuard(
       rateLimitServiceMock as unknown as RateLimitService,
-      whatsappClientMock as unknown as WhatsAppClientPort,
+      twilioPortMock as unknown as TwilioPort,
     );
 
     await expect(guard.canActivate(buildContext('5491112345678'))).resolves.toBe(true);
@@ -57,19 +54,16 @@ describe('WhatsAppRateLimitGuard', () => {
       retryAfterSeconds: 180,
       shouldNotify: true,
     });
-    whatsappClientMock.sendText.mockResolvedValue({ sid: 'SM100' } as never);
+    twilioPortMock.sendText.mockResolvedValue({ sid: 'SM100' } as never);
     const guard = new WhatsAppRateLimitGuard(
       rateLimitServiceMock as unknown as RateLimitService,
-      whatsappClientMock as unknown as WhatsAppClientPort,
+      twilioPortMock as unknown as TwilioPort,
     );
 
     await expect(guard.canActivate(buildContext('5491112345678'))).rejects.toThrow(
       new HttpException({ ok: true }, HttpStatus.OK),
     );
-    expect(whatsappClientMock.sendText.mock.calls[0]).toEqual([
-      '5491112345678',
-      RATE_LIMIT_MESSAGE,
-    ]);
+    expect(twilioPortMock.sendText.mock.calls[0]).toEqual(['5491112345678', RATE_LIMIT_MESSAGE]);
   });
 
   it('should still short-circuit request when notify send fails', async () => {
@@ -78,10 +72,10 @@ describe('WhatsAppRateLimitGuard', () => {
       retryAfterSeconds: 180,
       shouldNotify: true,
     });
-    whatsappClientMock.sendText.mockRejectedValue(new Error('twilio failed'));
+    twilioPortMock.sendText.mockRejectedValue(new Error('twilio failed'));
     const guard = new WhatsAppRateLimitGuard(
       rateLimitServiceMock as unknown as RateLimitService,
-      whatsappClientMock as unknown as WhatsAppClientPort,
+      twilioPortMock as unknown as TwilioPort,
     );
 
     await expect(guard.canActivate(buildContext('5491112345678'))).rejects.toThrow(
@@ -97,12 +91,12 @@ describe('WhatsAppRateLimitGuard', () => {
     });
     const guard = new WhatsAppRateLimitGuard(
       rateLimitServiceMock as unknown as RateLimitService,
-      whatsappClientMock as unknown as WhatsAppClientPort,
+      twilioPortMock as unknown as TwilioPort,
     );
 
     await expect(guard.canActivate(buildContext('5491112345678'))).rejects.toThrow(
       new HttpException({ ok: true }, HttpStatus.OK),
     );
-    expect(whatsappClientMock.sendText.mock.calls).toHaveLength(0);
+    expect(twilioPortMock.sendText.mock.calls).toHaveLength(0);
   });
 });
