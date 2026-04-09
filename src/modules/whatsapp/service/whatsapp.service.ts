@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { UNSUPPORTED_MESSAGE } from 'src/constants';
 import { BufferEntry, SimplifiedTwilioWebhookPayload } from 'src/lib';
 import { ReservationsService } from 'src/modules/reservations/service/reservations.service';
-import { TwilioAdapter } from '../adapters/twilio.adapter';
+import { TwilioPort } from '../ports';
 import { setTimeLapse } from '../utils/utils';
+import { TWILIO_PORT } from '../whatsapp.tokens';
 
 @Injectable()
 export class WhatsAppService {
@@ -11,12 +12,13 @@ export class WhatsAppService {
   private buffers = new Map<string, BufferEntry>();
 
   constructor(
-    private readonly twilioAdapter: TwilioAdapter,
+    @Inject(TWILIO_PORT)
+    private readonly twilioPort: TwilioPort,
     private readonly reservationsService: ReservationsService,
   ) {}
 
   async sendText(toE164: string, body: string) {
-    return this.twilioAdapter.sendText(toE164, body);
+    return this.twilioPort.sendText(toE164, body);
   }
 
   getUnsupportedMessageReply(): string {
@@ -33,7 +35,7 @@ export class WhatsAppService {
     params: Record<string, string | undefined>,
     signatureHeader: string,
   ): boolean {
-    return this.twilioAdapter.verifySignature(url, params, signatureHeader);
+    return this.twilioPort.verifySignature(url, params, signatureHeader);
   }
 
   async handleMultipleMessages(
