@@ -32,6 +32,7 @@ async function bootstrap() {
     .addTag('Communication', 'Webhook de Twilio WhatsApp y flujo de procesamiento conversacional.')
     .addTag('Health', 'Endpoints protegidos para monitoreo operativo.')
     .addTag('Dates', 'Endpoints operativos para mantenimiento manual y automatico de agenda.')
+    .addTag('Reservations', 'Endpoints operativos para dashboard y gestion manual de reservas.')
     .addApiKey(
       {
         type: 'apiKey',

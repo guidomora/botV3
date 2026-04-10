@@ -7,6 +7,7 @@ import { DateTime } from 'src/lib/types/datetime/datetime.type';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import { ServiceName, SHEETS_NAMES } from 'src/constants';
 import { parseSpreadSheetId } from 'src/modules/google-sheets/helpers/parse-spreadsheet-id.helper';
+import { datesMatch } from 'src/modules/google-sheets/helpers/names-match.helper';
 import { GoogleSheetsOpts, ProviderError, ProviderName, UpdateParamsRepository } from 'src/lib';
 
 @Injectable()
@@ -191,9 +192,14 @@ export class GoogleSheetsRepository {
       return [];
     }
 
-    const reservations = values.filter(
-      (row): row is string[] => Array.isArray(row) && row[0] === date,
-    );
+    const reservations = values.filter((row): row is string[] => {
+      if (!Array.isArray(row)) {
+        return false;
+      }
+
+      const rowDate = typeof row[0] === 'string' ? row[0] : undefined;
+      return datesMatch(rowDate, date);
+    });
 
     return reservations;
   }

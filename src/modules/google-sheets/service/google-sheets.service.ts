@@ -6,6 +6,8 @@ import { AddDataType } from 'src/lib/types/add-data.type';
 import {
   Availability,
   computeOnlineMaxCapacity,
+  DashboardReservation,
+  DashboardReservationSlot,
   formatPhoneNumber,
   GetIndexParams,
   UpdateParams,
@@ -289,12 +291,51 @@ export class GoogleSheetsService {
       const data = await this.googleSheetsRepository.getDates(range);
       const allDaysRows = data.filter((row) => row[0] !== 'Fecha');
 
-      const requestedDayRows = allDaysRows.filter((r) => r[0] === date && r[3] != '0');
+      const requestedDayRows = allDaysRows.filter((r) => datesMatch(r[0], date) && r[3] != '0');
 
       return requestedDayRows;
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }
+  }
+
+  async getReservationsByDate(date: string): Promise<DashboardReservation[]> {
+    try {
+      const reservations = await this.googleSheetsRepository.getReservationsByDate(date);
+
+      return reservations
+        .filter((row) => row[0] !== 'Fecha')
+        .map((row) => ({
+          date: String(row[0] ?? ''),
+          time: String(row[1] ?? ''),
+          name: String(row[2] ?? ''),
+          phone: String(row[3] ?? ''),
+          service: String(row[4] ?? ''),
+          quantity: Number(row[5] ?? 0),
+        }))
+        .filter(
+          (reservation) =>
+            reservation.date &&
+            reservation.time &&
+            reservation.name &&
+            reservation.phone &&
+            reservation.service &&
+            !Number.isNaN(reservation.quantity) &&
+            reservation.quantity > 0,
+        );
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  async getAvailabilitySlotsByDate(date: string): Promise<DashboardReservationSlot[]> {
+    const rows = await this.getDayAvailability(date);
+
+    return rows.map((row) => ({
+      time: String(row[1] ?? ''),
+      reserved: Number(row[2] ?? 0),
+      available: Number(row[3] ?? 0),
+    }));
   }
 
   async updateAvailabilityFromReservations(updateParams: UpdateParams) {

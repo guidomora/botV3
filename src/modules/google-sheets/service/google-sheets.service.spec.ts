@@ -194,6 +194,64 @@ describe('Given GoogleSheetsService', () => {
     });
   });
 
+  describe('When getReservationsByDate is called', () => {
+    it('Should map reservation rows for the requested date', async () => {
+      repository.getReservationsByDate.mockResolvedValue([
+        ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad'],
+        [
+          'martes 03 de marzo 2026 03/03/2026',
+          '19:00',
+          'juan perez',
+          '54-9-1122334455',
+          'Cena',
+          '2',
+        ],
+        [
+          'martes 03 de marzo 2026 03/03/2026',
+          '20:00',
+          'maria lopez',
+          '54-9-1199988877',
+          'Cena',
+          '4',
+        ],
+      ]);
+
+      await expect(
+        service.getReservationsByDate('martes 03 de marzo 2026 03/03/2026'),
+      ).resolves.toEqual([
+        {
+          date: 'martes 03 de marzo 2026 03/03/2026',
+          time: '19:00',
+          name: 'juan perez',
+          phone: '54-9-1122334455',
+          service: 'Cena',
+          quantity: 2,
+        },
+        {
+          date: 'martes 03 de marzo 2026 03/03/2026',
+          time: '20:00',
+          name: 'maria lopez',
+          phone: '54-9-1199988877',
+          service: 'Cena',
+          quantity: 4,
+        },
+      ]);
+    });
+  });
+
+  describe('When getAvailabilitySlotsByDate is called', () => {
+    it('Should map daily availability rows into slots', async () => {
+      repository.getDates.mockResolvedValue(availabilityRowsMock);
+
+      await expect(
+        service.getAvailabilitySlotsByDate('martes 03 de marzo 2026 03/03/2026'),
+      ).resolves.toEqual([
+        { time: '19:00', reserved: 2, available: 10 },
+        { time: '21:00', reserved: 3, available: 8 },
+      ]);
+    });
+  });
+
   describe('When updateAvailabilityFromReservations is called', () => {
     it('Should reject invalid state without writing sheet', async () => {
       repository.getDates.mockResolvedValue(availabilityRowsMock);
