@@ -14,6 +14,7 @@ import { ReservationsController } from './controller/reservations.controller';
 import { ReservationsDashboardService } from './service/reservations-dashboard.service';
 import { GetDailyReservationsSummaryUseCase } from './application/get-daily-reservations-summary.use-case';
 import { reservationsProviders } from './reservations.providers';
+import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
 
 @Module({
   controllers: [ReservationsController],
@@ -22,6 +23,7 @@ import { reservationsProviders } from './reservations.providers';
     ReservationsService,
     ReservationsDashboardService,
     GetDailyReservationsSummaryUseCase,
+    InternalApiTokenGuard,
     CreateReservationStrategy,
     DeleteReservationStrategy,
     AvailabilityStrategy,

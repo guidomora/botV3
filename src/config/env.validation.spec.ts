@@ -11,6 +11,7 @@ describe('validateEnvironmentVariables', () => {
     TWILIO_WHATSAPP_FROM: 'whatsapp:+14155238886',
     MAX_CAPACITY_TOTAL: '50',
     HEALTH_CHECK_SECRET: 'super-secret',
+    INTERNAL_API_TOKEN: 'internal-secret',
   };
 
   it('debería aceptar una configuración válida y aplicar defaults', () => {

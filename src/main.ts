@@ -8,6 +8,7 @@ import {
   AGENDA_SYNC_SIGNATURE_HEADER,
   AGENDA_SYNC_TIMESTAMP_HEADER,
   HEALTH_CHECK_SECRET_HEADER,
+  INTERNAL_API_TOKEN_HEADER,
 } from './constants';
 
 async function bootstrap() {
@@ -15,6 +16,11 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.setGlobalPrefix('bot');
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', INTERNAL_API_TOKEN_HEADER],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -64,6 +70,14 @@ async function bootstrap() {
         name: AGENDA_SYNC_SIGNATURE_HEADER,
       },
       'agenda-sync-signature',
+    )
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'header',
+        name: INTERNAL_API_TOKEN_HEADER,
+      },
+      'internal-api-token',
     )
     .build();
 

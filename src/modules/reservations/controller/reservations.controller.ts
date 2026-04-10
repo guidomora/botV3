@@ -1,9 +1,19 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
+  ApiHeader,
+  ApiOkResponse,
+  ApiOperation,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
+import { INTERNAL_API_TOKEN_HEADER } from 'src/constants';
 import { ValidationErrorResponseDto } from 'src/lib';
 import { ReservationsDashboardService } from '../service/reservations-dashboard.service';
 import { DailyReservationsSummaryResponseDto } from '../dto/daily-reservations-summary-response.dto';
 import { GetDailyReservationsSummaryQueryDto } from '../dto/get-daily-reservations-summary-query.dto';
+import { InternalApiTokenGuard } from '../guards/internal-api-token.guard';
 
 const formatIsoDateToSheetDate = (date: string): string => {
   const [year, month, day] = date.split('-');
@@ -12,6 +22,13 @@ const formatIsoDateToSheetDate = (date: string): string => {
 
 @Controller('reservations')
 @ApiTags('Reservations')
+@UseGuards(InternalApiTokenGuard)
+@ApiSecurity('internal-api-token')
+@ApiHeader({
+  name: INTERNAL_API_TOKEN_HEADER,
+  description: 'Token interno requerido para consumir endpoints del dashboard.',
+  required: true,
+})
 export class ReservationsController {
   constructor(private readonly reservationsDashboardService: ReservationsDashboardService) {}
 
@@ -28,6 +45,9 @@ export class ReservationsController {
   @ApiBadRequestResponse({
     description: 'La query date no tiene un formato valido.',
     type: ValidationErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
   })
   getDailySummary(
     @Query() query: GetDailyReservationsSummaryQueryDto,

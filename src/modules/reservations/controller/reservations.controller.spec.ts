@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReservationsController } from './reservations.controller';
 import { ReservationsDashboardService } from '../service/reservations-dashboard.service';
+import { InternalApiTokenGuard } from '../guards/internal-api-token.guard';
 
 describe('ReservationsController', () => {
   let controller: ReservationsController;
@@ -12,7 +13,7 @@ describe('ReservationsController', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const module: TestingModule = await Test.createTestingModule({
+    const moduleBuilder = Test.createTestingModule({
       controllers: [ReservationsController],
       providers: [
         {
@@ -20,7 +21,13 @@ describe('ReservationsController', () => {
           useValue: reservationsDashboardServiceMock,
         },
       ],
-    }).compile();
+    });
+
+    moduleBuilder
+      .overrideGuard(InternalApiTokenGuard)
+      .useValue({ canActivate: jest.fn().mockResolvedValue(true) });
+
+    const module: TestingModule = await moduleBuilder.compile();
 
     controller = module.get(ReservationsController);
   });

@@ -1,16 +1,21 @@
 ### History
 
-### 09/04/26
+### 10/04/26
 
-- Added ports to ai module
-- Added ports to whatsapp module
+- New GET endpoint at reservations module to send the reservations info for a specific date
+- CORS and Token added
+- Fix time bug: DONE
 - TODO:
-- Fix time bug
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 09/04/26
+
+- Added ports to ai module
+- Added ports to whatsapp module
 
 ### 08/04/26
 
