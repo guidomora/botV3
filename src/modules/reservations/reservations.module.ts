@@ -10,16 +10,26 @@ import { CacheContextModule } from 'src/modules/cache-context/cache.module';
 import { AvailabilityStrategy } from './service/intention/availability-reservation.strategy';
 import { UpdateReservationStrategy } from './service/intention/update-reservation.strategy';
 import { OtherStrategy } from './service/intention/other.strategy';
+import { ReservationsController } from './controller/reservations.controller';
+import { ReservationsDashboardService } from './service/reservations-dashboard.service';
+import { GetDailyReservationsSummaryUseCase } from './application/get-daily-reservations-summary.use-case';
+import { reservationsProviders } from './reservations.providers';
+import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
 
 @Module({
+  controllers: [ReservationsController],
   imports: [DatesModule, AiModule, GoogleSheetsModule.forRoot(), CacheContextModule],
   providers: [
     ReservationsService,
+    ReservationsDashboardService,
+    GetDailyReservationsSummaryUseCase,
+    InternalApiTokenGuard,
     CreateReservationStrategy,
     DeleteReservationStrategy,
     AvailabilityStrategy,
     UpdateReservationStrategy,
     OtherStrategy,
+    ...reservationsProviders,
     {
       provide: INTENTION_STRATEGIES,
       useFactory: (
@@ -46,6 +56,6 @@ import { OtherStrategy } from './service/intention/other.strategy';
 
     IntentionsRouter,
   ],
-  exports: [ReservationsService],
+  exports: [ReservationsService, ReservationsDashboardService],
 })
 export class ReservationsModule {}

@@ -39,6 +39,7 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     DATES_MANUAL_RATE_LIMIT_MAX_REQUESTS: positiveInteger.default(1),
     HEALTH_CHECK_SECRET: requiredString,
     HEALTH_CHECK_RATE_LIMIT_MAX_REQUESTS: positiveInteger.default(15),
+    INTERNAL_API_TOKEN: requiredString,
 
     IDEMPOTENCY_MESSAGE_SID_TTL_MS: positiveInteger.default(86400000),
     RATE_LIMIT_SHORT_WINDOW_MS: positiveInteger.default(30000),

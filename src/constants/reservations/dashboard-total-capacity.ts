@@ -1,0 +1,1 @@
+export const DASHBOARD_TOTAL_CAPACITY = 42;

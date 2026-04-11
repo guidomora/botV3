@@ -8,6 +8,7 @@ import {
   AGENDA_SYNC_SIGNATURE_HEADER,
   AGENDA_SYNC_TIMESTAMP_HEADER,
   HEALTH_CHECK_SECRET_HEADER,
+  INTERNAL_API_TOKEN_HEADER,
 } from './constants';
 
 async function bootstrap() {
@@ -15,6 +16,11 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.setGlobalPrefix('bot');
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', INTERNAL_API_TOKEN_HEADER],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -32,6 +38,7 @@ async function bootstrap() {
     .addTag('Communication', 'Webhook de Twilio WhatsApp y flujo de procesamiento conversacional.')
     .addTag('Health', 'Endpoints protegidos para monitoreo operativo.')
     .addTag('Dates', 'Endpoints operativos para mantenimiento manual y automatico de agenda.')
+    .addTag('Reservations', 'Endpoints operativos para dashboard y gestion manual de reservas.')
     .addApiKey(
       {
         type: 'apiKey',
@@ -63,6 +70,14 @@ async function bootstrap() {
         name: AGENDA_SYNC_SIGNATURE_HEADER,
       },
       'agenda-sync-signature',
+    )
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'header',
+        name: INTERNAL_API_TOKEN_HEADER,
+      },
+      'internal-api-token',
     )
     .build();
 
