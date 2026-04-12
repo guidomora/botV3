@@ -10,7 +10,9 @@ import {
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { hasExplicitReservationAction } from './helpers/has-explicit-reservation-action.helper';
+import { hasExplicitUpdateAction } from './helpers/has-explicit-update-action.helper';
 import { IntentionsRouter } from './intention/intention.router';
+import { inferActiveIntent } from 'src/modules/ai/utils';
 
 @Injectable()
 export class ReservationsService {
@@ -46,7 +48,13 @@ export class ReservationsService {
       }
 
       const history = await this.cacheService.getHistory(simplifiedPayload.waId);
-      const aiResponse = await this.aiService.interactWithAi(message, history);
+      const activeIntent = inferActiveIntent(history);
+      const shouldUseUpdateExtractor =
+        activeIntent === Intention.UPDATE || hasExplicitUpdateAction(message);
+
+      const aiResponse = shouldUseUpdateExtractor
+        ? await this.aiService.interactUpdateWithAi(message, history)
+        : await this.aiService.interactWithAi(message, history);
       const result = await this.router.route(aiResponse, simplifiedPayload);
 
       return result.reply;

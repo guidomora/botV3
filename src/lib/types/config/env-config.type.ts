@@ -4,6 +4,7 @@ export type EnvConfig = {
   OPEN_AI: string;
   PROJECT_ID?: string;
   GPT_MODEL: string;
+  GPT_MODEL_UPDATE?: string;
   SPREADSHEET_ID: string;
   GOOGLE_CLIENT_EMAIL: string;
   GOOGLE_PRIVATE_KEY: string;

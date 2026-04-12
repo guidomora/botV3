@@ -34,10 +34,10 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
       waId: simplifiedPayload.waId,
       values: {
         phone: resolvedPhone,
-        date: aiResponse.date,
-        time: aiResponse.time,
-        name: aiResponse.name,
-        quantity: aiResponse.quantity,
+        date: aiResponse.date ?? undefined,
+        time: aiResponse.time ?? undefined,
+        name: aiResponse.name ?? undefined,
+        quantity: aiResponse.quantity ?? undefined,
       },
     };
     const response = await this.datesService.createReservationWithMultipleMessages(data);

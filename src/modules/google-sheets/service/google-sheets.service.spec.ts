@@ -73,6 +73,29 @@ describe('Given GoogleSheetsService', () => {
       expect(index).toBe(3);
     });
 
+    it('Should match reservations even when stored phone uses another equivalent format', async () => {
+      repository.getDates.mockResolvedValue([
+        ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad'],
+        [
+          'martes 03 de marzo 2026 03/03/2026',
+          '20:00',
+          'maria lopez',
+          '5491199988877',
+          'Cena',
+          '4',
+        ],
+      ]);
+
+      const index = await service.getDateIndexByData({
+        date: 'martes 03 de marzo 2026 03/03/2026',
+        time: '20:00',
+        name: 'Maria',
+        phone: '11 99988-877',
+      });
+
+      expect(index).toBe(2);
+    });
+
     it('Should return -1 when reservation payload does not match rows', async () => {
       repository.getDates.mockResolvedValue(reservationRowsMock);
 
@@ -140,6 +163,24 @@ describe('Given GoogleSheetsService', () => {
       await expect(
         service.hasReservationByDateAndPhone('martes 03 de marzo 2026 03/03/2026', '1122334455', 2),
       ).resolves.toBe(false);
+    });
+
+    it('Should match same-day reservation using normalized phone formats', async () => {
+      repository.getDates.mockResolvedValue([
+        ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad'],
+        [
+          'martes 03 de marzo 2026 03/03/2026',
+          '20:00',
+          'maria lopez',
+          '+54 9 11 9998-8877',
+          'Cena',
+          '4',
+        ],
+      ]);
+
+      await expect(
+        service.hasReservationByDateAndPhone('martes 03 de marzo 2026 03/03/2026', '1199988877'),
+      ).resolves.toBe(true);
     });
   });
 

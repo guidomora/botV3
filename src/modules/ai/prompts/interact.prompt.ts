@@ -59,6 +59,9 @@ Si un valor no puede inferirse con seguridad, usa **null** (no strings vacíos):
   - "lunes/martes/…" = el próximo día de semana.
   - "este viernes" o "el viernes que viene" = próximo viernes.
 - date: "díaDeSemana dd de mes yyyy dd/MM/yyyy" (ej: "sábado 02 de agosto 2025 02/08/2025").
+- Si entiendes una fecha relativa o un día de semana, DEBES resolverlo a fecha concreta completa en ese formato.
+- Nunca devuelvas valores parciales como "lunes", "mañana", "el viernes", "este sábado" o similares en "date".
+- Si no puedes resolver la fecha exacta con seguridad, devuelve null.
 - Si solo hay mes/día sin año, asume el año actual salvo que ya haya pasado y se indique “que viene” → siguiente año.
 
 [time]

@@ -23,6 +23,22 @@ export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
 
+  private phonesMatch(leftPhone?: string | null, rightPhone?: string | null): boolean {
+    if (!leftPhone || !rightPhone) {
+      return false;
+    }
+
+    const normalizedLeftPhone = formatPhoneNumber(leftPhone) ?? leftPhone;
+    const normalizedRightPhone = formatPhoneNumber(rightPhone) ?? rightPhone;
+
+    return (
+      leftPhone === rightPhone ||
+      leftPhone === normalizedRightPhone ||
+      normalizedLeftPhone === rightPhone ||
+      normalizedLeftPhone === normalizedRightPhone
+    );
+  }
+
   private getOnlineMaxCapacity(): number {
     return computeOnlineMaxCapacity(
       process.env.MAX_CAPACITY_TOTAL,
@@ -120,7 +136,6 @@ export class GoogleSheetsService {
 
   async getDateIndexByData(getIndexParams: GetIndexParams): Promise<number> {
     const { date, time, name, phone } = getIndexParams;
-    const formattedPhone = formatPhoneNumber(phone);
 
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
@@ -132,10 +147,40 @@ export class GoogleSheetsService {
             row[1] &&
             row[1] === time &&
             namesMatch(name, row[2]) &&
-            (row[3] === formattedPhone || row[3] === phone),
+            this.phonesMatch(row[3], phone),
         ) + 1;
 
+      console.log('[GoogleSheetsService] getDateIndexByData.lookup', {
+        date,
+        time,
+        name,
+        phone,
+        matchedIndex: index,
+      });
+
       if (index === -1 || index === undefined || index === 0) {
+        const rowsMatchingDateAndTime = data
+          .filter((row) => datesMatch(row[0], date) && row[1] === time)
+          .map((row) => ({
+            date: row[0],
+            time: row[1],
+            name: row[2],
+            phone: row[3],
+          }));
+
+        const rowsMatchingPhone = data
+          .filter((row) => this.phonesMatch(row[3], phone))
+          .map((row) => ({
+            date: row[0],
+            time: row[1],
+            name: row[2],
+            phone: row[3],
+          }));
+
+        console.log('[GoogleSheetsService] getDateIndexByData.notFoundDetails', {
+          rowsMatchingDateAndTime,
+          rowsMatchingPhone,
+        });
         return -1;
       }
 
@@ -184,8 +229,6 @@ export class GoogleSheetsService {
     phone: string,
     excludedRowIndex?: number,
   ): Promise<boolean> {
-    const formattedPhone = formatPhoneNumber(phone) ?? phone;
-
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
@@ -203,7 +246,7 @@ export class GoogleSheetsService {
           return false;
         }
 
-        return datesMatch(rowDate, date) && (rowPhone === formattedPhone || rowPhone === phone);
+        return datesMatch(rowDate, date) && this.phonesMatch(rowPhone, phone);
       });
     } catch (error) {
       this.googleSheetsRepository.failure(error);

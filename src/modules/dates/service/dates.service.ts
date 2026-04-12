@@ -291,7 +291,12 @@ export class DatesService {
       phone,
     };
 
-    return this.datesSheetPort.getDateIndexByData(searchIndexObject);
+    console.log('[DatesService] getReservationIndexByData.searchIndexObject', searchIndexObject);
+
+    const reservationIndex = await this.datesSheetPort.getDateIndexByData(searchIndexObject);
+    console.log('[DatesService] getReservationIndexByData.reservationIndex', reservationIndex);
+
+    return reservationIndex;
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {

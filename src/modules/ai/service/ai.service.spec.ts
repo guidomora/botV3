@@ -92,6 +92,7 @@ describe('AiService', () => {
 
   afterEach(() => {
     delete process.env.GPT_MODEL;
+    delete process.env.GPT_MODEL_UPDATE;
   });
 
   it('should call OpenAI with json response format and parse interaction response', async () => {
@@ -113,6 +114,35 @@ describe('AiService', () => {
     expect(createCall?.responseFormat).toBe('json_object');
     expect(createCall?.systemPrompt).toContain('[user:availability] Manana a las 21');
     expect(createCall?.userMessage).toBe('Quiero mesa manana');
+  });
+
+  it('should call OpenAI with the dedicated update model and parse update extraction response', async () => {
+    process.env.GPT_MODEL_UPDATE = 'gpt-5.4-mini';
+    openAiClientMock.createChatCompletion.mockResolvedValue(
+      JSON.stringify({
+        intent: Intention.UPDATE,
+        currentDate: 'lunes 17 de marzo 2026 17/03/2026',
+        currentTime: '21:00',
+        newTime: '19:00',
+      }),
+    );
+
+    await expect(
+      service.interactUpdateWithAi('Cambiar reserva del lunes a las 21 para las 19', history),
+    ).resolves.toEqual({
+      intent: Intention.UPDATE,
+      currentDate: 'lunes 17 de marzo 2026 17/03/2026',
+      currentTime: '21:00',
+      newTime: '19:00',
+    });
+
+    expect(openAiClientMock.createChatCompletion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'gpt-5.4-mini',
+        responseFormat: 'json_object',
+        userMessage: 'Cambiar reserva del lunes a las 21 para las 19',
+      }),
+    );
   });
 
   it('should ask OpenAI for missing data and include optional user message in prompt', async () => {
@@ -286,7 +316,6 @@ describe('AiService', () => {
     expect(openAiClientMock.createChatCompletion).toHaveBeenCalledWith({
       model: 'gpt-test-model',
       responseFormat: 'text',
-      temperature: 1,
       systemPrompt: 'prompt del sistema',
       userMessage: 'mensaje usuario',
     });

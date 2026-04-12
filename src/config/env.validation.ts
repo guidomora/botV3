@@ -12,6 +12,7 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     OPEN_AI: requiredString,
     PROJECT_ID: Joi.string().trim().optional(),
     GPT_MODEL: Joi.string().trim().default('gpt-5-mini'),
+    GPT_MODEL_UPDATE: Joi.string().trim().optional(),
 
     SPREADSHEET_ID: requiredString,
     GOOGLE_CLIENT_EMAIL: Joi.string().trim().email().required(),

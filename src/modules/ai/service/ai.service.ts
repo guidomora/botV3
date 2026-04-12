@@ -11,6 +11,7 @@ import {
   reservationCreationFailedPrompt,
   socialCourtesyClassificationPrompt,
   timeAvailabilityReplyPrompt,
+  updateExtractionPrompt,
   updateReservationPhonePrompt,
   updateReservationPrompt,
 } from '../prompts';
@@ -21,6 +22,7 @@ import {
   ChatMessage,
   AvailabilityResponse,
   UpdateReservationType,
+  UpdateAiResponse,
   ProviderError,
   ProviderName,
 } from 'src/lib';
@@ -50,7 +52,36 @@ export class AiService {
     const aiResponse = await this.openAiConfig(prompt, message, true);
     const parseResponse = parseJsonResponse<MultipleMessagesResponse>(aiResponse);
 
+    console.log('[AI][interactWithAi] input', {
+      activeIntent,
+      message,
+      context,
+    });
+    console.log('[AI][interactWithAi] rawResponse', aiResponse);
+    console.log('[AI][interactWithAi] parsedResponse', parseResponse);
+
     return parseResponse;
+  }
+
+  async interactUpdateWithAi(
+    message: string,
+    messageHistory: ChatMessage[],
+  ): Promise<UpdateAiResponse> {
+    const context = serializeContext(messageHistory);
+    const prompt = updateExtractionPrompt(context);
+    const updateModel = process.env.GPT_MODEL_UPDATE ?? 'gpt-5.4-mini';
+    const aiResponse = await this.openAiConfig(prompt, message, true, updateModel);
+    const parsedResponse = parseJsonResponse<UpdateAiResponse>(aiResponse);
+
+    console.log('[AI][interactUpdateWithAi] input', {
+      message,
+      context,
+      model: updateModel,
+    });
+    console.log('[AI][interactUpdateWithAi] rawResponse', aiResponse);
+    console.log('[AI][interactUpdateWithAi] parsedResponse', parsedResponse);
+
+    return parsedResponse;
   }
 
   async getMissingData(
@@ -184,12 +215,16 @@ export class AiService {
     return this.openAiConfig(dataPrompt);
   }
 
-  async openAiConfig(prompt: string, userMessage?: string, json?: boolean): Promise<string> {
+  async openAiConfig(
+    prompt: string,
+    userMessage?: string,
+    json?: boolean,
+    model?: string,
+  ): Promise<string> {
     try {
       return await this.openAiClient.createChatCompletion({
-        model: process.env.GPT_MODEL || 'gpt-5-mini',
+        model: model || process.env.GPT_MODEL || 'gpt-5-mini',
         responseFormat: json ? 'json_object' : 'text',
-        temperature: 1,
         systemPrompt: prompt,
         userMessage: userMessage || 'Genera el mensaje ahora.',
       });

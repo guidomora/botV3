@@ -14,3 +14,4 @@ export * from './other.prompt';
 export * from './cancel-reservation-result.prompt';
 export * from './reservation-creation-failed.prompt';
 export * from './social-courtesy-classification.prompt';
+export * from './update-extraction.prompt';

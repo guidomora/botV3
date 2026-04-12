@@ -3,6 +3,7 @@ import { PROVIDER_TEMPORARY_ERROR_MESSAGE } from 'src/constants';
 import { Intention, ProviderError, ProviderName, RoleEnum } from 'src/lib';
 import {
   aiCreateReservationResponseMock,
+  aiUpdateReservationResponseMock,
   createAiServiceMock,
   createCacheServiceMock,
   createIntentionsRouterMock,
@@ -50,6 +51,7 @@ describe('ReservationsService', () => {
     ]);
     expect(cacheServiceMock.getHistory.mock.calls).toHaveLength(0);
     expect(aiServiceMock.interactWithAi.mock.calls).toHaveLength(0);
+    expect(aiServiceMock.interactUpdateWithAi.mock.calls).toHaveLength(0);
   });
 
   it('should skip courtesy detection when message has an explicit reservation action', async () => {
@@ -72,6 +74,29 @@ describe('ReservationsService', () => {
     ]);
     expect(routerMock.route.mock.calls[0]).toEqual([
       aiCreateReservationResponseMock,
+      simplifiedPayloadMock,
+    ]);
+  });
+
+  it('should use the dedicated update extractor when the message explicitly asks to change a reservation', async () => {
+    cacheServiceMock.getHistory.mockResolvedValue([{ role: RoleEnum.USER, content: 'previo' }]);
+    aiServiceMock.interactUpdateWithAi.mockResolvedValue(aiUpdateReservationResponseMock);
+    routerMock.route.mockResolvedValue({ reply: 'Decime el telefono' });
+
+    await expect(
+      service.conversationOrchestrator(
+        'Quiero cambiar una reserva del lunes a las 21 para las 19',
+        simplifiedPayloadMock,
+      ),
+    ).resolves.toBe('Decime el telefono');
+
+    expect(aiServiceMock.interactUpdateWithAi.mock.calls[0]).toEqual([
+      'Quiero cambiar una reserva del lunes a las 21 para las 19',
+      [{ role: RoleEnum.USER, content: 'previo' }],
+    ]);
+    expect(aiServiceMock.interactWithAi.mock.calls).toHaveLength(0);
+    expect(routerMock.route.mock.calls[0]).toEqual([
+      aiUpdateReservationResponseMock,
       simplifiedPayloadMock,
     ]);
   });
