@@ -5,14 +5,16 @@ export interface CapacityWindowInput {
   time: string;
   requestedPeople: number;
   reservationDurationMinutes: number;
+  slotIntervalMinutes: number;
   onlineMaxCapacity: number;
+  availableSlotTimes: string[];
   existingReservations: DateTime;
   excludedRowIndex?: number;
 }
 
 export interface CapacityWindowResult {
   onlineMaxCapacity: number;
-  overlappingReservations: DateTime;
+  affectedSlotTimes: string[];
   occupiedPeople: number;
   availableCapacity: number;
   canReserve: boolean;

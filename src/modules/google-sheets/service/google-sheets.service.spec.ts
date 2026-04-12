@@ -19,6 +19,7 @@ describe('Given GoogleSheetsService', () => {
       MAX_CAPACITY_TOTAL: '50',
       ONLINE_BUFFER_PERCENT: '20',
       RESERVATION_DURATION_MINUTES: '120',
+      SLOT_INTERVAL_MINUTES: '60',
     };
     repository = createGoogleSheetsRepositoryMock();
     service = new GoogleSheetsService(repository);
@@ -166,18 +167,28 @@ describe('Given GoogleSheetsService', () => {
   });
 
   describe('When getAvailabilityFromReservations is called', () => {
-    it('Should calculate occupied and available capacity from overlapping windows', async () => {
-      repository.getDates.mockResolvedValue(reservationRowsMock);
+    it('Should validate capacity using only forward slots impacted by the reservation', async () => {
+      repository.getDates
+        .mockResolvedValueOnce([
+          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
+          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
+        ])
+        .mockResolvedValueOnce([
+          ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad'],
+          ['martes 03 de marzo 2026 03/03/2026', '22:00', 'ana', '1', 'Cena', '39'],
+        ]);
 
       const result = await service.getAvailabilityFromReservations(
         'martes 03 de marzo 2026 03/03/2026',
-        '20:00',
+        '21:00',
         2,
       );
 
-      expect(result.reservations).toBe(9);
-      expect(result.available).toBe(31);
-      expect(result.isAvailable).toBe(true);
+      expect(result.reservations).toBe(0);
+      expect(result.available).toBe(40);
+      expect(result.isAvailable).toBe(false);
     });
   });
 
@@ -282,17 +293,45 @@ describe('Given GoogleSheetsService', () => {
   });
 
   describe('When refreshAvailabilityForDate is called', () => {
-    it('Should recalculate each slot and update all matched rows', async () => {
+    it('Should recalculate each slot using forward propagation only', async () => {
       repository.getDates
-        .mockResolvedValueOnce(availabilityRowsMock)
-        .mockResolvedValueOnce(reservationRowsMock)
-        .mockResolvedValueOnce(availabilityRowsMock)
-        .mockResolvedValueOnce(availabilityRowsMock)
-        .mockResolvedValueOnce(availabilityRowsMock);
+        .mockResolvedValueOnce([
+          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
+          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
+        ])
+        .mockResolvedValueOnce([
+          ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad'],
+          ['martes 03 de marzo 2026 03/03/2026', '21:00', 'maria', '1', 'Cena', '4'],
+        ])
+        .mockResolvedValueOnce([
+          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
+          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
+        ])
+        .mockResolvedValueOnce([
+          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
+          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
+        ])
+        .mockResolvedValueOnce([
+          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
+          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
+          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
+        ]);
 
       await service.refreshAvailabilityForDate('martes 03 de marzo 2026 03/03/2026');
 
       expect(repository.updateAvailabilitySheet.mock.calls).toHaveLength(3);
+      expect(repository.updateAvailabilitySheet.mock.calls).toEqual([
+        ['ReservasDisponibles!C2:D2', { reservations: 0, available: 40 }],
+        ['ReservasDisponibles!C3:D3', { reservations: 4, available: 36 }],
+        ['ReservasDisponibles!C4:D4', { reservations: 4, available: 36 }],
+      ]);
     });
   });
 

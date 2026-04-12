@@ -39,6 +39,15 @@ export class GoogleSheetsService {
     return duration;
   }
 
+  private getSlotIntervalMinutes(): number {
+    const interval = Number(process.env.SLOT_INTERVAL_MINUTES ?? 60);
+    if (Number.isNaN(interval) || interval <= 0) {
+      return 60;
+    }
+
+    return interval;
+  }
+
   async appendRow(range: string, values: DateTime) {
     try {
       await this.googleSheetsRepository.appendRow(range, values);
@@ -262,17 +271,24 @@ export class GoogleSheetsService {
     requestedPeople: number = 1,
     excludedRowIndex?: number,
   ): Promise<Availability> {
+    const availabilityRows = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[1]}!A:D`);
     const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
     const reservationDurationMinutes = this.getReservationDurationMinutes();
+    const slotIntervalMinutes = this.getSlotIntervalMinutes();
     const onlineMaxCapacity = this.getOnlineMaxCapacity();
+    const availableSlotTimes = availabilityRows
+      .filter((row) => datesMatch(row[0], date) && row[1])
+      .map((row) => String(row[1]));
 
     const capacity = calculateCapacityForRequestedWindow({
       date,
       time,
       requestedPeople,
       reservationDurationMinutes,
+      slotIntervalMinutes,
       onlineMaxCapacity,
+      availableSlotTimes,
       existingReservations: allReservations,
       excludedRowIndex,
     });
@@ -369,8 +385,10 @@ export class GoogleSheetsService {
     const daySlots = slots.filter((row) => datesMatch(row[0], date) && row[1]);
 
     const reservationDurationMinutes = this.getReservationDurationMinutes();
+    const slotIntervalMinutes = this.getSlotIntervalMinutes();
     const onlineMaxCapacity = this.getOnlineMaxCapacity();
     const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
+    const availableSlotTimes = daySlots.map((row) => String(row[1]));
 
     for (const slot of daySlots) {
       const slotTime = String(slot[1]);
@@ -380,7 +398,9 @@ export class GoogleSheetsService {
         time: slotTime,
         requestedPeople: 0,
         reservationDurationMinutes,
+        slotIntervalMinutes,
         onlineMaxCapacity,
+        availableSlotTimes,
         existingReservations: allReservations,
       });
 
