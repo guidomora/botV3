@@ -150,37 +150,7 @@ export class GoogleSheetsService {
             this.phonesMatch(row[3], phone),
         ) + 1;
 
-      console.log('[GoogleSheetsService] getDateIndexByData.lookup', {
-        date,
-        time,
-        name,
-        phone,
-        matchedIndex: index,
-      });
-
       if (index === -1 || index === undefined || index === 0) {
-        const rowsMatchingDateAndTime = data
-          .filter((row) => datesMatch(row[0], date) && row[1] === time)
-          .map((row) => ({
-            date: row[0],
-            time: row[1],
-            name: row[2],
-            phone: row[3],
-          }));
-
-        const rowsMatchingPhone = data
-          .filter((row) => this.phonesMatch(row[3], phone))
-          .map((row) => ({
-            date: row[0],
-            time: row[1],
-            name: row[2],
-            phone: row[3],
-          }));
-
-        console.log('[GoogleSheetsService] getDateIndexByData.notFoundDetails', {
-          rowsMatchingDateAndTime,
-          rowsMatchingPhone,
-        });
         return -1;
       }
 

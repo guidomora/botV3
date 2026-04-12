@@ -290,13 +290,7 @@ export class DatesService {
       name: currentName.toLowerCase(),
       phone,
     };
-
-    console.log('[DatesService] getReservationIndexByData.searchIndexObject', searchIndexObject);
-
-    const reservationIndex = await this.datesSheetPort.getDateIndexByData(searchIndexObject);
-    console.log('[DatesService] getReservationIndexByData.reservationIndex', reservationIndex);
-
-    return reservationIndex;
+    return this.datesSheetPort.getDateIndexByData(searchIndexObject);
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {

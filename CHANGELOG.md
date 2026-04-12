@@ -1,16 +1,21 @@
 ### History
 
-### 10/04/26
+### 12/04/26
 
-- New GET endpoint at reservations module to send the reservations info for a specific date
-- CORS and Token added
-- Fix time bug: DONE
+- Update flow: fixed
+- Availability bug fixed: when creating a new reservation at 21hs (example), the system was considering the availability backwards 20hs and 21hs instead of 21hs and 22hs
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 10/04/26
+
+- New GET endpoint at reservations module to send the reservations info for a specific date
+- CORS and Token added
+- Fix time bug: DONE
 
 ### 09/04/26
 

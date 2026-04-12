@@ -52,14 +52,6 @@ export class AiService {
     const aiResponse = await this.openAiConfig(prompt, message, true);
     const parseResponse = parseJsonResponse<MultipleMessagesResponse>(aiResponse);
 
-    console.log('[AI][interactWithAi] input', {
-      activeIntent,
-      message,
-      context,
-    });
-    console.log('[AI][interactWithAi] rawResponse', aiResponse);
-    console.log('[AI][interactWithAi] parsedResponse', parseResponse);
-
     return parseResponse;
   }
 
@@ -72,14 +64,6 @@ export class AiService {
     const updateModel = process.env.GPT_MODEL_UPDATE ?? 'gpt-5.4-mini';
     const aiResponse = await this.openAiConfig(prompt, message, true, updateModel);
     const parsedResponse = parseJsonResponse<UpdateAiResponse>(aiResponse);
-
-    console.log('[AI][interactUpdateWithAi] input', {
-      message,
-      context,
-      model: updateModel,
-    });
-    console.log('[AI][interactUpdateWithAi] rawResponse', aiResponse);
-    console.log('[AI][interactUpdateWithAi] parsedResponse', parsedResponse);
 
     return parsedResponse;
   }

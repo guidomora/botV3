@@ -87,17 +87,13 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     this.logger.log('Executing update reservation strategy', UpdateReservationStrategy.name);
     const waId = simplifiedPayload.waId;
     const currentState = await this.cacheService.getUpdateState(waId);
-    console.log('[UpdateReservationStrategy] currentState', currentState);
-    console.log('[UpdateReservationStrategy] aiResponse', aiResponse);
 
     const mappedState = this.mapAiResponseToUpdateReservation(
       aiResponse,
       currentState,
       simplifiedPayload,
     );
-    console.log('[UpdateReservationStrategy] mappedState', mappedState);
     let nextState = await this.cacheService.updateUpdateState(waId, mappedState);
-    console.log('[UpdateReservationStrategy] nextStateAfterFirstMerge', nextState);
 
     if (
       nextState.stage === 'identify' &&
@@ -109,11 +105,9 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
       nextState = await this.cacheService.updateUpdateState(waId, {
         stage: 'reschedule',
       });
-      console.log('[UpdateReservationStrategy] nextStateAfterStageChange', nextState);
     }
 
     const { current, target } = getMissingUpdateFields(nextState);
-    console.log('[UpdateReservationStrategy] missingFields', { current, target, nextState });
     const history = await this.cacheService.getHistory(waId);
 
     if (current.length > 0) {
@@ -137,19 +131,12 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
       nextState.currentDate &&
       nextState.currentTime
     ) {
-      console.log('[UpdateReservationStrategy] lookupReservationWith', {
-        currentDate: nextState.currentDate,
-        currentTime: nextState.currentTime,
-        currentName: nextState.currentName,
-        phone: nextState.phone,
-      });
       const currentReservationIndex = await this.datesService.getReservationIndexByData(
         nextState.currentDate,
         nextState.currentTime,
         nextState.currentName,
         nextState.phone,
       );
-      console.log('[UpdateReservationStrategy] currentReservationIndex', currentReservationIndex);
 
       if (currentReservationIndex === -1) {
         const message = 'No se encontró la reserva con los datos proporcionados.';
