@@ -1,15 +1,19 @@
 ### History
 
-### 12/04/26
+### 14/04/26
 
-- Update flow: fixed
-- Availability bug fixed: when creating a new reservation at 21hs (example), the system was considering the availability backwards 20hs and 21hs instead of 21hs and 22hs
+- New endpoint to get the all the dates from the agenda
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 12/04/26
+
+- Update flow: fixed
+- Availability bug fixed: when creating a new reservation at 21hs (example), the system was considering the availability backwards 20hs and 21hs instead of 21hs and 22hs
 
 ### 10/04/26
 

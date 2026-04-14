@@ -7,6 +7,7 @@ describe('ReservationsController', () => {
   let controller: ReservationsController;
 
   const reservationsDashboardServiceMock = {
+    getAvailableDates: jest.fn(),
     getDailySummary: jest.fn(),
   };
 
@@ -57,5 +58,19 @@ describe('ReservationsController', () => {
       '2026-04-10',
       '10/04/2026',
     );
+  });
+
+  it('should return available reservation dates for dashboard calendar', async () => {
+    reservationsDashboardServiceMock.getAvailableDates.mockResolvedValue([
+      '2026-04-01',
+      '2026-04-02',
+      '2026-04-03',
+    ]);
+
+    await expect(controller.getAvailableDates()).resolves.toEqual({
+      dates: ['2026-04-01', '2026-04-02', '2026-04-03'],
+    });
+
+    expect(reservationsDashboardServiceMock.getAvailableDates).toHaveBeenCalledTimes(1);
   });
 });

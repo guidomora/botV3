@@ -12,6 +12,7 @@ import { UpdateReservationStrategy } from './service/intention/update-reservatio
 import { OtherStrategy } from './service/intention/other.strategy';
 import { ReservationsController } from './controller/reservations.controller';
 import { ReservationsDashboardService } from './service/reservations-dashboard.service';
+import { GetAvailableReservationDatesUseCase } from './application/get-available-reservation-dates.use-case';
 import { GetDailyReservationsSummaryUseCase } from './application/get-daily-reservations-summary.use-case';
 import { reservationsProviders } from './reservations.providers';
 import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
@@ -22,6 +23,7 @@ import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
   providers: [
     ReservationsService,
     ReservationsDashboardService,
+    GetAvailableReservationDatesUseCase,
     GetDailyReservationsSummaryUseCase,
     InternalApiTokenGuard,
     CreateReservationStrategy,

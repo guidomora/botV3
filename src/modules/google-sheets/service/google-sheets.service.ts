@@ -15,13 +15,25 @@ import {
 } from 'src/lib';
 import { SheetsName } from 'src/constants';
 import { Logger } from '@nestjs/common';
-import { datesMatch, namesMatch } from '../helpers/names-match.helper';
+import { datesMatch, extractCalendarDate, namesMatch } from '../helpers/names-match.helper';
 import { calculateCapacityForRequestedWindow } from '../helpers/capacity-overlap.helper';
 
 @Injectable()
 export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
+
+  private formatCalendarDateToIso(date: string): string | null {
+    const calendarDate = extractCalendarDate(date);
+
+    if (!calendarDate) {
+      return null;
+    }
+
+    const [day, month, year] = calendarDate.split('/');
+
+    return `${year}-${month}-${day}`;
+  }
 
   private phonesMatch(leftPhone?: string | null, rightPhone?: string | null): boolean {
     if (!leftPhone || !rightPhone) {
@@ -323,6 +335,20 @@ export class GoogleSheetsService {
       const requestedDayRows = allDaysRows.filter((r) => datesMatch(r[0], date) && r[3] != '0');
 
       return requestedDayRows;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
+  async getAvailableReservationDates(): Promise<string[]> {
+    const range = `${SHEETS_NAMES[1]}!A:A`;
+
+    try {
+      const data = await this.googleSheetsRepository.getDates(range);
+
+      return [...new Set(data.map((row) => this.formatCalendarDateToIso(String(row[0] ?? ''))))]
+        .filter((date): date is string => !!date)
+        .sort((leftDate, rightDate) => leftDate.localeCompare(rightDate));
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }

@@ -246,6 +246,25 @@ describe('Given GoogleSheetsService', () => {
     });
   });
 
+  describe('When getAvailableReservationDates is called', () => {
+    it('Should return unique agenda dates in ascending ISO order', async () => {
+      repository.getDates.mockResolvedValue([
+        ['Fecha'],
+        ['viernes 10 de abril 2026 10/04/2026'],
+        ['jueves 09 de abril 2026 09/04/2026'],
+        ['viernes 10 de abril 2026 10/04/2026'],
+        ['miercoles 15 de abril 2026 15/04/2026'],
+        ['fila sin fecha valida'],
+      ]);
+
+      await expect(service.getAvailableReservationDates()).resolves.toEqual([
+        '2026-04-09',
+        '2026-04-10',
+        '2026-04-15',
+      ]);
+    });
+  });
+
   describe('When getReservationsByDate is called', () => {
     it('Should map reservation rows for the requested date', async () => {
       repository.getReservationsByDate.mockResolvedValue([
