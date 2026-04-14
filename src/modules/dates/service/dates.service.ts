@@ -290,7 +290,6 @@ export class DatesService {
       name: currentName.toLowerCase(),
       phone,
     };
-
     return this.datesSheetPort.getDateIndexByData(searchIndexObject);
   }
 

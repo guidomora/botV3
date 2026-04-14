@@ -7,6 +7,7 @@ import {
   StatusEnum,
   SimplifiedTwilioWebhookPayload,
   TemporalStatusEnum,
+  UpdateAiResponse,
   UpdateReservationType,
 } from 'src/lib';
 import { AiService } from 'src/modules/ai/service/ai.service';
@@ -18,6 +19,7 @@ export const createAiServiceMock = () =>
   ({
     isSocialCourtesyMessage: jest.fn<Promise<boolean>, [string]>(),
     interactWithAi: jest.fn<Promise<MultipleMessagesResponse>, [string, unknown[]]>(),
+    interactUpdateWithAi: jest.fn<Promise<UpdateAiResponse>, [string, unknown[]]>(),
     askDateForAvailabilityAi: jest.fn<Promise<string>, [unknown[]]>(),
     dayAvailabilityAiResponse: jest.fn<Promise<string>, [unknown, unknown[]]>(),
     dayAndTimeAvailabilityAiResponse: jest.fn<Promise<string>, [unknown, unknown[], string]>(),
@@ -155,4 +157,17 @@ export const updateStateReadyToRescheduleMock: UpdateReservationType = {
   newName: null,
   newQuantity: null,
   stage: 'reschedule',
+};
+
+export const aiUpdateReservationResponseMock: UpdateAiResponse = {
+  intent: Intention.UPDATE,
+  currentDate: 'domingo 29 de marzo 2026 29/03/2026',
+  currentTime: '21:00',
+  currentName: 'guido',
+  currentPhone: null,
+  newDate: null,
+  newTime: '19:00',
+  newName: null,
+  newQuantity: null,
+  useCurrentPhone: null,
 };

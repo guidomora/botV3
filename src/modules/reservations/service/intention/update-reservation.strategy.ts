@@ -27,65 +27,53 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
   private mapAiResponseToUpdateReservation(
     aiResponse: MultipleMessagesResponse,
     updateState: UpdateReservationType,
+    simplifiedPayload: SimplifiedTwilioWebhookPayload,
   ): Partial<UpdateReservationType> {
     const updateData: Partial<UpdateReservationType> = {};
+    const resolvedCurrentPhone =
+      aiResponse.currentPhone ??
+      aiResponse.phone ??
+      (aiResponse.useCurrentPhone ? simplifiedPayload.waId : undefined);
 
-    const hasCurrentReservationData = Boolean(
-      (updateState.currentDate ?? (updateState.stage === 'identify' ? aiResponse.date : null)) &&
-        (updateState.currentTime ?? (updateState.stage === 'identify' ? aiResponse.time : null)) &&
-        (updateState.currentName ?? (updateState.stage === 'identify' ? aiResponse.name : null)) &&
-        (updateState.phone ?? aiResponse.phone),
-    );
-
-    if (aiResponse.name) {
-      if (
-        updateState.stage === 'reschedule' ||
-        (updateState.currentName &&
-          updateState.phone &&
-          updateState.currentDate &&
-          updateState.currentTime)
-      ) {
-        updateData.newName = aiResponse.name;
-      } else if (!updateState.currentName) {
-        updateData.currentName = aiResponse.name;
-      }
+    if (aiResponse.currentName) {
+      updateData.currentName = aiResponse.currentName;
+    } else if (aiResponse.name && updateState.stage === 'identify' && !updateState.currentName) {
+      updateData.currentName = aiResponse.name;
     }
 
-    if (aiResponse.phone) {
-      updateData.phone = aiResponse.phone;
+    if (resolvedCurrentPhone) {
+      updateData.phone = resolvedCurrentPhone;
     }
 
-    if (updateState.stage === 'identify') {
-      if (!updateState.currentDate && aiResponse.date) {
-        updateData.currentDate = aiResponse.date;
-      }
-      if (!updateState.currentTime && aiResponse.time) {
-        updateData.currentTime = aiResponse.time;
-      }
-
-      if (updateState.currentDate && updateState.currentTime) {
-        if (aiResponse.date) {
-          updateData.newDate = aiResponse.date;
-        }
-        if (aiResponse.time) {
-          updateData.newTime = aiResponse.time;
-        }
-      }
+    if (aiResponse.currentDate) {
+      updateData.currentDate = aiResponse.currentDate;
+    } else if (updateState.stage === 'identify' && aiResponse.date && !updateState.currentDate) {
+      updateData.currentDate = aiResponse.date;
     }
 
-    if (updateState.stage === 'reschedule') {
-      if (aiResponse.date) {
-        updateData.newDate = aiResponse.date;
-      }
-      if (aiResponse.time) {
-        updateData.newTime = aiResponse.time;
-      }
-      if (aiResponse.name) {
-        updateData.newName = aiResponse.name;
-      }
+    if (aiResponse.currentTime) {
+      updateData.currentTime = aiResponse.currentTime;
+    } else if (updateState.stage === 'identify' && aiResponse.time && !updateState.currentTime) {
+      updateData.currentTime = aiResponse.time;
     }
 
-    if (aiResponse.quantity && (updateState.stage === 'reschedule' || hasCurrentReservationData)) {
+    if (aiResponse.newDate) {
+      updateData.newDate = aiResponse.newDate;
+    }
+
+    if (aiResponse.newTime) {
+      updateData.newTime = aiResponse.newTime;
+    }
+
+    if (aiResponse.newName) {
+      updateData.newName = aiResponse.newName;
+    } else if (updateState.stage === 'reschedule' && aiResponse.name) {
+      updateData.newName = aiResponse.name;
+    }
+
+    if (aiResponse.newQuantity) {
+      updateData.newQuantity = aiResponse.newQuantity;
+    } else if (aiResponse.quantity && updateState.stage === 'reschedule') {
       updateData.newQuantity = aiResponse.quantity;
     }
 
@@ -100,7 +88,11 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     const waId = simplifiedPayload.waId;
     const currentState = await this.cacheService.getUpdateState(waId);
 
-    const mappedState = this.mapAiResponseToUpdateReservation(aiResponse, currentState);
+    const mappedState = this.mapAiResponseToUpdateReservation(
+      aiResponse,
+      currentState,
+      simplifiedPayload,
+    );
     let nextState = await this.cacheService.updateUpdateState(waId, mappedState);
 
     if (

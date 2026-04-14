@@ -41,7 +41,7 @@ describe('UpdateReservationStrategy', () => {
     aiServiceMock.askUpdateReservationPhone.mockResolvedValue('Decime tu telefono');
 
     await expect(
-      strategy.execute({ intent: Intention.UPDATE, name: 'guido' }, simplifiedPayloadMock),
+      strategy.execute({ intent: Intention.UPDATE, currentName: 'guido' }, simplifiedPayloadMock),
     ).resolves.toEqual({
       reply: 'Decime tu telefono',
     });
@@ -56,6 +56,75 @@ describe('UpdateReservationStrategy', () => {
         phone: null,
       },
     ]);
+  });
+
+  it('should use the current WhatsApp number when AI marks useCurrentPhone', async () => {
+    cacheServiceMock.getUpdateState.mockResolvedValue({
+      ...updateStateIdentifyMock,
+      currentName: 'guido',
+      currentDate: 'domingo 29 de marzo 2026 29/03/2026',
+      currentTime: '21:00',
+    });
+    cacheServiceMock.updateUpdateState.mockResolvedValue({
+      ...updateStateReadyToRescheduleMock,
+      phone: simplifiedPayloadMock.waId,
+    });
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    datesServiceMock.getReservationIndexByData.mockResolvedValue(12);
+    aiServiceMock.askUpdateReservationData.mockResolvedValue('Que queres cambiar?');
+
+    await expect(
+      strategy.execute({ intent: Intention.UPDATE, useCurrentPhone: true }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: 'Que queres cambiar?',
+    });
+
+    expect(cacheServiceMock.updateUpdateState.mock.calls[0]?.[1]).toMatchObject({
+      phone: simplifiedPayloadMock.waId,
+    });
+  });
+
+  it('should keep current reservation data separate from the new requested target', async () => {
+    cacheServiceMock.getUpdateState.mockResolvedValue(updateStateIdentifyMock);
+    cacheServiceMock.updateUpdateState
+      .mockResolvedValueOnce({
+        ...updateStateIdentifyMock,
+        currentName: 'guido',
+        currentDate: 'lunes 13 de abril 2026 13/04/2026',
+        currentTime: '21:00',
+        newTime: '19:00',
+      })
+      .mockResolvedValueOnce({
+        ...updateStateReadyToRescheduleMock,
+        currentName: 'guido',
+        currentDate: 'lunes 13 de abril 2026 13/04/2026',
+        currentTime: '21:00',
+        newTime: '19:00',
+      });
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    aiServiceMock.askUpdateReservationPhone.mockResolvedValue('Decime tu telefono');
+
+    await expect(
+      strategy.execute(
+        {
+          intent: Intention.UPDATE,
+          currentName: 'guido',
+          currentDate: 'lunes 13 de abril 2026 13/04/2026',
+          currentTime: '21:00',
+          newTime: '19:00',
+        },
+        simplifiedPayloadMock,
+      ),
+    ).resolves.toEqual({
+      reply: 'Decime tu telefono',
+    });
+
+    expect(cacheServiceMock.updateUpdateState.mock.calls[0]?.[1]).toEqual({
+      currentName: 'guido',
+      currentDate: 'lunes 13 de abril 2026 13/04/2026',
+      currentTime: '21:00',
+      newTime: '19:00',
+    });
   });
 
   it('should reply when current reservation does not exist', async () => {
@@ -118,8 +187,8 @@ describe('UpdateReservationStrategy', () => {
       strategy.execute(
         {
           intent: Intention.UPDATE,
-          name: 'guido',
-          phone: '5491112345678',
+          currentName: 'guido',
+          currentPhone: '5491112345678',
         },
         simplifiedPayloadMock,
       ),

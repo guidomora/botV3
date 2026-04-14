@@ -29,18 +29,25 @@ function quantitiesMatch(left: string | null, right: string | null): boolean {
   return normalizedLeft === normalizedRight;
 }
 
+function hasConcreteCalendarDate(value: string | null): boolean {
+  return /\b\d{2}\/\d{2}\/\d{4}\b/.test(value ?? '');
+}
+
 export function getMissingUpdateFields(state: UpdateReservationType): UpdateMissingFields {
   const current: UpdateField[] = [];
 
   if (!state.currentName) current.push('currentName');
   if (!state.phone) current.push('phone');
-  if (!state.currentDate) current.push('currentDate');
+  if (!state.currentDate || !hasConcreteCalendarDate(state.currentDate))
+    current.push('currentDate');
   if (!state.currentTime) current.push('currentTime');
 
   const target: UpdateField[] = [];
   const hasCurrentReservationData = current.length === 0;
   const hasTarget =
-    (state.newDate && normalizeText(state.newDate) !== normalizeText(state.currentDate)) ||
+    (state.newDate &&
+      hasConcreteCalendarDate(state.newDate) &&
+      normalizeText(state.newDate) !== normalizeText(state.currentDate)) ||
     (state.newTime && normalizeText(state.newTime) !== normalizeText(state.currentTime)) ||
     (state.newName && normalizeText(state.newName) !== normalizeText(state.currentName)) ||
     (state.newQuantity && !quantitiesMatch(state.newQuantity, state.currentQuantity));

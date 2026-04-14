@@ -1,7 +1,7 @@
 export type CreateChatCompletionParams = {
   model: string;
   responseFormat: 'json_object' | 'text';
-  temperature: number;
+  temperature?: number;
   systemPrompt: string;
   userMessage: string;
 };

@@ -23,6 +23,22 @@ export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
 
+  private phonesMatch(leftPhone?: string | null, rightPhone?: string | null): boolean {
+    if (!leftPhone || !rightPhone) {
+      return false;
+    }
+
+    const normalizedLeftPhone = formatPhoneNumber(leftPhone) ?? leftPhone;
+    const normalizedRightPhone = formatPhoneNumber(rightPhone) ?? rightPhone;
+
+    return (
+      leftPhone === rightPhone ||
+      leftPhone === normalizedRightPhone ||
+      normalizedLeftPhone === rightPhone ||
+      normalizedLeftPhone === normalizedRightPhone
+    );
+  }
+
   private getOnlineMaxCapacity(): number {
     return computeOnlineMaxCapacity(
       process.env.MAX_CAPACITY_TOTAL,
@@ -37,6 +53,15 @@ export class GoogleSheetsService {
     }
 
     return duration;
+  }
+
+  private getSlotIntervalMinutes(): number {
+    const interval = Number(process.env.SLOT_INTERVAL_MINUTES ?? 60);
+    if (Number.isNaN(interval) || interval <= 0) {
+      return 60;
+    }
+
+    return interval;
   }
 
   async appendRow(range: string, values: DateTime) {
@@ -111,7 +136,6 @@ export class GoogleSheetsService {
 
   async getDateIndexByData(getIndexParams: GetIndexParams): Promise<number> {
     const { date, time, name, phone } = getIndexParams;
-    const formattedPhone = formatPhoneNumber(phone);
 
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
@@ -123,7 +147,7 @@ export class GoogleSheetsService {
             row[1] &&
             row[1] === time &&
             namesMatch(name, row[2]) &&
-            (row[3] === formattedPhone || row[3] === phone),
+            this.phonesMatch(row[3], phone),
         ) + 1;
 
       if (index === -1 || index === undefined || index === 0) {
@@ -175,8 +199,6 @@ export class GoogleSheetsService {
     phone: string,
     excludedRowIndex?: number,
   ): Promise<boolean> {
-    const formattedPhone = formatPhoneNumber(phone) ?? phone;
-
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
@@ -194,7 +216,7 @@ export class GoogleSheetsService {
           return false;
         }
 
-        return datesMatch(rowDate, date) && (rowPhone === formattedPhone || rowPhone === phone);
+        return datesMatch(rowDate, date) && this.phonesMatch(rowPhone, phone);
       });
     } catch (error) {
       this.googleSheetsRepository.failure(error);
@@ -262,17 +284,24 @@ export class GoogleSheetsService {
     requestedPeople: number = 1,
     excludedRowIndex?: number,
   ): Promise<Availability> {
+    const availabilityRows = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[1]}!A:D`);
     const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
     const reservationDurationMinutes = this.getReservationDurationMinutes();
+    const slotIntervalMinutes = this.getSlotIntervalMinutes();
     const onlineMaxCapacity = this.getOnlineMaxCapacity();
+    const availableSlotTimes = availabilityRows
+      .filter((row) => datesMatch(row[0], date) && row[1])
+      .map((row) => String(row[1]));
 
     const capacity = calculateCapacityForRequestedWindow({
       date,
       time,
       requestedPeople,
       reservationDurationMinutes,
+      slotIntervalMinutes,
       onlineMaxCapacity,
+      availableSlotTimes,
       existingReservations: allReservations,
       excludedRowIndex,
     });
@@ -369,8 +398,10 @@ export class GoogleSheetsService {
     const daySlots = slots.filter((row) => datesMatch(row[0], date) && row[1]);
 
     const reservationDurationMinutes = this.getReservationDurationMinutes();
+    const slotIntervalMinutes = this.getSlotIntervalMinutes();
     const onlineMaxCapacity = this.getOnlineMaxCapacity();
     const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
+    const availableSlotTimes = daySlots.map((row) => String(row[1]));
 
     for (const slot of daySlots) {
       const slotTime = String(slot[1]);
@@ -380,7 +411,9 @@ export class GoogleSheetsService {
         time: slotTime,
         requestedPeople: 0,
         reservationDurationMinutes,
+        slotIntervalMinutes,
         onlineMaxCapacity,
+        availableSlotTimes,
         existingReservations: allReservations,
       });
 

@@ -23,18 +23,18 @@ export class OpenAiConfig implements AiClientPort {
   async createChatCompletion(params: {
     model: string;
     responseFormat: 'json_object' | 'text';
-    temperature: number;
+    temperature?: number;
     systemPrompt: string;
     userMessage: string;
   }): Promise<string> {
     const response = await this.openai.chat.completions.create({
       model: params.model,
       response_format: { type: params.responseFormat },
-      temperature: params.temperature,
       messages: [
         { role: 'system', content: params.systemPrompt },
         { role: 'user', content: params.userMessage },
       ],
+      ...(params.temperature != null ? { temperature: params.temperature } : {}),
     });
 
     return response.choices[0].message.content!.trim();

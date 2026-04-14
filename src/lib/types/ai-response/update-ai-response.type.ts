@@ -1,13 +1,7 @@
 import { Intention } from './intention.enum';
 
-export interface MultipleMessagesResponse {
-  intent: Intention;
-  date?: string | null;
-  time?: string | null;
-  name?: string | null;
-  phone?: string | null;
-  quantity?: string | null;
-  useCurrentPhone?: boolean | null;
+export interface UpdateAiResponse {
+  intent: Intention.UPDATE;
   currentDate?: string | null;
   currentTime?: string | null;
   currentName?: string | null;
@@ -16,4 +10,5 @@ export interface MultipleMessagesResponse {
   newTime?: string | null;
   newName?: string | null;
   newQuantity?: string | null;
+  useCurrentPhone?: boolean | null;
 }
