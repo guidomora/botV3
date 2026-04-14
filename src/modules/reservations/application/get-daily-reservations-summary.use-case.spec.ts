@@ -9,6 +9,7 @@ describe('GetDailyReservationsSummaryUseCase', () => {
 
   beforeEach(() => {
     reservationsDashboardReadPort = {
+      getAvailableDates: jest.fn(),
       getReservationsByDate: jest.fn<Promise<DashboardReservation[]>, [string]>(),
       getAvailabilitySlotsByDate: jest.fn<Promise<DashboardReservationSlot[]>, [string]>(),
     };
