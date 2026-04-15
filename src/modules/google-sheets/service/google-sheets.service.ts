@@ -446,16 +446,21 @@ export class GoogleSheetsService {
 
   async refreshAvailabilityForDate(date: string): Promise<void> {
     const slots = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[1]}!A:D`);
-    const daySlots = slots.filter((row) => datesMatch(row[0], date) && row[1]);
+    const daySlots = slots
+      .map((row, index) => ({
+        row,
+        rowIndex: index + 1,
+      }))
+      .filter(({ row }) => datesMatch(row[0], date) && row[1]);
 
     const reservationDurationMinutes = this.getReservationDurationMinutes();
     const slotIntervalMinutes = this.getSlotIntervalMinutes();
     const onlineMaxCapacity = this.getOnlineMaxCapacity();
     const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
-    const availableSlotTimes = daySlots.map((row) => String(row[1]));
+    const availableSlotTimes = daySlots.map(({ row }) => String(row[1]));
 
-    for (const slot of daySlots) {
-      const slotTime = String(slot[1]);
+    for (const { row, rowIndex } of daySlots) {
+      const slotTime = String(row[1]);
 
       const capacity = calculateCapacityForRequestedWindow({
         date,
@@ -468,17 +473,11 @@ export class GoogleSheetsService {
         existingReservations: allReservations,
       });
 
-      const slotRowIndex = await this.getDate(date, slotTime, `${SHEETS_NAMES[1]}!A:C`);
-
-      if (slotRowIndex === -1) {
-        continue;
-      }
-
       const occupiedPeople = capacity.occupiedPeople;
       const availableCapacity = capacity.availableCapacity;
 
       await this.googleSheetsRepository.updateAvailabilitySheet(
-        `${SHEETS_NAMES[1]}!C${slotRowIndex}:D${slotRowIndex}`,
+        `${SHEETS_NAMES[1]}!C${rowIndex}:D${rowIndex}`,
         {
           reservations: occupiedPeople,
           available: availableCapacity,

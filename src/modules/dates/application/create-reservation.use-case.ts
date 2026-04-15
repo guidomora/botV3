@@ -18,7 +18,10 @@ export class CreateReservationRowUseCase {
   private readonly logger = new Logger(CreateReservationRowUseCase.name);
   constructor(@Inject(DATES_SHEET_PORT) private readonly datesSheetPort: DatesSheetPort) {}
 
-  async createReservation(createReservation: CreateReservationType): Promise<ServiceResponse> {
+  async createReservation(
+    createReservation: CreateReservationType,
+    options?: { skipAvailabilityRefresh?: boolean },
+  ): Promise<ServiceResponse> {
     const { date, time, name, phone, quantity, excludedRowIndex } = createReservation;
 
     try {
@@ -118,7 +121,10 @@ export class CreateReservationRowUseCase {
       };
 
       await this.datesSheetPort.updateAvailabilityFromReservations(updateParams);
-      await this.datesSheetPort.refreshAvailabilityForDate(date!);
+
+      if (!options?.skipAvailabilityRefresh) {
+        await this.datesSheetPort.refreshAvailabilityForDate(date!);
+      }
 
       return {
         error: false,

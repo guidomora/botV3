@@ -183,4 +183,21 @@ describe('CreateReservationRowUseCase', () => {
       customerData: createReservationRequestMock,
     });
   });
+
+  it('should skip availability refresh when requested by an orchestrator', async () => {
+    googleSheetsServiceMock.getDate.mockResolvedValue(27);
+    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 8,
+      available: 34,
+    });
+    googleSheetsServiceMock.getRowValues.mockResolvedValue(minimalSlotRowValuesMock);
+
+    await useCase.createReservation(createReservationRequestMock, {
+      skipAvailabilityRefresh: true,
+    });
+
+    expect(googleSheetsServiceMock.refreshAvailabilityForDate).not.toHaveBeenCalled();
+  });
 });

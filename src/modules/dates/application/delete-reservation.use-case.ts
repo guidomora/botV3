@@ -17,7 +17,10 @@ export class DeleteReservationUseCase {
     private readonly generateDatetime: GenerateDatetime,
   ) {}
 
-  async deleteReservation(deleteReservation: DeleteReservation): Promise<string> {
+  async deleteReservation(
+    deleteReservation: DeleteReservation,
+    options?: { skipAvailabilityRefresh?: boolean },
+  ): Promise<string> {
     const { phone, date, time, name } = deleteReservation;
 
     const getIndexParams: GetIndexParams = {
@@ -54,7 +57,11 @@ export class DeleteReservationUseCase {
       };
 
       await this.datesSheetPort.updateAvailabilityFromReservations(updateParams);
-      await this.datesSheetPort.refreshAvailabilityForDate(date!);
+
+      if (!options?.skipAvailabilityRefresh) {
+        await this.datesSheetPort.refreshAvailabilityForDate(date!);
+      }
+
       this.logger.log(
         `Reserva eliminada correctamente para el dia ${date} a las ${time} para ${phone}`,
         DeleteReservationUseCase.name,
