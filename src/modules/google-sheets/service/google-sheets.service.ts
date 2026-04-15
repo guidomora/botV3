@@ -188,6 +188,17 @@ export class GoogleSheetsService {
     }
   }
 
+  async getAgendaDateLabel(date: string): Promise<string | null> {
+    try {
+      const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[1]}!A:A`);
+      const matchingRow = data.find((row) => datesMatch(row[0], date) && row[0] !== 'Fecha');
+
+      return matchingRow?.[0] ? String(matchingRow[0]) : null;
+    } catch (error) {
+      this.googleSheetsRepository.failure(error);
+    }
+  }
+
   async getDatetimeDates(date: string, time: string): Promise<DateTime> {
     try {
       const data = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
@@ -381,6 +392,20 @@ export class GoogleSheetsService {
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }
+  }
+
+  async getReservationByDateTimeAndPhone(
+    date: string,
+    time: string,
+    phone: string,
+  ): Promise<DashboardReservation | null> {
+    const reservations = await this.getReservationsByDate(date);
+
+    return (
+      reservations.find(
+        (reservation) => reservation.time === time && this.phonesMatch(reservation.phone, phone),
+      ) ?? null
+    );
   }
 
   async getAvailabilitySlotsByDate(date: string): Promise<DashboardReservationSlot[]> {

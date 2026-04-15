@@ -8,3 +8,4 @@ export * from './dashboard-available-dates.type';
 export * from './dashboard-reservation.type';
 export * from './dashboard-reservation-slot.type';
 export * from './daily-reservations-summary.type';
+export * from './dashboard-update-reservation.type';

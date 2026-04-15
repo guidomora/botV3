@@ -1,5 +1,6 @@
 import {
   AddMissingFieldOutput,
+  DashboardReservation,
   DeleteReservation,
   Intention,
   MultipleMessagesResponse,
@@ -66,6 +67,11 @@ export const createDatesServiceMock = () =>
     createReservationWithMultipleMessages: jest.fn<Promise<AddMissingFieldOutput>, [unknown]>(),
     deleteReservation: jest.fn<Promise<string>, [DeleteReservation]>(),
     getReservationIndexByData: jest.fn<Promise<number>, [string, string, string, string]>(),
+    findReservationByLookup: jest.fn<
+      Promise<DashboardReservation | null>,
+      [string, string, string]
+    >(),
+    resolveAgendaDateLabel: jest.fn<Promise<string | null>, [string]>(),
     updateReservation: jest.fn<
       Promise<{ status: StatusEnum; message: string; error: boolean }>,
       [UpdateReservationType]

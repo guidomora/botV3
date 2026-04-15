@@ -9,6 +9,7 @@ describe('ReservationsController', () => {
   const reservationsDashboardServiceMock = {
     getAvailableDates: jest.fn(),
     getDailySummary: jest.fn(),
+    updateReservation: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -72,5 +73,41 @@ describe('ReservationsController', () => {
     });
 
     expect(reservationsDashboardServiceMock.getAvailableDates).toHaveBeenCalledTimes(1);
+  });
+
+  it('should delegate reservation update request to dashboard service', async () => {
+    reservationsDashboardServiceMock.updateReservation.mockResolvedValue({
+      message: 'Reserva actualizada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '21:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 4,
+      },
+    });
+
+    const body = {
+      phone: '1122334455',
+      currentDate: '2026-04-10',
+      currentTime: '20:00',
+      time: '21:00',
+      quantity: 4,
+    };
+
+    await expect(controller.updateReservation(body)).resolves.toEqual({
+      message: 'Reserva actualizada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '21:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 4,
+      },
+    });
+
+    expect(reservationsDashboardServiceMock.updateReservation).toHaveBeenCalledWith(body);
   });
 });
