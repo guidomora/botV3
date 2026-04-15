@@ -411,28 +411,11 @@ describe('Given GoogleSheetsService', () => {
         .mockResolvedValueOnce([
           ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad'],
           ['martes 03 de marzo 2026 03/03/2026', '21:00', 'maria', '1', 'Cena', '4'],
-        ])
-        .mockResolvedValueOnce([
-          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
-          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
-          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
-          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
-        ])
-        .mockResolvedValueOnce([
-          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
-          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
-          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
-          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
-        ])
-        .mockResolvedValueOnce([
-          ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
-          ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
-          ['martes 03 de marzo 2026 03/03/2026', '21:00', '0', '40'],
-          ['martes 03 de marzo 2026 03/03/2026', '22:00', '0', '40'],
         ]);
 
       await service.refreshAvailabilityForDate('martes 03 de marzo 2026 03/03/2026');
 
+      expect(repository.getDates.mock.calls).toHaveLength(2);
       expect(repository.updateAvailabilitySheet.mock.calls).toHaveLength(3);
       expect(repository.updateAvailabilitySheet.mock.calls).toEqual([
         ['ReservasDisponibles!C2:D2', { reservations: 0, available: 40 }],
