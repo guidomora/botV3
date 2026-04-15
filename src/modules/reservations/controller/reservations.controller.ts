@@ -1,20 +1,25 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
 import {
+  ApiBody,
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiForbiddenResponse,
   ApiHeader,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import { INTERNAL_API_TOKEN_HEADER } from 'src/constants';
-import { ValidationErrorResponseDto } from 'src/lib';
+import { HttpErrorResponseDto, ValidationErrorResponseDto } from 'src/lib';
 import { ReservationsDashboardService } from '../service/reservations-dashboard.service';
 import { AvailableReservationDatesResponseDto } from '../dto/available-reservation-dates-response.dto';
 import { DailyReservationsSummaryResponseDto } from '../dto/daily-reservations-summary-response.dto';
 import { GetDailyReservationsSummaryQueryDto } from '../dto/get-daily-reservations-summary-query.dto';
 import { InternalApiTokenGuard } from '../guards/internal-api-token.guard';
+import { UpdateDashboardReservationDto } from '../dto/update-dashboard-reservation.dto';
+import { UpdateDashboardReservationResponseDto } from '../dto/update-dashboard-reservation-response.dto';
 
 const formatIsoDateToSheetDate = (date: string): string => {
   const [year, month, day] = date.split('-');
@@ -76,5 +81,39 @@ export class ReservationsController {
       query.date,
       formatIsoDateToSheetDate(query.date),
     );
+  }
+
+  @Patch()
+  @ApiOperation({
+    summary: 'Editar una reserva existente desde el dashboard',
+    description:
+      'Permite editar fecha, hora, nombre y cantidad enviando en el body el telefono, la fecha actual y la hora actual para localizar la reserva.',
+  })
+  @ApiBody({
+    type: UpdateDashboardReservationDto,
+  })
+  @ApiOkResponse({
+    description: 'Reserva actualizada correctamente.',
+    type: UpdateDashboardReservationResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'El body es invalido o no incluye campos editables.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'No se encontro la reserva original con los datos enviados.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'La actualizacion no pudo realizarse por una regla de negocio.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  updateReservation(
+    @Body() body: UpdateDashboardReservationDto,
+  ): Promise<UpdateDashboardReservationResponseDto> {
+    return this.reservationsDashboardService.updateReservation(body);
   }
 }

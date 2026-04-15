@@ -9,6 +9,14 @@ describe('parseDate', () => {
     expect(parsed.getDate()).toBe(1);
   });
 
+  it('should parse ISO dates', () => {
+    const parsed = parseDate('2030-03-01');
+
+    expect(parsed.getFullYear()).toBe(2030);
+    expect(parsed.getMonth()).toBe(2);
+    expect(parsed.getDate()).toBe(1);
+  });
+
   it('should throw when date does not contain a valid dd/mm/yyyy suffix', () => {
     expect(() => parseDate('domingo 01 de marzo 2030')).toThrow('Formato de fecha');
   });

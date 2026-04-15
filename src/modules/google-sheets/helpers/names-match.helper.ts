@@ -29,8 +29,18 @@ export const normalizeDateLabel = (date?: string): string => {
 export const extractCalendarDate = (date?: string): string | null => {
   if (!date) return null;
 
-  const match = date.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
-  return match?.[0] ?? null;
+  const ddMmYyyyMatch = date.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
+  if (ddMmYyyyMatch?.[0]) {
+    return ddMmYyyyMatch[0];
+  }
+
+  const isoMatch = date.match(/\b\d{4}-\d{2}-\d{2}\b/);
+  if (!isoMatch?.[0]) {
+    return null;
+  }
+
+  const [year, month, day] = isoMatch[0].split('-');
+  return `${day}/${month}/${year}`;
 };
 
 export const datesMatch = (leftDate?: string, rightDate?: string): boolean => {

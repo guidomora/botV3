@@ -129,6 +129,26 @@ describe('Given GoogleSheetsService', () => {
     });
   });
 
+  describe('When getAgendaDateLabel is called', () => {
+    it('Should resolve agenda labels from ISO dates', async () => {
+      repository.getDates.mockResolvedValue([
+        ['Fecha'],
+        ['viernes 10 de abril 2026 10/04/2026'],
+        ['sabado 11 de abril 2026 11/04/2026'],
+      ]);
+
+      await expect(service.getAgendaDateLabel('2026-04-11')).resolves.toBe(
+        'sabado 11 de abril 2026 11/04/2026',
+      );
+    });
+
+    it('Should return null when requested date is not in agenda', async () => {
+      repository.getDates.mockResolvedValue([['Fecha'], ['viernes 10 de abril 2026 10/04/2026']]);
+
+      await expect(service.getAgendaDateLabel('2026-04-12')).resolves.toBeNull();
+    });
+  });
+
   describe('When getDatetimeDates is called', () => {
     it('Should filter rows by matching date and time', async () => {
       repository.getDates.mockResolvedValue(reservationRowsMock);
@@ -307,6 +327,33 @@ describe('Given GoogleSheetsService', () => {
           quantity: 4,
         },
       ]);
+    });
+  });
+
+  describe('When getReservationByDateTimeAndPhone is called', () => {
+    it('Should locate a reservation using normalized phone and exact time', async () => {
+      repository.getReservationsByDate.mockResolvedValue([
+        ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad'],
+        [
+          'martes 03 de marzo 2026 03/03/2026',
+          '19:00',
+          'juan perez',
+          '54-9-1122334455',
+          'Cena',
+          '2',
+        ],
+      ]);
+
+      await expect(
+        service.getReservationByDateTimeAndPhone('2026-03-03', '19:00', '11 2233-4455'),
+      ).resolves.toEqual({
+        date: 'martes 03 de marzo 2026 03/03/2026',
+        time: '19:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 2,
+      });
     });
   });
 

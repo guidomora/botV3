@@ -2,11 +2,13 @@ import { GetAvailableReservationDatesUseCase } from '../application/get-availabl
 import { DailyReservationsSummary } from 'src/lib';
 import { GetDailyReservationsSummaryUseCase } from '../application/get-daily-reservations-summary.use-case';
 import { ReservationsDashboardService } from './reservations-dashboard.service';
+import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
 
 describe('ReservationsDashboardService', () => {
   let service: ReservationsDashboardService;
   let getAvailableReservationDatesUseCase: jest.Mocked<GetAvailableReservationDatesUseCase>;
   let getDailyReservationsSummaryUseCase: jest.Mocked<GetDailyReservationsSummaryUseCase>;
+  let updateDashboardReservationUseCase: jest.Mocked<UpdateDashboardReservationUseCase>;
 
   beforeEach(() => {
     getAvailableReservationDatesUseCase = {
@@ -17,9 +19,14 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn<Promise<DailyReservationsSummary>, [string, string]>(),
     } as unknown as jest.Mocked<GetDailyReservationsSummaryUseCase>;
 
+    updateDashboardReservationUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<UpdateDashboardReservationUseCase>;
+
     service = new ReservationsDashboardService(
       getAvailableReservationDatesUseCase,
       getDailyReservationsSummaryUseCase,
+      updateDashboardReservationUseCase,
     );
   });
 
@@ -62,5 +69,40 @@ describe('ReservationsDashboardService', () => {
       '2026-04-10',
       '10/04/2026',
     ]);
+  });
+
+  it('should delegate reservation update to the use case', async () => {
+    const payload = {
+      phone: '1122334455',
+      currentDate: '2026-04-10',
+      currentTime: '20:00',
+      quantity: 5,
+    };
+
+    updateDashboardReservationUseCase.execute.mockResolvedValue({
+      message: 'Reserva actualizada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '20:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 5,
+      },
+    });
+
+    await expect(service.updateReservation(payload)).resolves.toEqual({
+      message: 'Reserva actualizada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '20:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 5,
+      },
+    });
+
+    expect(updateDashboardReservationUseCase.execute.mock.calls[0]).toEqual([payload]);
   });
 });

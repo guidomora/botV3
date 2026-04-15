@@ -3,6 +3,7 @@ import {
   AddMissingFieldInput,
   AddMissingFieldOutput,
   AvailabilityResponse,
+  DashboardReservation,
   DeleteReservation,
   formatPhoneNumber,
   GetIndexParams,
@@ -291,6 +292,24 @@ export class DatesService {
       phone,
     };
     return this.datesSheetPort.getDateIndexByData(searchIndexObject);
+  }
+
+  async resolveAgendaDateLabel(date: string): Promise<string | null> {
+    return this.datesSheetPort.getAgendaDateLabel(date);
+  }
+
+  async findReservationByLookup(
+    currentDate: string,
+    currentTime: string,
+    phone: string,
+  ): Promise<DashboardReservation | null> {
+    const formattedPhone = formatPhoneNumber(phone) ?? phone;
+
+    return this.datesSheetPort.getReservationByDateTimeAndPhone(
+      currentDate,
+      currentTime,
+      formattedPhone,
+    );
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {

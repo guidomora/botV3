@@ -1,5 +1,12 @@
 export const parseDate = (date: string): Date => {
   const trimmed = date.trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [yyyy, mm, dd] = trimmed.split('-');
+
+    return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  }
+
   const datePart = trimmed.slice(-10);
   const [dd, mm, yyyy] = datePart.split('/');
 
