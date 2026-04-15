@@ -296,7 +296,9 @@ export class UpdateReservationUseCase {
       excludedRowIndex: resolvedReservation.currentReservationIndex,
     };
 
-    const creationResult = await this.createReservationRowUseCase.createReservation(createObject);
+    const creationResult = await this.createReservationRowUseCase.createReservation(createObject, {
+      skipAvailabilityRefresh: true,
+    });
 
     if (creationResult.error) {
       return {
@@ -313,7 +315,9 @@ export class UpdateReservationUseCase {
       phone: context.formattedPhone,
     };
 
-    await this.deleteReservationUseCase.deleteReservation(deleteObject);
+    await this.deleteReservationUseCase.deleteReservation(deleteObject, {
+      skipAvailabilityRefresh: true,
+    });
 
     await this.datesSheetPort.refreshAvailabilityForDate(context.currentDate);
     if (context.targetDate !== context.currentDate) {

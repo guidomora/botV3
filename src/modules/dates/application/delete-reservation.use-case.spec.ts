@@ -80,6 +80,21 @@ describe('DeleteReservationUseCase', () => {
     );
   });
 
+  it('should skip availability refresh when requested by an orchestrator', async () => {
+    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
+    googleSheetsServiceMock.getDatetimeDates.mockResolvedValue(singleReservationSheetRowMock);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      reservations: 0,
+      available: 42,
+    });
+
+    await useCase.deleteReservation(deleteReservationRequestMock, {
+      skipAvailabilityRefresh: true,
+    });
+
+    expect(googleSheetsServiceMock.refreshAvailabilityForDate).not.toHaveBeenCalled();
+  });
+
   it('should delete old rows in both sheets when cutoff date exists', async () => {
     generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue(

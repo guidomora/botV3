@@ -264,20 +264,30 @@ describe('UpdateReservationUseCase', () => {
       error: false,
     });
 
-    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith({
-      date: nextReservationDateLabelMock,
-      time: '21:00',
-      name: 'guido nuevo',
-      phone: '54-9-1154916243',
-      quantity: 5,
-      excludedRowIndex: 27,
-    });
-    expect(deleteReservationUseCaseMock.deleteReservation).toHaveBeenCalledWith({
-      date: futureReservationDateLabelMock,
-      time: '20:00',
-      name: 'guido',
-      phone: '54-9-1154916243',
-    });
+    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith(
+      {
+        date: nextReservationDateLabelMock,
+        time: '21:00',
+        name: 'guido nuevo',
+        phone: '54-9-1154916243',
+        quantity: 5,
+        excludedRowIndex: 27,
+      },
+      {
+        skipAvailabilityRefresh: true,
+      },
+    );
+    expect(deleteReservationUseCaseMock.deleteReservation).toHaveBeenCalledWith(
+      {
+        date: futureReservationDateLabelMock,
+        time: '20:00',
+        name: 'guido',
+        phone: '54-9-1154916243',
+      },
+      {
+        skipAvailabilityRefresh: true,
+      },
+    );
     expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenNthCalledWith(
       1,
       futureReservationDateLabelMock,
@@ -321,14 +331,19 @@ describe('UpdateReservationUseCase', () => {
     expect(googleSheetsServiceMock.refreshAvailabilityForDate).toHaveBeenCalledWith(
       futureReservationDateLabelMock,
     );
-    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith({
-      date: futureReservationDateLabelMock,
-      time: '21:00',
-      name: 'guido noche',
-      phone: '54-9-1154916243',
-      quantity: 4,
-      excludedRowIndex: 27,
-    });
+    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith(
+      {
+        date: futureReservationDateLabelMock,
+        time: '21:00',
+        name: 'guido noche',
+        phone: '54-9-1154916243',
+        quantity: 4,
+        excludedRowIndex: 27,
+      },
+      {
+        skipAvailabilityRefresh: true,
+      },
+    );
   });
 
   it('should use normalized name to find the current reservation', async () => {
