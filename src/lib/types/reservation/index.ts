@@ -10,3 +10,4 @@ export * from './dashboard-reservation-slot.type';
 export * from './daily-reservations-summary.type';
 export * from './daily-reservation-slots.type';
 export * from './dashboard-update-reservation.type';
+export * from './dashboard-delete-reservation.type';

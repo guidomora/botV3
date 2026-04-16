@@ -10,6 +10,7 @@ describe('ReservationsController', () => {
     getAvailableDates: jest.fn(),
     getDailySlots: jest.fn(),
     getDailySummary: jest.fn(),
+    deleteReservation: jest.fn(),
     updateReservation: jest.fn(),
   };
 
@@ -135,5 +136,39 @@ describe('ReservationsController', () => {
     });
 
     expect(reservationsDashboardServiceMock.updateReservation).toHaveBeenCalledWith(body);
+  });
+
+  it('should delegate reservation delete request to dashboard service', async () => {
+    reservationsDashboardServiceMock.deleteReservation.mockResolvedValue({
+      message: 'Reserva eliminada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '20:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 4,
+      },
+    });
+
+    const body = {
+      phone: '1122334455',
+      currentDate: '2026-04-10',
+      currentTime: '20:00',
+    };
+
+    await expect(controller.deleteReservation(body)).resolves.toEqual({
+      message: 'Reserva eliminada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '20:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 4,
+      },
+    });
+
+    expect(reservationsDashboardServiceMock.deleteReservation).toHaveBeenCalledWith(body);
   });
 });

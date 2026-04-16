@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBody,
   ApiBadRequestResponse,
@@ -21,6 +21,8 @@ import { GetDailyReservationsSummaryQueryDto } from '../dto/get-daily-reservatio
 import { InternalApiTokenGuard } from '../guards/internal-api-token.guard';
 import { UpdateDashboardReservationDto } from '../dto/update-dashboard-reservation.dto';
 import { UpdateDashboardReservationResponseDto } from '../dto/update-dashboard-reservation-response.dto';
+import { DeleteDashboardReservationDto } from '../dto/delete-dashboard-reservation.dto';
+import { DeleteDashboardReservationResponseDto } from '../dto/delete-dashboard-reservation-response.dto';
 
 const formatIsoDateToSheetDate = (date: string): string => {
   const [year, month, day] = date.split('-');
@@ -141,5 +143,39 @@ export class ReservationsController {
     @Body() body: UpdateDashboardReservationDto,
   ): Promise<UpdateDashboardReservationResponseDto> {
     return this.reservationsDashboardService.updateReservation(body);
+  }
+
+  @Delete()
+  @ApiOperation({
+    summary: 'Eliminar una reserva existente desde el dashboard',
+    description:
+      'Permite eliminar una reserva enviando en el body el telefono, la fecha actual y la hora actual para localizarla.',
+  })
+  @ApiBody({
+    type: DeleteDashboardReservationDto,
+  })
+  @ApiOkResponse({
+    description: 'Reserva eliminada correctamente.',
+    type: DeleteDashboardReservationResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'El body es invalido.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'No se encontro la reserva original con los datos enviados.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'La eliminacion no pudo realizarse por una regla de negocio.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  deleteReservation(
+    @Body() body: DeleteDashboardReservationDto,
+  ): Promise<DeleteDashboardReservationResponseDto> {
+    return this.reservationsDashboardService.deleteReservation(body);
   }
 }

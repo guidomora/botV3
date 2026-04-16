@@ -15,6 +15,7 @@ import { ReservationsDashboardService } from './service/reservations-dashboard.s
 import { GetAvailableReservationDatesUseCase } from './application/get-available-reservation-dates.use-case';
 import { GetDailyReservationSlotsUseCase } from './application/get-daily-reservation-slots.use-case';
 import { GetDailyReservationsSummaryUseCase } from './application/get-daily-reservations-summary.use-case';
+import { DeleteDashboardReservationUseCase } from './application/delete-dashboard-reservation.use-case';
 import { UpdateDashboardReservationUseCase } from './application/update-dashboard-reservation.use-case';
 import { reservationsProviders } from './reservations.providers';
 import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
@@ -28,6 +29,7 @@ import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
     GetAvailableReservationDatesUseCase,
     GetDailyReservationSlotsUseCase,
     GetDailyReservationsSummaryUseCase,
+    DeleteDashboardReservationUseCase,
     UpdateDashboardReservationUseCase,
     InternalApiTokenGuard,
     CreateReservationStrategy,
