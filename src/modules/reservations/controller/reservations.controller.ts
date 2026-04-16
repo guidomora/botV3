@@ -15,6 +15,7 @@ import { INTERNAL_API_TOKEN_HEADER } from 'src/constants';
 import { HttpErrorResponseDto, ValidationErrorResponseDto } from 'src/lib';
 import { ReservationsDashboardService } from '../service/reservations-dashboard.service';
 import { AvailableReservationDatesResponseDto } from '../dto/available-reservation-dates-response.dto';
+import { DailyReservationSlotsResponseDto } from '../dto/daily-reservation-slots-response.dto';
 import { DailyReservationsSummaryResponseDto } from '../dto/daily-reservations-summary-response.dto';
 import { GetDailyReservationsSummaryQueryDto } from '../dto/get-daily-reservations-summary-query.dto';
 import { InternalApiTokenGuard } from '../guards/internal-api-token.guard';
@@ -55,6 +56,31 @@ export class ReservationsController {
     const dates = await this.reservationsDashboardService.getAvailableDates();
 
     return { dates };
+  }
+
+  @Get('slots')
+  @ApiOperation({
+    summary: 'Obtener horarios disponibles de una fecha',
+    description: 'Devuelve las franjas horarias disponibles en agenda para la fecha solicitada.',
+  })
+  @ApiOkResponse({
+    description: 'Listado de horarios disponibles para la fecha solicitada.',
+    type: DailyReservationSlotsResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'La query date no tiene un formato valido.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  getDailySlots(
+    @Query() query: GetDailyReservationsSummaryQueryDto,
+  ): Promise<DailyReservationSlotsResponseDto> {
+    return this.reservationsDashboardService.getDailySlots(
+      query.date,
+      formatIsoDateToSheetDate(query.date),
+    );
   }
 
   @Get()

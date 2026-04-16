@@ -1,14 +1,20 @@
 ### History
 
-### 14/04/26
+### 15/10/25
 
-- New endpoint to get the all the dates from the agenda
+- Edit reservation endpoint
+- Reduced the number of requests to Google Sheets
+- Get time slots by date
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 14/04/26
+
+- New endpoint to get the all the dates from the agenda
 
 ### 12/04/26
 
