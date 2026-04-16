@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   DashboardAvailableDates,
+  DashboardDeleteReservationResult,
+  DashboardDeleteReservationType,
   DailyReservationSlots,
   DashboardUpdateReservationResult,
   DashboardUpdateReservationType,
@@ -9,6 +11,7 @@ import {
 import { GetAvailableReservationDatesUseCase } from '../application/get-available-reservation-dates.use-case';
 import { GetDailyReservationSlotsUseCase } from '../application/get-daily-reservation-slots.use-case';
 import { GetDailyReservationsSummaryUseCase } from '../application/get-daily-reservations-summary.use-case';
+import { DeleteDashboardReservationUseCase } from '../application/delete-dashboard-reservation.use-case';
 import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
 
 @Injectable()
@@ -17,6 +20,7 @@ export class ReservationsDashboardService {
     private readonly getAvailableReservationDatesUseCase: GetAvailableReservationDatesUseCase,
     private readonly getDailyReservationSlotsUseCase: GetDailyReservationSlotsUseCase,
     private readonly getDailyReservationsSummaryUseCase: GetDailyReservationsSummaryUseCase,
+    private readonly deleteDashboardReservationUseCase: DeleteDashboardReservationUseCase,
     private readonly updateDashboardReservationUseCase: UpdateDashboardReservationUseCase,
   ) {}
 
@@ -36,5 +40,11 @@ export class ReservationsDashboardService {
     payload: DashboardUpdateReservationType,
   ): Promise<DashboardUpdateReservationResult> {
     return this.updateDashboardReservationUseCase.execute(payload);
+  }
+
+  async deleteReservation(
+    payload: DashboardDeleteReservationType,
+  ): Promise<DashboardDeleteReservationResult> {
+    return this.deleteDashboardReservationUseCase.execute(payload);
   }
 }

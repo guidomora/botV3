@@ -1,16 +1,20 @@
 ### History
 
-### 15/10/25
+### 16/04/26
 
-- Edit reservation endpoint
-- Reduced the number of requests to Google Sheets
-- Get time slots by date
+- New endpoint to DELETE a reservation from the dashboard
 - TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 15/04/26
+
+- Edit reservation endpoint
+- Reduced the number of requests to Google Sheets
+- Get time slots by date
 
 ### 14/04/26
 

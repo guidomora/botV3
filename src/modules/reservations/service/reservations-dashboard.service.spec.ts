@@ -2,6 +2,7 @@ import { GetAvailableReservationDatesUseCase } from '../application/get-availabl
 import { DailyReservationSlots, DailyReservationsSummary } from 'src/lib';
 import { GetDailyReservationSlotsUseCase } from '../application/get-daily-reservation-slots.use-case';
 import { GetDailyReservationsSummaryUseCase } from '../application/get-daily-reservations-summary.use-case';
+import { DeleteDashboardReservationUseCase } from '../application/delete-dashboard-reservation.use-case';
 import { ReservationsDashboardService } from './reservations-dashboard.service';
 import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
 
@@ -10,6 +11,7 @@ describe('ReservationsDashboardService', () => {
   let getAvailableReservationDatesUseCase: jest.Mocked<GetAvailableReservationDatesUseCase>;
   let getDailyReservationSlotsUseCase: jest.Mocked<GetDailyReservationSlotsUseCase>;
   let getDailyReservationsSummaryUseCase: jest.Mocked<GetDailyReservationsSummaryUseCase>;
+  let deleteDashboardReservationUseCase: jest.Mocked<DeleteDashboardReservationUseCase>;
   let updateDashboardReservationUseCase: jest.Mocked<UpdateDashboardReservationUseCase>;
 
   beforeEach(() => {
@@ -29,10 +31,15 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn(),
     } as unknown as jest.Mocked<UpdateDashboardReservationUseCase>;
 
+    deleteDashboardReservationUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<DeleteDashboardReservationUseCase>;
+
     service = new ReservationsDashboardService(
       getAvailableReservationDatesUseCase,
       getDailyReservationSlotsUseCase,
       getDailyReservationsSummaryUseCase,
+      deleteDashboardReservationUseCase,
       updateDashboardReservationUseCase,
     );
   });
@@ -135,5 +142,39 @@ describe('ReservationsDashboardService', () => {
     });
 
     expect(updateDashboardReservationUseCase.execute.mock.calls[0]).toEqual([payload]);
+  });
+
+  it('should delegate reservation delete to the use case', async () => {
+    const payload = {
+      phone: '1122334455',
+      currentDate: '2026-04-10',
+      currentTime: '20:00',
+    };
+
+    deleteDashboardReservationUseCase.execute.mockResolvedValue({
+      message: 'Reserva eliminada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '20:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 4,
+      },
+    });
+
+    await expect(service.deleteReservation(payload)).resolves.toEqual({
+      message: 'Reserva eliminada correctamente.',
+      reservation: {
+        date: 'viernes 10 de abril 2026 10/04/2026',
+        time: '20:00',
+        name: 'juan perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 4,
+      },
+    });
+
+    expect(deleteDashboardReservationUseCase.execute.mock.calls[0]).toEqual([payload]);
   });
 });
