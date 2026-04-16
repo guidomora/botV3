@@ -8,6 +8,7 @@ describe('ReservationsController', () => {
 
   const reservationsDashboardServiceMock = {
     getAvailableDates: jest.fn(),
+    getDailySlots: jest.fn(),
     getDailySummary: jest.fn(),
     updateReservation: jest.fn(),
   };
@@ -73,6 +74,31 @@ describe('ReservationsController', () => {
     });
 
     expect(reservationsDashboardServiceMock.getAvailableDates).toHaveBeenCalledTimes(1);
+  });
+
+  it('should delegate daily slots request using formatted sheet date', async () => {
+    reservationsDashboardServiceMock.getDailySlots.mockResolvedValue({
+      date: '2026-04-10',
+      sheetDate: '10/04/2026',
+      slots: [
+        { time: '20:00', reserved: 10, available: 32 },
+        { time: '21:00', reserved: 18, available: 24 },
+      ],
+    });
+
+    await expect(controller.getDailySlots({ date: '2026-04-10' })).resolves.toEqual({
+      date: '2026-04-10',
+      sheetDate: '10/04/2026',
+      slots: [
+        { time: '20:00', reserved: 10, available: 32 },
+        { time: '21:00', reserved: 18, available: 24 },
+      ],
+    });
+
+    expect(reservationsDashboardServiceMock.getDailySlots).toHaveBeenCalledWith(
+      '2026-04-10',
+      '10/04/2026',
+    );
   });
 
   it('should delegate reservation update request to dashboard service', async () => {

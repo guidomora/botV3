@@ -1,5 +1,6 @@
 import { GetAvailableReservationDatesUseCase } from '../application/get-available-reservation-dates.use-case';
-import { DailyReservationsSummary } from 'src/lib';
+import { DailyReservationSlots, DailyReservationsSummary } from 'src/lib';
+import { GetDailyReservationSlotsUseCase } from '../application/get-daily-reservation-slots.use-case';
 import { GetDailyReservationsSummaryUseCase } from '../application/get-daily-reservations-summary.use-case';
 import { ReservationsDashboardService } from './reservations-dashboard.service';
 import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
@@ -7,6 +8,7 @@ import { UpdateDashboardReservationUseCase } from '../application/update-dashboa
 describe('ReservationsDashboardService', () => {
   let service: ReservationsDashboardService;
   let getAvailableReservationDatesUseCase: jest.Mocked<GetAvailableReservationDatesUseCase>;
+  let getDailyReservationSlotsUseCase: jest.Mocked<GetDailyReservationSlotsUseCase>;
   let getDailyReservationsSummaryUseCase: jest.Mocked<GetDailyReservationsSummaryUseCase>;
   let updateDashboardReservationUseCase: jest.Mocked<UpdateDashboardReservationUseCase>;
 
@@ -19,12 +21,17 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn<Promise<DailyReservationsSummary>, [string, string]>(),
     } as unknown as jest.Mocked<GetDailyReservationsSummaryUseCase>;
 
+    getDailyReservationSlotsUseCase = {
+      execute: jest.fn<Promise<DailyReservationSlots>, [string, string]>(),
+    } as unknown as jest.Mocked<GetDailyReservationSlotsUseCase>;
+
     updateDashboardReservationUseCase = {
       execute: jest.fn(),
     } as unknown as jest.Mocked<UpdateDashboardReservationUseCase>;
 
     service = new ReservationsDashboardService(
       getAvailableReservationDatesUseCase,
+      getDailyReservationSlotsUseCase,
       getDailyReservationsSummaryUseCase,
       updateDashboardReservationUseCase,
     );
@@ -66,6 +73,30 @@ describe('ReservationsDashboardService', () => {
       slots: [],
     });
     expect(getDailyReservationsSummaryUseCase.execute.mock.calls[0]).toEqual([
+      '2026-04-10',
+      '10/04/2026',
+    ]);
+  });
+
+  it('should delegate slots retrieval to the use case', async () => {
+    getDailyReservationSlotsUseCase.execute.mockResolvedValue({
+      date: '2026-04-10',
+      sheetDate: '10/04/2026',
+      slots: [
+        { time: '20:00', reserved: 10, available: 32 },
+        { time: '21:00', reserved: 18, available: 24 },
+      ],
+    });
+
+    await expect(service.getDailySlots('2026-04-10', '10/04/2026')).resolves.toEqual({
+      date: '2026-04-10',
+      sheetDate: '10/04/2026',
+      slots: [
+        { time: '20:00', reserved: 10, available: 32 },
+        { time: '21:00', reserved: 18, available: 24 },
+      ],
+    });
+    expect(getDailyReservationSlotsUseCase.execute.mock.calls[0]).toEqual([
       '2026-04-10',
       '10/04/2026',
     ]);
