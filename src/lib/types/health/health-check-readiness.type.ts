@@ -1,4 +1,4 @@
-export type HealthCheckDependencyStatus = 'ok' | 'error';
+export type HealthCheckDependencyStatus = 'ok' | 'error' | 'disabled';
 
 export type HealthCheckStatus = 'ok' | 'error';
 
@@ -16,5 +16,6 @@ export interface HealthCheckReadyResponse {
   checks: {
     config: HealthCheckDependencyStatus;
     googleSheets: HealthCheckDependencyStatus;
+    redis: HealthCheckDependencyStatus;
   };
 }

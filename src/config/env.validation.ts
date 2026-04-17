@@ -3,11 +3,13 @@ import { EnvConfig } from 'src/lib';
 
 const requiredString = Joi.string().trim().required();
 const positiveInteger = Joi.number().integer().positive();
+const booleanFlag = Joi.boolean().truthy('true').truthy('1').falsy('false').falsy('0');
 
 export function validateEnvironmentVariables(config: Record<string, unknown>): EnvConfig {
   const schema = Joi.object<EnvConfig>({
     NODE_ENV: Joi.string().valid('development', 'test', 'production').default('development'),
     PORT: positiveInteger.default(3000),
+    RESERVATION_JOBS_ENABLED: booleanFlag.default(false),
 
     OPEN_AI: requiredString,
     PROJECT_ID: Joi.string().trim().optional(),
@@ -22,6 +24,18 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     TWILIO_AUTH_TOKEN: requiredString,
     TWILIO_WHATSAPP_FROM: Joi.string().trim().optional(),
     TWILIO_MESSAGING_SERVICE_SID: Joi.string().trim().optional(),
+
+    REDIS_URL: Joi.string().trim().optional(),
+    REDIS_HOST: Joi.string().trim().optional(),
+    REDIS_PORT: positiveInteger.optional(),
+    REDIS_USERNAME: Joi.string().trim().optional(),
+    REDIS_PASSWORD: Joi.string().trim().optional(),
+    REDIS_DB: Joi.number().integer().min(0).default(0),
+    REDIS_TLS_ENABLED: booleanFlag.default(false),
+    REDISHOST: Joi.string().trim().optional(),
+    REDISPORT: positiveInteger.optional(),
+    REDISUSER: Joi.string().trim().optional(),
+    REDISPASSWORD: Joi.string().trim().optional(),
 
     MAX_CAPACITY_TOTAL: positiveInteger.required(),
     ONLINE_BUFFER_PERCENT: Joi.number().min(0).max(99).default(0),
@@ -65,5 +79,15 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     throw new Error(`Configuración de entorno inválida: ${validationErrors}`);
   }
 
-  return validationResult.value;
+  const validatedConfig = validationResult.value;
+  const redisHost = validatedConfig.REDIS_HOST ?? validatedConfig.REDISHOST;
+  const hasRedisConnectionConfig = Boolean(validatedConfig.REDIS_URL || redisHost);
+
+  if (validatedConfig.RESERVATION_JOBS_ENABLED && !hasRedisConnectionConfig) {
+    throw new Error(
+      'Configuración de entorno inválida: si RESERVATION_JOBS_ENABLED=true, debés definir REDIS_URL o REDIS_HOST/REDISHOST.',
+    );
+  }
+
+  return validatedConfig;
 }

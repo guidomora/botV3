@@ -3,17 +3,25 @@ import { ApiProperty } from '@nestjs/swagger';
 class HealthCheckReadyChecksDto {
   @ApiProperty({
     description: 'Estado de la configuracion minima requerida para operar.',
-    enum: ['ok', 'error'],
+    enum: ['ok', 'error', 'disabled'],
     example: 'ok',
   })
-  config!: 'ok' | 'error';
+  config!: 'ok' | 'error' | 'disabled';
 
   @ApiProperty({
     description: 'Estado de acceso a Google Sheets.',
-    enum: ['ok', 'error'],
+    enum: ['ok', 'error', 'disabled'],
     example: 'ok',
   })
-  googleSheets!: 'ok' | 'error';
+  googleSheets!: 'ok' | 'error' | 'disabled';
+
+  @ApiProperty({
+    description:
+      'Estado de Redis para reservation-jobs. Puede quedar disabled mientras la infraestructura no este habilitada.',
+    enum: ['ok', 'error', 'disabled'],
+    example: 'disabled',
+  })
+  redis!: 'ok' | 'error' | 'disabled';
 }
 
 export class HealthCheckReadyResponseDto {

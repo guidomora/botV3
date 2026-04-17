@@ -86,6 +86,7 @@ Objetivo principal:
 - **Modulo Health**
   - Endpoints protegidos `GET /bot/health/live` y `GET /bot/health/ready`.
   - Validacion de secret y rate limit para monitoreo operativo.
+  - Readiness extendido para validar Google Sheets y la conectividad base de Redis cuando `reservation-jobs` este habilitado.
 
 ---
 
@@ -278,6 +279,16 @@ Despues de cada alta, baja o modificacion:
 - `GOOGLE_CLIENT_EMAIL`
 - `GOOGLE_PRIVATE_KEY`
 
+### Redis / reservation-jobs
+
+- `RESERVATION_JOBS_ENABLED` habilita la infraestructura base de Redis para futuros jobs de reservas.
+- `REDIS_URL` recomendado cuando exista una URL unica de conexion.
+- `REDIS_HOST` y `REDIS_PORT` como alternativa explicita.
+- `REDIS_USERNAME` y `REDIS_PASSWORD` opcionales segun proveedor.
+- `REDIS_DB`
+- `REDIS_TLS_ENABLED`
+- Compatibilidad Railway: tambien se aceptan `REDISHOST`, `REDISPORT`, `REDISUSER` y `REDISPASSWORD`.
+
 ### Reglas de negocio y agenda
 
 - `MAX_CAPACITY_TOTAL`
@@ -312,6 +323,14 @@ Despues de cada alta, baja o modificacion:
 - `PORT`
 - `NODE_ENV`
 - `API_BASE_URL` base publica del despliegue incluyendo `/bot` para workflows operativos
+
+### Redis local
+
+- Para desarrollo local se incluye `docker-compose.redis.yml`.
+- Levantar Redis con `docker compose -f docker-compose.redis.yml up -d`.
+- Ejemplo minimo local:
+  - `RESERVATION_JOBS_ENABLED=true`
+  - `REDIS_URL=redis://localhost:6379`
 
 ---
 
