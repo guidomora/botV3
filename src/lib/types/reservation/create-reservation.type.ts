@@ -7,6 +7,11 @@ export interface CreateReservationType {
   excludedRowIndex?: number;
 }
 
+export interface CreateReservationOptions {
+  skipAvailabilityRefresh?: boolean;
+  allowLargeReservations?: boolean;
+}
+
 export interface CreateReservationTemporalType {
   date?: string;
   time?: string;

@@ -149,6 +149,30 @@ describe('CreateReservationRowUseCase', () => {
     expect(result.message).toContain('11-5555-0000');
   });
 
+  it('should allow large reservations when the caller explicitly enables them', async () => {
+    googleSheetsServiceMock.getDate.mockResolvedValue(27);
+    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 8,
+      available: 34,
+    });
+    googleSheetsServiceMock.getRowValues.mockResolvedValue(minimalSlotRowValuesMock);
+
+    const result = await useCase.createReservation(
+      {
+        ...createReservationRequestMock,
+        quantity: 13,
+      },
+      {
+        allowLargeReservations: true,
+      },
+    );
+
+    expect(result.status).toBe(StatusEnum.SUCCESS);
+    expect(googleSheetsServiceMock.createReservation).toHaveBeenCalled();
+  });
+
   it('should return no availability when capacity is exhausted', async () => {
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);

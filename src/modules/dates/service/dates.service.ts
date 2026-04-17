@@ -3,6 +3,8 @@ import {
   AddMissingFieldInput,
   AddMissingFieldOutput,
   AvailabilityResponse,
+  CreateReservationOptions,
+  CreateReservationType,
   DashboardReservation,
   DeleteReservation,
   formatPhoneNumber,
@@ -310,6 +312,13 @@ export class DatesService {
       currentTime,
       formattedPhone,
     );
+  }
+
+  async createReservation(
+    createReservation: CreateReservationType,
+    options?: CreateReservationOptions,
+  ): Promise<ServiceResponse> {
+    return this.createReservationRowUseCase.createReservation(createReservation, options);
   }
 
   async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {

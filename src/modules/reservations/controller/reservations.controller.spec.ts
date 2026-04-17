@@ -7,6 +7,7 @@ describe('ReservationsController', () => {
   let controller: ReservationsController;
 
   const reservationsDashboardServiceMock = {
+    createReservation: jest.fn(),
     getAvailableDates: jest.fn(),
     getDailySlots: jest.fn(),
     getDailySummary: jest.fn(),
@@ -136,6 +137,42 @@ describe('ReservationsController', () => {
     });
 
     expect(reservationsDashboardServiceMock.updateReservation).toHaveBeenCalledWith(body);
+  });
+
+  it('should delegate reservation create request to dashboard service', async () => {
+    reservationsDashboardServiceMock.createReservation.mockResolvedValue({
+      message: 'Reserva creada correctamente.',
+      reservation: {
+        date: 'jueves 16 de abril 2026 16/04/2026',
+        time: '21:00',
+        name: 'Juan Perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 14,
+      },
+    });
+
+    const body = {
+      date: '2026-04-16',
+      time: '21:00',
+      name: 'Juan Perez',
+      phone: '1122334455',
+      quantity: 14,
+    };
+
+    await expect(controller.createReservation(body)).resolves.toEqual({
+      message: 'Reserva creada correctamente.',
+      reservation: {
+        date: 'jueves 16 de abril 2026 16/04/2026',
+        time: '21:00',
+        name: 'Juan Perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 14,
+      },
+    });
+
+    expect(reservationsDashboardServiceMock.createReservation).toHaveBeenCalledWith(body);
   });
 
   it('should delegate reservation delete request to dashboard service', async () => {

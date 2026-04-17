@@ -5,9 +5,11 @@ import { GetDailyReservationsSummaryUseCase } from '../application/get-daily-res
 import { DeleteDashboardReservationUseCase } from '../application/delete-dashboard-reservation.use-case';
 import { ReservationsDashboardService } from './reservations-dashboard.service';
 import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
+import { CreateDashboardReservationUseCase } from '../application/create-dashboard-reservation.use-case';
 
 describe('ReservationsDashboardService', () => {
   let service: ReservationsDashboardService;
+  let createDashboardReservationUseCase: jest.Mocked<CreateDashboardReservationUseCase>;
   let getAvailableReservationDatesUseCase: jest.Mocked<GetAvailableReservationDatesUseCase>;
   let getDailyReservationSlotsUseCase: jest.Mocked<GetDailyReservationSlotsUseCase>;
   let getDailyReservationsSummaryUseCase: jest.Mocked<GetDailyReservationsSummaryUseCase>;
@@ -27,6 +29,10 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn<Promise<DailyReservationSlots>, [string, string]>(),
     } as unknown as jest.Mocked<GetDailyReservationSlotsUseCase>;
 
+    createDashboardReservationUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<CreateDashboardReservationUseCase>;
+
     updateDashboardReservationUseCase = {
       execute: jest.fn(),
     } as unknown as jest.Mocked<UpdateDashboardReservationUseCase>;
@@ -36,6 +42,7 @@ describe('ReservationsDashboardService', () => {
     } as unknown as jest.Mocked<DeleteDashboardReservationUseCase>;
 
     service = new ReservationsDashboardService(
+      createDashboardReservationUseCase,
       getAvailableReservationDatesUseCase,
       getDailyReservationSlotsUseCase,
       getDailyReservationsSummaryUseCase,
@@ -57,6 +64,42 @@ describe('ReservationsDashboardService', () => {
       '2026-04-03',
     ]);
     expect(getAvailableReservationDatesUseCase.execute.mock.calls).toHaveLength(1);
+  });
+
+  it('should delegate reservation create to the use case', async () => {
+    const payload = {
+      date: '2026-04-16',
+      time: '21:00',
+      name: 'Juan Perez',
+      phone: '1122334455',
+      quantity: 14,
+    };
+
+    createDashboardReservationUseCase.execute.mockResolvedValue({
+      message: 'Reserva creada correctamente.',
+      reservation: {
+        date: 'jueves 16 de abril 2026 16/04/2026',
+        time: '21:00',
+        name: 'Juan Perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 14,
+      },
+    });
+
+    await expect(service.createReservation(payload)).resolves.toEqual({
+      message: 'Reserva creada correctamente.',
+      reservation: {
+        date: 'jueves 16 de abril 2026 16/04/2026',
+        time: '21:00',
+        name: 'Juan Perez',
+        phone: '54-9-1122334455',
+        service: 'Cena',
+        quantity: 14,
+      },
+    });
+
+    expect(createDashboardReservationUseCase.execute.mock.calls[0]).toEqual([payload]);
   });
 
   it('should delegate summary retrieval to the use case', async () => {
