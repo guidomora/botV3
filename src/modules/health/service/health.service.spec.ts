@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
+import { ReservationJobsRedisService } from 'src/modules/reservation-jobs/service/reservation-jobs-redis.service';
 import { HealthService } from './health.service';
 import { createConfigServiceMock } from '../test/mocks/dependency-mocks';
 
@@ -12,6 +13,7 @@ jest.mock('googleapis', () => ({
 describe('HealthService', () => {
   let healthService: HealthService;
   let configService: ReturnType<typeof createConfigServiceMock>;
+  let reservationJobsRedisService: jest.Mocked<ReservationJobsRedisService>;
   const googleSheetsMock = google.sheets as unknown as jest.Mock;
 
   beforeEach(() => {
@@ -22,7 +24,15 @@ describe('HealthService', () => {
       GOOGLE_PRIVATE_KEY: 'private-key',
       HEALTH_CHECK_SECRET: 'super-secret',
     });
-    healthService = new HealthService(configService as unknown as ConfigService);
+    reservationJobsRedisService = {
+      isEnabled: jest.fn().mockReturnValue(false),
+      getConfig: jest.fn(),
+      getReadinessStatus: jest.fn().mockResolvedValue('disabled'),
+    } as unknown as jest.Mocked<ReservationJobsRedisService>;
+    healthService = new HealthService(
+      configService as unknown as ConfigService,
+      reservationJobsRedisService,
+    );
   });
 
   it('debería devolver liveness ok', () => {
@@ -49,6 +59,7 @@ describe('HealthService', () => {
     expect(result.checks).toEqual({
       config: 'ok',
       googleSheets: 'ok',
+      redis: 'disabled',
     });
     expect(getMock).toHaveBeenCalledWith({
       spreadsheetId: 'spreadsheet-id',
@@ -62,7 +73,11 @@ describe('HealthService', () => {
       SPREADSHEET_ID: 'spreadsheet-id',
       GOOGLE_CLIENT_EMAIL: 'bot@example.com',
     });
-    healthService = new HealthService(configService as unknown as ConfigService);
+    reservationJobsRedisService.isEnabled.mockReturnValue(true);
+    healthService = new HealthService(
+      configService as unknown as ConfigService,
+      reservationJobsRedisService,
+    );
 
     const result = await healthService.getReadyStatus();
 
@@ -72,6 +87,7 @@ describe('HealthService', () => {
     expect(result.checks).toEqual({
       config: 'error',
       googleSheets: 'error',
+      redis: 'error',
     });
   });
 
@@ -91,6 +107,29 @@ describe('HealthService', () => {
     expect(result.checks).toEqual({
       config: 'ok',
       googleSheets: 'error',
+      redis: 'disabled',
+    });
+  });
+
+  it('debería devolver readiness error cuando Redis está habilitado y falla', async () => {
+    const getMock = jest.fn().mockResolvedValue({ data: { spreadsheetId: 'spreadsheet-id' } });
+    googleSheetsMock.mockReturnValue({
+      spreadsheets: {
+        get: getMock,
+      },
+    });
+    reservationJobsRedisService.isEnabled.mockReturnValue(true);
+    reservationJobsRedisService.getReadinessStatus.mockResolvedValue('error');
+
+    const result = await healthService.getReadyStatus();
+
+    expect(result.status).toBe('error');
+    expect(result.type).toBe('readiness');
+    expect(typeof result.timestamp).toBe('string');
+    expect(result.checks).toEqual({
+      config: 'ok',
+      googleSheets: 'ok',
+      redis: 'error',
     });
   });
 });

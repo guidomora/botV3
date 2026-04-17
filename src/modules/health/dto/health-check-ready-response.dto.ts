@@ -14,6 +14,14 @@ class HealthCheckReadyChecksDto {
     example: 'ok',
   })
   googleSheets!: 'ok' | 'error';
+
+  @ApiProperty({
+    description:
+      'Estado de Redis para reservation-jobs. Puede quedar disabled mientras la infraestructura no este habilitada.',
+    enum: ['ok', 'error', 'disabled'],
+    example: 'disabled',
+  })
+  redis!: 'ok' | 'error' | 'disabled';
 }
 
 export class HealthCheckReadyResponseDto {

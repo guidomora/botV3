@@ -3,10 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { JWT } from 'google-auth-library';
 import { google } from 'googleapis';
 import { HealthCheckLiveResponse, HealthCheckReadyResponse } from 'src/lib';
+import { ReservationJobsRedisService } from 'src/modules/reservation-jobs/service/reservation-jobs-redis.service';
 
 @Injectable()
 export class HealthService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly reservationJobsRedisService: ReservationJobsRedisService,
+  ) {}
 
   getLiveStatus(): HealthCheckLiveResponse {
     return {
@@ -22,6 +26,8 @@ export class HealthService {
     const configOk = this.hasRequiredConfiguration();
 
     if (!configOk) {
+      const redisStatus = this.reservationJobsRedisService.isEnabled() ? 'error' : 'disabled';
+
       return {
         status: 'error',
         type: 'readiness',
@@ -29,19 +35,23 @@ export class HealthService {
         checks: {
           config: 'error',
           googleSheets: 'error',
+          redis: redisStatus,
         },
       };
     }
 
     const googleSheetsOk = await this.canAccessGoogleSheets();
+    const redisStatus = await this.reservationJobsRedisService.getReadinessStatus();
+    const overallStatus = googleSheetsOk && redisStatus !== 'error' ? 'ok' : 'error';
 
     return {
-      status: googleSheetsOk ? 'ok' : 'error',
+      status: overallStatus,
       type: 'readiness',
       timestamp,
       checks: {
         config: 'ok',
         googleSheets: googleSheetsOk ? 'ok' : 'error',
+        redis: redisStatus,
       },
     };
   }

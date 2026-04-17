@@ -1,6 +1,7 @@
 export type EnvConfig = {
   NODE_ENV: 'development' | 'test' | 'production';
   PORT: number;
+  RESERVATION_JOBS_ENABLED: boolean;
   OPEN_AI: string;
   PROJECT_ID?: string;
   GPT_MODEL: string;
@@ -12,6 +13,17 @@ export type EnvConfig = {
   TWILIO_AUTH_TOKEN: string;
   TWILIO_WHATSAPP_FROM?: string;
   TWILIO_MESSAGING_SERVICE_SID?: string;
+  REDIS_URL?: string;
+  REDIS_HOST?: string;
+  REDIS_PORT?: number;
+  REDIS_USERNAME?: string;
+  REDIS_PASSWORD?: string;
+  REDIS_DB: number;
+  REDIS_TLS_ENABLED: boolean;
+  REDISHOST?: string;
+  REDISPORT?: number;
+  REDISUSER?: string;
+  REDISPASSWORD?: string;
   MAX_CAPACITY_TOTAL: number;
   ONLINE_BUFFER_PERCENT: number;
   RESERVATION_DURATION_MINUTES: number;
