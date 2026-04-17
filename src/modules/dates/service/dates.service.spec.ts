@@ -531,4 +531,33 @@ describe('DatesService', () => {
     await expect(service.updateReservation(updateReservation)).resolves.toEqual(response);
     expect(updateReservationUseCaseMock.updateReservation).toHaveBeenCalledWith(updateReservation);
   });
+
+  it('should delegate createReservation to its use case', async () => {
+    const createReservation = {
+      date: existingReservationDateLabelMock,
+      time: '22:00',
+      name: 'guido',
+      phone: '54-9-1154916243',
+      quantity: 13,
+    };
+    const response = {
+      status: StatusEnum.SUCCESS,
+      message: 'ok',
+      error: false,
+    };
+
+    createReservationRowUseCaseMock.createReservation.mockResolvedValue(response);
+
+    await expect(
+      service.createReservation(createReservation, {
+        allowLargeReservations: true,
+      }),
+    ).resolves.toEqual(response);
+    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith(
+      createReservation,
+      {
+        allowLargeReservations: true,
+      },
+    );
+  });
 });

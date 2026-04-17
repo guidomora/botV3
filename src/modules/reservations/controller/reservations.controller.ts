@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBody,
   ApiBadRequestResponse,
@@ -23,6 +23,8 @@ import { UpdateDashboardReservationDto } from '../dto/update-dashboard-reservati
 import { UpdateDashboardReservationResponseDto } from '../dto/update-dashboard-reservation-response.dto';
 import { DeleteDashboardReservationDto } from '../dto/delete-dashboard-reservation.dto';
 import { DeleteDashboardReservationResponseDto } from '../dto/delete-dashboard-reservation-response.dto';
+import { CreateDashboardReservationDto } from '../dto/create-dashboard-reservation.dto';
+import { CreateDashboardReservationResponseDto } from '../dto/create-dashboard-reservation-response.dto';
 
 const formatIsoDateToSheetDate = (date: string): string => {
   const [year, month, day] = date.split('-');
@@ -40,6 +42,36 @@ const formatIsoDateToSheetDate = (date: string): string => {
 })
 export class ReservationsController {
   constructor(private readonly reservationsDashboardService: ReservationsDashboardService) {}
+
+  @Post()
+  @ApiOperation({
+    summary: 'Crear una reserva desde el dashboard',
+    description:
+      'Permite crear una reserva enviando fecha en formato ISO, horario, nombre, telefono y cantidad.',
+  })
+  @ApiBody({
+    type: CreateDashboardReservationDto,
+  })
+  @ApiOkResponse({
+    description: 'Reserva creada correctamente.',
+    type: CreateDashboardReservationResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'El body es invalido.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'El alta no pudo realizarse por una regla de negocio.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  createReservation(
+    @Body() body: CreateDashboardReservationDto,
+  ): Promise<CreateDashboardReservationResponseDto> {
+    return this.reservationsDashboardService.createReservation(body);
+  }
 
   @Get('available-dates')
   @ApiOperation({

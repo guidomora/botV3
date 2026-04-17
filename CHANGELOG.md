@@ -4,6 +4,8 @@
 
 - New endpoint to DELETE a reservation from the dashboard
 - TODO:
+- MCP Server implementation
+- a feature to mark an entire day as unavailable at sheets
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.

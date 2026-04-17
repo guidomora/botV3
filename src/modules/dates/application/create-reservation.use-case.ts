@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SHEETS_NAMES } from 'src/constants';
 import {
+  CreateReservationOptions,
   CreateReservationType,
   getLargeReservationValidation,
   ServiceResponse,
@@ -20,7 +21,7 @@ export class CreateReservationRowUseCase {
 
   async createReservation(
     createReservation: CreateReservationType,
-    options?: { skipAvailabilityRefresh?: boolean },
+    options?: CreateReservationOptions,
   ): Promise<ServiceResponse> {
     const { date, time, name, phone, quantity, excludedRowIndex } = createReservation;
 
@@ -63,7 +64,7 @@ export class CreateReservationRowUseCase {
       );
 
       const largeReservationValidation = getLargeReservationValidation(quantity);
-      if (largeReservationValidation.isLargeReservation) {
+      if (largeReservationValidation.isLargeReservation && !options?.allowLargeReservations) {
         this.logger.warn('Cantidad excede el límite permitido para reservas por WhatsApp');
 
         const contactInstruction = largeReservationValidation.contactNumber
