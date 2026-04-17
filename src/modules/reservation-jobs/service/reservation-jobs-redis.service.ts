@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import IORedis from 'ioredis';
 import { createClient, RedisClientOptions } from 'redis';
 import { ReservationJobsRedisConfig } from 'src/lib';
 
@@ -33,6 +34,26 @@ export class ReservationJobsRedisService {
       db: this.configService.get<number>('REDIS_DB') ?? 0,
       tlsEnabled: this.configService.get<boolean>('REDIS_TLS_ENABLED') ?? false,
     };
+  }
+
+  createBullMqConnection(): IORedis {
+    const config = this.getConfig();
+
+    if (config.url) {
+      return new IORedis(config.url, {
+        maxRetriesPerRequest: null,
+      });
+    }
+
+    return new IORedis({
+      host: config.host,
+      port: config.port,
+      username: config.username,
+      password: config.password,
+      db: config.db,
+      maxRetriesPerRequest: null,
+      tls: config.tlsEnabled ? {} : undefined,
+    });
   }
 
   async getReadinessStatus(): Promise<'ok' | 'error' | 'disabled'> {

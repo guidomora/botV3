@@ -5,10 +5,9 @@ import { HealthController } from './controller/health.controller';
 import { HealthSecretGuard } from './guards/health-secret.guard';
 import { HealthRateLimitGuard } from './guards/health-rate-limit.guard';
 import { HealthService } from './service/health.service';
-import { ReservationJobsModule } from '../reservation-jobs/reservation-jobs.module';
 
 @Module({
-  imports: [ConfigModule, CacheModule.register({ ttl: 0 }), ReservationJobsModule],
+  imports: [ConfigModule, CacheModule.register({ ttl: 0 })],
   controllers: [HealthController],
   providers: [HealthService, HealthSecretGuard, HealthRateLimitGuard],
 })

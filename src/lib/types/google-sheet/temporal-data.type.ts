@@ -26,6 +26,7 @@ export type AddMissingFieldInput = {
 
 export type AddMissingFieldOutput = {
   status: TemporalStatusEnum;
+  rowIndex?: number;
   missingFields: string[];
   reservationData: TemporalDataType;
   message?: string;

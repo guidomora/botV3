@@ -72,44 +72,44 @@ export class DatesService {
     const { date, time, name, phone, quantity } = reservation.snapshot;
     const formattedPhone = formatPhoneNumber(phone);
     if (reservation.status === TemporalStatusEnum.COMPLETED) {
-      const customerData = {
-        date: date!.toLowerCase(),
-        time: time!.toLowerCase(),
-        name: name!.toLowerCase(),
-        phone: formattedPhone?.toLowerCase() ?? phone!.toLowerCase(),
-        quantity: Number(quantity!),
+      return {
+        status: reservation.status,
+        rowIndex: reservation.rowIndex,
+        missingFields: reservation.missingFields,
+        reservationData: {
+          date: date!.toLowerCase(),
+          time: time!.toLowerCase(),
+          name: name!.toLowerCase(),
+          phone: formattedPhone?.toLowerCase() ?? phone!.toLowerCase(),
+          quantity,
+        },
       };
-
-      const createResponse = await this.createReservationRowUseCase.createReservation(customerData);
-      if (createResponse.error) {
-        if (createResponse.status === StatusEnum.DATE_ALREADY_PASSED) {
-          return {
-            status: TemporalStatusEnum.IN_PROGRESS,
-            missingFields: ['date', 'time'],
-            reservationData: reservation.snapshot,
-            message: createResponse.message,
-            errorStatus: createResponse.status,
-          };
-        }
-        return {
-          status: TemporalStatusEnum.FAILED,
-          missingFields: reservation.missingFields,
-          reservationData: reservation.snapshot,
-          message: createResponse.message,
-          errorStatus: createResponse.status,
-        };
-      }
-      this.logger.log('Reserva trasladada a hoja de reservas');
-
-      await this.datesSheetPort.deleteRow(reservation.rowIndex, 2);
-
-      this.logger.log('Fila eliminada de la hoja temporal');
     }
     return {
       status: reservation.status,
+      rowIndex: reservation.rowIndex,
       missingFields: reservation.missingFields,
       reservationData: reservation.snapshot,
     };
+  }
+
+  async clearTemporalReservationFields(
+    waId: string,
+    fields: ('date' | 'time' | 'name' | 'phone' | 'service' | 'quantity' | 'waId' | 'intent')[],
+  ): Promise<AddMissingFieldOutput> {
+    const clearedReservation = await this.datesTemporalSheetPort.clearFields(waId, fields);
+
+    return {
+      status: clearedReservation.status,
+      rowIndex: clearedReservation.rowIndex,
+      missingFields: clearedReservation.missingFields,
+      reservationData: clearedReservation.snapshot,
+    };
+  }
+
+  async deleteTemporalReservationRow(rowIndex: number): Promise<void> {
+    await this.datesSheetPort.deleteRow(rowIndex, 2);
+    this.logger.log('Fila eliminada de la hoja temporal');
   }
 
   private async validateProgressiveReservationAvailability(

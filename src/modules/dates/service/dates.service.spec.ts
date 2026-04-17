@@ -99,7 +99,7 @@ describe('DatesService', () => {
     });
   });
 
-  it('should create reservation from temporal data when snapshot is completed', async () => {
+  it('should return completed temporal data ready to enqueue when snapshot is completed', async () => {
     googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue(temporalCompletedRowMock);
     googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
     googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
@@ -107,11 +107,6 @@ describe('DatesService', () => {
       isAvailable: true,
       reservations: 10,
       available: 32,
-    });
-    createReservationRowUseCaseMock.createReservation.mockResolvedValue({
-      error: false,
-      status: StatusEnum.SUCCESS,
-      message: 'created',
     });
 
     const result = await service.createReservationWithMultipleMessages({
@@ -119,79 +114,18 @@ describe('DatesService', () => {
       values: temporalCompletedSnapshotMock,
     });
 
-    expect(createReservationRowUseCaseMock.createReservation).toHaveBeenCalledWith({
-      date: futureReservationDateLabelMock,
-      time: '20:00',
-      name: 'guido',
-      phone: '54-9-1154916243',
-      quantity: 4,
-    });
-    expect(googleSheetsServiceMock.deleteRow).toHaveBeenCalledWith(9, 2);
+    expect(createReservationRowUseCaseMock.createReservation).not.toHaveBeenCalled();
     expect(result).toEqual({
       status: TemporalStatusEnum.COMPLETED,
+      rowIndex: 9,
       missingFields: [],
-      reservationData: temporalCompletedSnapshotMock,
-    });
-  });
-
-  it('should keep temporal conversation in progress when final reservation date already passed', async () => {
-    googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue(temporalCompletedRowMock);
-    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
-    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: true,
-      reservations: 10,
-      available: 32,
-    });
-    createReservationRowUseCaseMock.createReservation.mockResolvedValue({
-      error: true,
-      status: StatusEnum.DATE_ALREADY_PASSED,
-      message: 'fecha pasada',
-    });
-
-    await expect(
-      service.createReservationWithMultipleMessages({
-        waId: '5491154916243',
-        values: temporalCompletedSnapshotMock,
-      }),
-    ).resolves.toEqual({
-      status: TemporalStatusEnum.IN_PROGRESS,
-      missingFields: ['date', 'time'],
-      reservationData: temporalCompletedSnapshotMock,
-      message: 'fecha pasada',
-      errorStatus: StatusEnum.DATE_ALREADY_PASSED,
-    });
-  });
-
-  it('should fail temporal creation when reservation use case returns another error', async () => {
-    googleTemporalSheetsServiceMock.addMissingField.mockResolvedValue({
-      ...temporalCompletedRowMock,
-      missingFields: ['service'],
-    });
-    googleSheetsServiceMock.getDateIndexByDate.mockResolvedValue(4);
-    googleSheetsServiceMock.getDayAvailability.mockResolvedValue(availabilityRowsMock);
-    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
-      isAvailable: true,
-      reservations: 10,
-      available: 32,
-    });
-    createReservationRowUseCaseMock.createReservation.mockResolvedValue({
-      error: true,
-      status: StatusEnum.NO_AVAILABILITY,
-      message: 'sin lugar',
-    });
-
-    await expect(
-      service.createReservationWithMultipleMessages({
-        waId: '5491154916243',
-        values: temporalCompletedSnapshotMock,
-      }),
-    ).resolves.toEqual({
-      status: TemporalStatusEnum.FAILED,
-      missingFields: ['service'],
-      reservationData: temporalCompletedSnapshotMock,
-      message: 'sin lugar',
-      errorStatus: StatusEnum.NO_AVAILABILITY,
+      reservationData: {
+        date: futureReservationDateLabelMock,
+        time: '20:00',
+        name: 'guido',
+        phone: '54-9-1154916243',
+        quantity: '4',
+      },
     });
   });
 
@@ -207,6 +141,7 @@ describe('DatesService', () => {
       }),
     ).resolves.toEqual({
       status: TemporalStatusEnum.IN_PROGRESS,
+      rowIndex: temporalInProgressRowMock.rowIndex,
       missingFields: ['time'],
       reservationData: temporalInProgressRowMock.snapshot,
     });
@@ -389,6 +324,7 @@ describe('DatesService', () => {
       }),
     ).resolves.toEqual({
       status: TemporalStatusEnum.IN_PROGRESS,
+      rowIndex: 9,
       missingFields: ['quantity', 'phone'],
       reservationData: {
         date: futureReservationDateLabelMock,
@@ -559,5 +495,23 @@ describe('DatesService', () => {
         allowLargeReservations: true,
       },
     );
+  });
+
+  it('should clear temporal reservation fields using temporal sheet port', async () => {
+    googleTemporalSheetsServiceMock.clearFields.mockResolvedValue(temporalDateClearedRowMock);
+
+    await expect(
+      service.clearTemporalReservationFields('5491154916243', ['date', 'time']),
+    ).resolves.toEqual({
+      status: TemporalStatusEnum.IN_PROGRESS,
+      rowIndex: temporalDateClearedRowMock.rowIndex,
+      missingFields: temporalDateClearedRowMock.missingFields,
+      reservationData: temporalDateClearedRowMock.snapshot,
+    });
+  });
+
+  it('should delete temporal reservation row directly when requested', async () => {
+    await expect(service.deleteTemporalReservationRow(9)).resolves.toBeUndefined();
+    expect(googleSheetsServiceMock.deleteRow).toHaveBeenCalledWith(9, 2);
   });
 });

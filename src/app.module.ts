@@ -8,6 +8,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { CacheContextModule } from './modules/cache-context/cache.module';
 import { HealthModule } from './modules/health/health.module';
+import { ReservationJobsModule } from './modules/reservation-jobs/reservation-jobs.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { HealthModule } from './modules/health/health.module';
     AiModule,
     WhatsAppModule.forRootAsync(),
     CacheContextModule,
+    ReservationJobsModule,
     HealthModule,
   ],
 })

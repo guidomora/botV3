@@ -13,12 +13,14 @@ import { AddMissingFieldInput } from 'src/lib';
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { Logger } from '@nestjs/common';
 import { CacheService } from 'src/modules/cache-context/cache.service';
+import { CreateReservationQueueService } from 'src/modules/reservation-jobs/service/create-reservation-queue.service';
 @Injectable()
 export class CreateReservationStrategy implements IntentionStrategyInterface {
   readonly intent = Intention.CREATE;
   private readonly logger = new Logger(CreateReservationStrategy.name);
   constructor(
     private readonly datesService: DatesService,
+    private readonly createReservationQueueService: CreateReservationQueueService,
     private readonly aiService: AiService,
     private readonly cacheService: CacheService,
   ) {}
@@ -62,6 +64,78 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
       }
 
       case TemporalStatusEnum.COMPLETED: {
+        const queueResponse = await this.createReservationQueueService.createReservation({
+          date: response.reservationData.date,
+          time: response.reservationData.time,
+          name: response.reservationData.name!,
+          phone: response.reservationData.phone!,
+          quantity: Number(response.reservationData.quantity!),
+        });
+
+        if (queueResponse.error) {
+          if (queueResponse.status === StatusEnum.DATE_ALREADY_PASSED) {
+            const clearedReservation = await this.datesService.clearTemporalReservationFields(
+              data.waId,
+              ['date', 'time'],
+            );
+            const retryReply = await this.aiService.getMissingData(
+              clearedReservation.missingFields,
+              history,
+              queueResponse.message,
+            );
+            await this.cacheService.appendEntityMessage(
+              data.waId,
+              retryReply,
+              RoleEnum.ASSISTANT,
+              Intention.CREATE,
+            );
+            return { reply: retryReply };
+          }
+
+          if (
+            [StatusEnum.NO_AVAILABILITY, StatusEnum.NO_DATE_FOUND].includes(queueResponse.status) &&
+            response.reservationData.date &&
+            response.reservationData.time
+          ) {
+            const suggestedAvailability = await this.datesService.getDayAndTimeAvailability(
+              response.reservationData.date,
+              response.reservationData.time,
+            );
+
+            const unavailableWithAlternativesReply =
+              await this.aiService.dayAndTimeAvailabilityAiResponse(
+                suggestedAvailability,
+                history,
+                response.reservationData.time,
+              );
+
+            await this.cacheService.appendEntityMessage(
+              data.waId,
+              unavailableWithAlternativesReply,
+              RoleEnum.ASSISTANT,
+              Intention.CREATE,
+            );
+            return { reply: unavailableWithAlternativesReply };
+          }
+
+          const failedReply = await this.aiService.createReservationFailed(
+            response.reservationData,
+            history,
+            queueResponse.message,
+          );
+          await this.cacheService.appendEntityMessage(
+            data.waId,
+            failedReply,
+            RoleEnum.ASSISTANT,
+            Intention.CREATE,
+          );
+          return { reply: failedReply };
+        }
+
+        if (response.rowIndex) {
+          await this.datesService.deleteTemporalReservationRow(response.rowIndex);
+        }
+
         this.logger.log(`Create reservation strategy completed`);
         const completedReply = await this.aiService.reservationCompleted(
           response.reservationData,
