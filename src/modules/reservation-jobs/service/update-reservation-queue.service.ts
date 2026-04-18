@@ -1,7 +1,12 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Queue, QueueEvents } from 'bullmq';
 import IORedis from 'ioredis';
-import { ServiceResponse, UpdateReservationJobData, UpdateReservationType } from 'src/lib';
+import {
+  ServiceResponse,
+  UpdateReservationJobData,
+  UpdateReservationOptions,
+  UpdateReservationType,
+} from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import {
   UPDATE_RESERVATION_JOB_NAME,
@@ -58,9 +63,12 @@ export class UpdateReservationQueueService implements OnModuleInit, OnModuleDest
     this.logger.log('Update reservation queue cerrada correctamente');
   }
 
-  async updateReservation(reservation: UpdateReservationType): Promise<ServiceResponse> {
+  async updateReservation(
+    reservation: UpdateReservationType,
+    options?: UpdateReservationOptions,
+  ): Promise<ServiceResponse> {
     if (!this.reservationJobsRedisService.isEnabled()) {
-      return this.datesService.updateReservation(reservation);
+      return this.datesService.updateReservation(reservation, options);
     }
 
     if (!this.queue || !this.queueEvents) {
@@ -69,6 +77,7 @@ export class UpdateReservationQueueService implements OnModuleInit, OnModuleDest
 
     const job = await this.queue.add(UPDATE_RESERVATION_JOB_NAME, {
       reservation,
+      options,
     });
     this.logger.log(
       `Job update-reservation encolado id=${job.id ?? 'unknown'} phone=${reservation.phone} currentDate=${reservation.currentDate} currentTime=${reservation.currentTime}`,

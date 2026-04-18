@@ -38,18 +38,23 @@ describe('UpdateReservationQueueService', () => {
     );
 
     await expect(
-      service.updateReservation({
-        currentName: 'guido',
-        phone: '5491112345678',
-        currentDate: 'domingo 29 de marzo 2026 29/03/2026',
-        currentTime: '21:00',
-        currentQuantity: '2',
-        newDate: 'lunes 30 de marzo 2026 30/03/2026',
-        newTime: null,
-        newName: null,
-        newQuantity: null,
-        stage: 'reschedule',
-      }),
+      service.updateReservation(
+        {
+          currentName: 'guido',
+          phone: '5491112345678',
+          currentDate: 'domingo 29 de marzo 2026 29/03/2026',
+          currentTime: '21:00',
+          currentQuantity: '2',
+          newDate: 'lunes 30 de marzo 2026 30/03/2026',
+          newTime: null,
+          newName: null,
+          newQuantity: null,
+          stage: 'reschedule',
+        },
+        {
+          allowLargeReservations: true,
+        },
+      ),
     ).resolves.toEqual({
       status: 'SUCCESS',
       message: 'updated',
@@ -57,6 +62,15 @@ describe('UpdateReservationQueueService', () => {
     });
 
     expect(datesServiceMock.updateReservation).toHaveBeenCalledTimes(1);
+    expect(datesServiceMock.updateReservation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentName: 'guido',
+        phone: '5491112345678',
+      }),
+      {
+        allowLargeReservations: true,
+      },
+    );
     expect(queueConstructorMock).not.toHaveBeenCalled();
   });
 
@@ -113,18 +127,23 @@ describe('UpdateReservationQueueService', () => {
     });
 
     await expect(
-      service.updateReservation({
-        currentName: 'guido',
-        phone: '5491112345678',
-        currentDate: 'domingo 29 de marzo 2026 29/03/2026',
-        currentTime: '21:00',
-        currentQuantity: '2',
-        newDate: 'lunes 30 de marzo 2026 30/03/2026',
-        newTime: null,
-        newName: null,
-        newQuantity: null,
-        stage: 'reschedule',
-      }),
+      service.updateReservation(
+        {
+          currentName: 'guido',
+          phone: '5491112345678',
+          currentDate: 'domingo 29 de marzo 2026 29/03/2026',
+          currentTime: '21:00',
+          currentQuantity: '2',
+          newDate: 'lunes 30 de marzo 2026 30/03/2026',
+          newTime: null,
+          newName: null,
+          newQuantity: null,
+          stage: 'reschedule',
+        },
+        {
+          allowLargeReservations: true,
+        },
+      ),
     ).resolves.toEqual({
       status: 'SUCCESS',
       message: 'updated',
@@ -143,6 +162,9 @@ describe('UpdateReservationQueueService', () => {
         newName: null,
         newQuantity: null,
         stage: 'reschedule',
+      },
+      options: {
+        allowLargeReservations: true,
       },
     });
   });

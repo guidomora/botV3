@@ -9,6 +9,7 @@ import {
   ServiceResponse,
   StatusEnum,
   UpdateReservationContextType,
+  UpdateReservationOptions,
   UpdateReservationResolvedType,
   UpdateReservationType,
 } from 'src/lib';
@@ -29,7 +30,10 @@ export class UpdateReservationUseCase {
     private readonly deleteReservationUseCase: DeleteReservationUseCase,
   ) {}
 
-  async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {
+  async updateReservation(
+    updateReservation: UpdateReservationType,
+    options?: UpdateReservationOptions,
+  ): Promise<ServiceResponse> {
     const requiredDataValidation = this.validateRequiredOriginalData(updateReservation);
     if (requiredDataValidation) {
       return requiredDataValidation;
@@ -66,6 +70,7 @@ export class UpdateReservationUseCase {
     const resolvedReservation = await this.resolveReservationData(context, currentReservationIndex);
     const largeReservationValidation = this.validateLargeReservation(
       resolvedReservation.resolvedQuantity,
+      options,
     );
     if (largeReservationValidation) {
       return largeReservationValidation;
@@ -224,9 +229,12 @@ export class UpdateReservationUseCase {
     return firstValue;
   }
 
-  private validateLargeReservation(resolvedQuantity: number): ServiceResponse | null {
+  private validateLargeReservation(
+    resolvedQuantity: number,
+    options?: UpdateReservationOptions,
+  ): ServiceResponse | null {
     const largeReservationValidation = getLargeReservationValidation(resolvedQuantity);
-    if (largeReservationValidation.isLargeReservation) {
+    if (largeReservationValidation.isLargeReservation && !options?.allowLargeReservations) {
       const contactInstruction = largeReservationValidation.contactNumber
         ? `Por favor escribinos o llamanos al ${largeReservationValidation.contactNumber} para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.`
         : 'Por favor escribinos o llamanos para ayudarte con la modificación, ya que este tipo de reserva requiere atención directa.';

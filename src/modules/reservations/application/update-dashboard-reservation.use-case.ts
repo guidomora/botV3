@@ -81,8 +81,12 @@ export class UpdateDashboardReservationUseCase {
       stage: 'reschedule',
     };
 
-    const result =
-      await this.updateReservationQueueService.updateReservation(updateReservationPayload);
+    const result = await this.updateReservationQueueService.updateReservation(
+      updateReservationPayload,
+      {
+        allowLargeReservations: true,
+      },
+    );
 
     if (result.error) {
       this.logger.warn(

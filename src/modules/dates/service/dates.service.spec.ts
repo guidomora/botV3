@@ -464,8 +464,14 @@ describe('DatesService', () => {
     const updateReservation = buildUpdateReservationMock();
     updateReservationUseCaseMock.updateReservation.mockResolvedValue(response);
 
-    await expect(service.updateReservation(updateReservation)).resolves.toEqual(response);
-    expect(updateReservationUseCaseMock.updateReservation).toHaveBeenCalledWith(updateReservation);
+    await expect(
+      service.updateReservation(updateReservation, {
+        allowLargeReservations: true,
+      }),
+    ).resolves.toEqual(response);
+    expect(updateReservationUseCaseMock.updateReservation).toHaveBeenCalledWith(updateReservation, {
+      allowLargeReservations: true,
+    });
   });
 
   it('should delegate createReservation to its use case', async () => {

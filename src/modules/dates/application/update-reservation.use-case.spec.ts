@@ -110,6 +110,34 @@ describe('UpdateReservationUseCase', () => {
     });
   });
 
+  it('should allow large reservation updates when the caller explicitly enables them', async () => {
+    googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
+    googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
+    googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
+    googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
+      isAvailable: true,
+      reservations: 10,
+      available: 32,
+    });
+
+    await expect(
+      useCase.updateReservation(buildUpdateReservationMock({ newQuantity: '15' }), {
+        allowLargeReservations: true,
+      }),
+    ).resolves.toMatchObject({
+      status: StatusEnum.SUCCESS,
+      error: false,
+    });
+
+    expect(googleSheetsServiceMock.createReservation).toHaveBeenCalledWith('Reservas!C27:F27', {
+      customerData: {
+        name: 'guido',
+        phone: '54-9-1154916243',
+        quantity: 15,
+      },
+    });
+  });
+
   it('should reject same-slot updates when there is no remaining availability', async () => {
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
