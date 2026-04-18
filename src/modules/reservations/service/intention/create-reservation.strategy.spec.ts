@@ -3,6 +3,7 @@ import {
   createAiServiceMock,
   createCacheServiceMock,
   createDatesServiceMock,
+  createReservationQueueServiceMock as buildCreateReservationQueueServiceMock,
   simplifiedPayloadMock,
   temporalCompletedResponseMock,
   temporalFailedResponseMock,
@@ -13,15 +14,22 @@ import { CreateReservationStrategy } from './create-reservation.strategy';
 describe('CreateReservationStrategy', () => {
   let strategy: CreateReservationStrategy;
   let datesServiceMock = createDatesServiceMock();
+  let createReservationQueueServiceMock = buildCreateReservationQueueServiceMock();
   let aiServiceMock = createAiServiceMock();
   let cacheServiceMock = createCacheServiceMock();
 
   beforeEach(() => {
     jest.clearAllMocks();
     datesServiceMock = createDatesServiceMock();
+    createReservationQueueServiceMock = buildCreateReservationQueueServiceMock();
     aiServiceMock = createAiServiceMock();
     cacheServiceMock = createCacheServiceMock();
-    strategy = new CreateReservationStrategy(datesServiceMock, aiServiceMock, cacheServiceMock);
+    strategy = new CreateReservationStrategy(
+      datesServiceMock,
+      createReservationQueueServiceMock,
+      aiServiceMock,
+      cacheServiceMock,
+    );
   });
 
   it('should ask for missing data while reservation is in progress', async () => {
@@ -91,6 +99,11 @@ describe('CreateReservationStrategy', () => {
     datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue(
       temporalCompletedResponseMock,
     );
+    createReservationQueueServiceMock.createReservation.mockResolvedValue({
+      status: StatusEnum.SUCCESS,
+      message: 'created',
+      error: false,
+    });
     cacheServiceMock.getHistory.mockResolvedValue([]);
     aiServiceMock.reservationCompleted.mockResolvedValue('Reserva creada');
 
@@ -104,7 +117,46 @@ describe('CreateReservationStrategy', () => {
       temporalCompletedResponseMock.reservationData,
       [],
     ]);
+    expect(createReservationQueueServiceMock.createReservation.mock.calls[0]).toEqual([
+      {
+        date: 'domingo 29 de marzo 2026 29/03/2026',
+        time: '21:00',
+        name: 'guido',
+        phone: '5491112345678',
+        quantity: 2,
+      },
+    ]);
+    expect(datesServiceMock.deleteTemporalReservationRow.mock.calls[0]).toEqual([9]);
     expect(cacheServiceMock.markFlowCompleted.mock.calls[0]).toEqual([simplifiedPayloadMock.waId]);
+  });
+
+  it('should ask for date again when queued creation fails because date already passed', async () => {
+    datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue(
+      temporalCompletedResponseMock,
+    );
+    createReservationQueueServiceMock.createReservation.mockResolvedValue({
+      status: StatusEnum.DATE_ALREADY_PASSED,
+      message: 'fecha pasada',
+      error: true,
+    });
+    datesServiceMock.clearTemporalReservationFields.mockResolvedValue({
+      status: TemporalStatusEnum.IN_PROGRESS,
+      missingFields: ['date', 'time'],
+      reservationData: temporalCompletedResponseMock.reservationData,
+    });
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    aiServiceMock.getMissingData.mockResolvedValue('Decime otra fecha');
+
+    await expect(
+      strategy.execute({ intent: Intention.CREATE, useCurrentPhone: true }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: 'Decime otra fecha',
+    });
+
+    expect(datesServiceMock.clearTemporalReservationFields.mock.calls[0]).toEqual([
+      simplifiedPayloadMock.waId,
+      ['date', 'time'],
+    ]);
   });
 
   it('should suggest alternative availability on failed reservation due to no availability', async () => {

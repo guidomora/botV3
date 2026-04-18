@@ -15,6 +15,7 @@ import { AiService } from 'src/modules/ai/service/ai.service';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { IntentionsRouter } from '../../service/intention/intention.router';
+import { CreateReservationQueueService } from 'src/modules/reservation-jobs/service/create-reservation-queue.service';
 
 export const createAiServiceMock = () =>
   ({
@@ -65,6 +66,8 @@ export const createDatesServiceMock = () =>
     getDayAvailability: jest.fn<Promise<unknown>, [string]>(),
     getDayAndTimeAvailability: jest.fn<Promise<unknown>, [string, string]>(),
     createReservationWithMultipleMessages: jest.fn<Promise<AddMissingFieldOutput>, [unknown]>(),
+    clearTemporalReservationFields: jest.fn<Promise<AddMissingFieldOutput>, [string, string[]]>(),
+    deleteTemporalReservationRow: jest.fn<Promise<void>, [number]>(),
     deleteReservation: jest.fn<Promise<string>, [DeleteReservation]>(),
     getReservationIndexByData: jest.fn<Promise<number>, [string, string, string, string]>(),
     findReservationByLookup: jest.fn<
@@ -77,6 +80,11 @@ export const createDatesServiceMock = () =>
       [UpdateReservationType]
     >(),
   }) as unknown as jest.Mocked<DatesService>;
+
+export const createReservationQueueServiceMock = () =>
+  ({
+    createReservation: jest.fn(),
+  }) as unknown as jest.Mocked<CreateReservationQueueService>;
 
 export const simplifiedPayloadMock: SimplifiedTwilioWebhookPayload = {
   body: 'Hola',
@@ -108,6 +116,7 @@ export const temporalInProgressResponseMock: AddMissingFieldOutput = {
 
 export const temporalCompletedResponseMock: AddMissingFieldOutput = {
   status: TemporalStatusEnum.COMPLETED,
+  rowIndex: 9,
   missingFields: [],
   reservationData: {
     date: 'domingo 29 de marzo 2026 29/03/2026',

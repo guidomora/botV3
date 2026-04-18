@@ -7,12 +7,16 @@ import {
   formatPhoneNumber,
 } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { CreateReservationQueueService } from 'src/modules/reservation-jobs/service/create-reservation-queue.service';
 
 @Injectable()
 export class CreateDashboardReservationUseCase {
   private readonly logger = new Logger(CreateDashboardReservationUseCase.name);
 
-  constructor(private readonly datesService: DatesService) {}
+  constructor(
+    private readonly datesService: DatesService,
+    private readonly createReservationQueueService: CreateReservationQueueService,
+  ) {}
 
   async execute(
     payload: DashboardCreateReservationType,
@@ -24,7 +28,7 @@ export class CreateDashboardReservationUseCase {
       `Intentando crear reserva desde dashboard. phone=${normalizedPayload.phone} date=${targetDate} time=${normalizedPayload.time}`,
     );
 
-    const result = await this.datesService.createReservation(
+    const result = await this.createReservationQueueService.createReservation(
       {
         date: targetDate,
         time: normalizedPayload.time,
