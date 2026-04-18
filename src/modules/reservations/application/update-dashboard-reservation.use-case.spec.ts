@@ -148,6 +148,9 @@ describe('UpdateDashboardReservationUseCase', () => {
         newQuantity: '4',
         stage: 'reschedule',
       },
+      {
+        allowLargeReservations: true,
+      },
     ]);
   });
 });

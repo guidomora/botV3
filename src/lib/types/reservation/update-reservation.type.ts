@@ -1,5 +1,9 @@
 export type UpdateReservationStage = 'identify' | 'reschedule';
 
+export interface UpdateReservationOptions {
+  allowLargeReservations?: boolean;
+}
+
 export interface UpdateReservationType {
   currentName: string | null;
   phone: string | null;

@@ -12,6 +12,7 @@ import {
   ServiceResponse,
   StatusEnum,
   TemporalStatusEnum,
+  UpdateReservationOptions,
   UpdateReservationType,
 } from 'src/lib';
 import {
@@ -321,8 +322,11 @@ export class DatesService {
     return this.createReservationRowUseCase.createReservation(createReservation, options);
   }
 
-  async updateReservation(updateReservation: UpdateReservationType): Promise<ServiceResponse> {
+  async updateReservation(
+    updateReservation: UpdateReservationType,
+    options?: UpdateReservationOptions,
+  ): Promise<ServiceResponse> {
     this.logger.log('Updating reservation', DatesService.name);
-    return this.updateReservationUseCase.updateReservation(updateReservation);
+    return this.updateReservationUseCase.updateReservation(updateReservation, options);
   }
 }

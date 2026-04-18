@@ -40,7 +40,10 @@ export class UpdateReservationWorkerService implements OnModuleInit, OnModuleDes
           `Procesando job update-reservation id=${job.id ?? 'unknown'} phone=${job.data.reservation.phone} currentDate=${job.data.reservation.currentDate} currentTime=${job.data.reservation.currentTime}`,
         );
 
-        const result = await this.datesService.updateReservation(job.data.reservation);
+        const result = await this.datesService.updateReservation(
+          job.data.reservation,
+          job.data.options,
+        );
 
         this.logger.log(
           `Job update-reservation procesado id=${job.id ?? 'unknown'} status=${result.status} error=${result.error}`,
