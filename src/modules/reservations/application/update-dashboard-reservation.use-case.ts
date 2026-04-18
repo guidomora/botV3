@@ -14,12 +14,16 @@ import {
   UpdateReservationType,
 } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { UpdateReservationQueueService } from 'src/modules/reservation-jobs/service/update-reservation-queue.service';
 
 @Injectable()
 export class UpdateDashboardReservationUseCase {
   private readonly logger = new Logger(UpdateDashboardReservationUseCase.name);
 
-  constructor(private readonly datesService: DatesService) {}
+  constructor(
+    private readonly datesService: DatesService,
+    private readonly updateReservationQueueService: UpdateReservationQueueService,
+  ) {}
 
   async execute(
     payload: DashboardUpdateReservationType,
@@ -77,7 +81,8 @@ export class UpdateDashboardReservationUseCase {
       stage: 'reschedule',
     };
 
-    const result = await this.datesService.updateReservation(updateReservationPayload);
+    const result =
+      await this.updateReservationQueueService.updateReservation(updateReservationPayload);
 
     if (result.error) {
       this.logger.warn(

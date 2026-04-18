@@ -16,6 +16,7 @@ import { CacheService } from 'src/modules/cache-context/cache.service';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { IntentionsRouter } from '../../service/intention/intention.router';
 import { CreateReservationQueueService } from 'src/modules/reservation-jobs/service/create-reservation-queue.service';
+import { UpdateReservationQueueService } from 'src/modules/reservation-jobs/service/update-reservation-queue.service';
 
 export const createAiServiceMock = () =>
   ({
@@ -85,6 +86,11 @@ export const createReservationQueueServiceMock = () =>
   ({
     createReservation: jest.fn(),
   }) as unknown as jest.Mocked<CreateReservationQueueService>;
+
+export const createUpdateReservationQueueServiceMock = () =>
+  ({
+    updateReservation: jest.fn(),
+  }) as unknown as jest.Mocked<UpdateReservationQueueService>;
 
 export const simplifiedPayloadMock: SimplifiedTwilioWebhookPayload = {
   body: 'Hola',
