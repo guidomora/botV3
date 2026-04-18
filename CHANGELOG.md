@@ -2,7 +2,7 @@
 
 ### 18/04/26
 
-- Race condition support added
+- Race condition support added to create, edit and delete
 - Redis connection, queues and workers implemented
 - TODO:
 - MCP Server implementation
