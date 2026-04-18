@@ -1,5 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { DeleteReservationQueueService } from 'src/modules/reservation-jobs/service/delete-reservation-queue.service';
 import { DeleteDashboardReservationUseCase } from './delete-dashboard-reservation.use-case';
 
 describe('DeleteDashboardReservationUseCase', () => {
@@ -7,12 +8,17 @@ describe('DeleteDashboardReservationUseCase', () => {
 
   const datesServiceMock = {
     findReservationByLookup: jest.fn(),
-    deleteReservation: jest.fn(),
   } as unknown as jest.Mocked<DatesService>;
+  const deleteReservationQueueServiceMock = {
+    deleteReservation: jest.fn(),
+  } as unknown as jest.Mocked<DeleteReservationQueueService>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCase = new DeleteDashboardReservationUseCase(datesServiceMock);
+    useCase = new DeleteDashboardReservationUseCase(
+      datesServiceMock,
+      deleteReservationQueueServiceMock,
+    );
   });
 
   it('should throw not found when reservation does not exist', async () => {
@@ -36,7 +42,7 @@ describe('DeleteDashboardReservationUseCase', () => {
       service: 'Cena',
       quantity: 2,
     });
-    datesServiceMock.deleteReservation.mockResolvedValue(
+    deleteReservationQueueServiceMock.deleteReservation.mockResolvedValue(
       'Algunos de los datos ingresados no coinciden con la reserva.',
     );
 
@@ -58,7 +64,7 @@ describe('DeleteDashboardReservationUseCase', () => {
       service: 'Cena',
       quantity: 2,
     });
-    datesServiceMock.deleteReservation.mockResolvedValue(
+    deleteReservationQueueServiceMock.deleteReservation.mockResolvedValue(
       'Su reserva ha sido cancelada correctamente.',
     );
 
@@ -85,7 +91,7 @@ describe('DeleteDashboardReservationUseCase', () => {
       '20:00',
       '54-9-1122334455',
     ]);
-    expect(datesServiceMock.deleteReservation.mock.calls[0]).toEqual([
+    expect(deleteReservationQueueServiceMock.deleteReservation.mock.calls[0]).toEqual([
       {
         phone: '54-9-1122334455',
         date: 'viernes 10 de abril 2026 10/04/2026',

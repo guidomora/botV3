@@ -5,12 +5,16 @@ import {
   formatPhoneNumber,
 } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { DeleteReservationQueueService } from 'src/modules/reservation-jobs/service/delete-reservation-queue.service';
 
 @Injectable()
 export class DeleteDashboardReservationUseCase {
   private readonly logger = new Logger(DeleteDashboardReservationUseCase.name);
 
-  constructor(private readonly datesService: DatesService) {}
+  constructor(
+    private readonly datesService: DatesService,
+    private readonly deleteReservationQueueService: DeleteReservationQueueService,
+  ) {}
 
   async execute(
     payload: DashboardDeleteReservationType,
@@ -39,7 +43,7 @@ export class DeleteDashboardReservationUseCase {
       });
     }
 
-    const result = await this.datesService.deleteReservation({
+    const result = await this.deleteReservationQueueService.deleteReservation({
       phone: normalizedPayload.phone,
       date: currentReservation.date,
       time: currentReservation.time,

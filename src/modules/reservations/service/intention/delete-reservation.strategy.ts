@@ -11,6 +11,7 @@ import { DatesService } from 'src/modules/dates/service/dates.service';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { IntentionStrategyInterface, StrategyResult } from './intention-strategy.interface';
 import { getMissingFields } from '../helpers/get-missing-fields.helper';
+import { DeleteReservationQueueService } from 'src/modules/reservation-jobs/service/delete-reservation-queue.service';
 
 @Injectable()
 export class DeleteReservationStrategy implements IntentionStrategyInterface {
@@ -18,6 +19,7 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
   private readonly logger = new Logger(DeleteReservationStrategy.name);
   constructor(
     private readonly datesService: DatesService,
+    private readonly deleteReservationQueueService: DeleteReservationQueueService,
     private readonly aiService: AiService,
     private readonly cacheService: CacheService,
   ) {}
@@ -47,7 +49,7 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
       return { reply: response };
     }
 
-    const response = await this.datesService.deleteReservation(state);
+    const response = await this.deleteReservationQueueService.deleteReservation(state);
 
     const history = await this.cacheService.getHistory(waId);
 
