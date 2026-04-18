@@ -1,8 +1,9 @@
 ### History
 
-### 16/04/26
+### 18/04/26
 
-- New endpoint to DELETE a reservation from the dashboard
+- Race condition support added
+- Redis connection, queues and workers implemented
 - TODO:
 - MCP Server implementation
 - a feature to mark an entire day as unavailable at sheets
@@ -11,6 +12,10 @@
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 16/04/26
+
+- New endpoint to DELETE a reservation from the dashboard
 
 ### 15/04/26
 
