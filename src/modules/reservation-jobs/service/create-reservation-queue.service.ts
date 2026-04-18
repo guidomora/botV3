@@ -52,6 +52,7 @@ export class CreateReservationQueueService implements OnModuleInit, OnModuleDest
 
     await this.queue.waitUntilReady();
     await this.queueEvents.waitUntilReady();
+    this.logger.log('Create reservation queue inicializada y lista para recibir jobs');
   }
 
   async onModuleDestroy(): Promise<void> {
@@ -59,6 +60,7 @@ export class CreateReservationQueueService implements OnModuleInit, OnModuleDest
     await this.queue?.close();
     await this.eventsConnection?.quit();
     await this.producerConnection?.quit();
+    this.logger.log('Create reservation queue cerrada correctamente');
   }
 
   async createReservation(
@@ -77,7 +79,15 @@ export class CreateReservationQueueService implements OnModuleInit, OnModuleDest
       reservation,
       options,
     });
+    this.logger.log(
+      `Job create-reservation encolado id=${job.id ?? 'unknown'} phone=${reservation.phone} date=${reservation.date} time=${reservation.time}`,
+    );
 
-    return await job.waitUntilFinished(this.queueEvents, this.jobTimeoutMs);
+    const result = await job.waitUntilFinished(this.queueEvents, this.jobTimeoutMs);
+    this.logger.log(
+      `Job create-reservation finalizado id=${job.id ?? 'unknown'} status=${result.status} error=${result.error}`,
+    );
+
+    return result;
   }
 }

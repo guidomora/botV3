@@ -1,4 +1,5 @@
 import { Queue, QueueEvents } from 'bullmq';
+import { CREATE_RESERVATION_QUEUE_NAME } from '../reservation-jobs.constants';
 import { CreateReservationQueueService } from './create-reservation-queue.service';
 
 jest.mock('bullmq', () => ({
@@ -67,8 +68,13 @@ describe('CreateReservationQueueService', () => {
     const queueCloseMock = jest.fn().mockResolvedValue(undefined);
     const queueEventsWaitUntilReadyMock = jest.fn().mockResolvedValue(undefined);
     const queueEventsCloseMock = jest.fn().mockResolvedValue(undefined);
+    const producerConnectionMock = {};
+    const eventsConnectionMock = {};
 
     reservationJobsRedisServiceMock.isEnabled.mockReturnValue(true);
+    reservationJobsRedisServiceMock.createBullMqConnection
+      .mockReturnValueOnce(producerConnectionMock)
+      .mockReturnValueOnce(eventsConnectionMock);
     queueConstructorMock.mockImplementation(() => ({
       add: addMock,
       waitUntilReady: waitUntilReadyMock,
@@ -85,6 +91,20 @@ describe('CreateReservationQueueService', () => {
     );
 
     await service.onModuleInit();
+
+    expect(queueConstructorMock).toHaveBeenCalledWith(
+      CREATE_RESERVATION_QUEUE_NAME,
+      expect.objectContaining({
+        connection: producerConnectionMock,
+        defaultJobOptions: {
+          removeOnComplete: 100,
+          removeOnFail: 100,
+        },
+      }),
+    );
+    expect(queueEventsConstructorMock).toHaveBeenCalledWith(CREATE_RESERVATION_QUEUE_NAME, {
+      connection: eventsConnectionMock,
+    });
 
     await expect(
       service.createReservation(

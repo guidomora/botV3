@@ -22,6 +22,9 @@ export class CreateReservationWorkerService implements OnModuleInit, OnModuleDes
 
   async onModuleInit(): Promise<void> {
     if (!this.reservationJobsRedisService.isEnabled()) {
+      this.logger.log(
+        'Create reservation worker deshabilitado porque reservation-jobs no esta activo',
+      );
       return;
     }
 
@@ -33,7 +36,20 @@ export class CreateReservationWorkerService implements OnModuleInit, OnModuleDes
           throw new Error(`Job no soportado: ${job.name}`);
         }
 
-        return this.datesService.createReservation(job.data.reservation, job.data.options);
+        this.logger.log(
+          `Procesando job create-reservation id=${job.id ?? 'unknown'} phone=${job.data.reservation.phone} date=${job.data.reservation.date} time=${job.data.reservation.time}`,
+        );
+
+        const result = await this.datesService.createReservation(
+          job.data.reservation,
+          job.data.options,
+        );
+
+        this.logger.log(
+          `Job create-reservation procesado id=${job.id ?? 'unknown'} status=${result.status} error=${result.error}`,
+        );
+
+        return result;
       },
       {
         connection: this.workerConnection,
@@ -49,10 +65,12 @@ export class CreateReservationWorkerService implements OnModuleInit, OnModuleDes
     });
 
     await this.worker.waitUntilReady();
+    this.logger.log('Create reservation worker inicializado y escuchando jobs');
   }
 
   async onModuleDestroy(): Promise<void> {
     await this.worker?.close();
     await this.workerConnection?.quit();
+    this.logger.log('Create reservation worker cerrado correctamente');
   }
 }
