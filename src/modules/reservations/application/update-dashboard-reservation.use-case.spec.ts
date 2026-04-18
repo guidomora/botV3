@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { StatusEnum } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { UpdateReservationQueueService } from 'src/modules/reservation-jobs/service/update-reservation-queue.service';
 import { UpdateDashboardReservationUseCase } from './update-dashboard-reservation.use-case';
 
 describe('UpdateDashboardReservationUseCase', () => {
@@ -9,12 +10,17 @@ describe('UpdateDashboardReservationUseCase', () => {
   const datesServiceMock = {
     findReservationByLookup: jest.fn(),
     resolveAgendaDateLabel: jest.fn(),
-    updateReservation: jest.fn(),
   } as unknown as jest.Mocked<DatesService>;
+  const updateReservationQueueServiceMock = {
+    updateReservation: jest.fn(),
+  } as unknown as jest.Mocked<UpdateReservationQueueService>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCase = new UpdateDashboardReservationUseCase(datesServiceMock);
+    useCase = new UpdateDashboardReservationUseCase(
+      datesServiceMock,
+      updateReservationQueueServiceMock,
+    );
   });
 
   it('should throw not found when original reservation does not exist', async () => {
@@ -70,7 +76,7 @@ describe('UpdateDashboardReservationUseCase', () => {
       service: 'Cena',
       quantity: 2,
     });
-    datesServiceMock.updateReservation.mockResolvedValue({
+    updateReservationQueueServiceMock.updateReservation.mockResolvedValue({
       status: StatusEnum.MISSING_DATA_UPDATE,
       message: 'Faltan datos de la reserva original',
       error: true,
@@ -96,7 +102,7 @@ describe('UpdateDashboardReservationUseCase', () => {
       quantity: 2,
     });
     datesServiceMock.resolveAgendaDateLabel.mockResolvedValue('sabado 11 de abril 2026 11/04/2026');
-    datesServiceMock.updateReservation.mockResolvedValue({
+    updateReservationQueueServiceMock.updateReservation.mockResolvedValue({
       status: StatusEnum.SUCCESS,
       message: 'Reserva actualizada correctamente.',
       error: false,
@@ -129,7 +135,7 @@ describe('UpdateDashboardReservationUseCase', () => {
       '20:00',
       '54-9-1122334455',
     ]);
-    expect(datesServiceMock.updateReservation.mock.calls[0]).toEqual([
+    expect(updateReservationQueueServiceMock.updateReservation.mock.calls[0]).toEqual([
       {
         currentName: 'juan perez',
         phone: '54-9-1122334455',

@@ -3,6 +3,7 @@ import {
   createAiServiceMock,
   createCacheServiceMock,
   createDatesServiceMock,
+  createUpdateReservationQueueServiceMock,
   simplifiedPayloadMock,
   updateStateIdentifyMock,
   updateStateReadyToRescheduleMock,
@@ -12,15 +13,22 @@ import { UpdateReservationStrategy } from './update-reservation.strategy';
 describe('UpdateReservationStrategy', () => {
   let strategy: UpdateReservationStrategy;
   let datesServiceMock = createDatesServiceMock();
+  let updateReservationQueueServiceMock = createUpdateReservationQueueServiceMock();
   let aiServiceMock = createAiServiceMock();
   let cacheServiceMock = createCacheServiceMock();
 
   beforeEach(() => {
     jest.clearAllMocks();
     datesServiceMock = createDatesServiceMock();
+    updateReservationQueueServiceMock = createUpdateReservationQueueServiceMock();
     aiServiceMock = createAiServiceMock();
     cacheServiceMock = createCacheServiceMock();
-    strategy = new UpdateReservationStrategy(datesServiceMock, aiServiceMock, cacheServiceMock);
+    strategy = new UpdateReservationStrategy(
+      datesServiceMock,
+      updateReservationQueueServiceMock,
+      aiServiceMock,
+      cacheServiceMock,
+    );
   });
 
   it('should ask only for phone when that is the last missing current field', async () => {
@@ -201,7 +209,7 @@ describe('UpdateReservationStrategy', () => {
       [],
       updateStateReadyToRescheduleMock,
     ]);
-    expect(datesServiceMock.updateReservation.mock.calls).toHaveLength(0);
+    expect(updateReservationQueueServiceMock.updateReservation.mock.calls).toHaveLength(0);
   });
 
   it('should ask what to change when AI repeats the same date and time as current reservation', async () => {
@@ -228,7 +236,7 @@ describe('UpdateReservationStrategy', () => {
       [],
       stateWithRepeatedTarget,
     ]);
-    expect(datesServiceMock.updateReservation.mock.calls).toHaveLength(0);
+    expect(updateReservationQueueServiceMock.updateReservation.mock.calls).toHaveLength(0);
   });
 
   it('should suggest alternative availability when update fails due to no availability', async () => {
@@ -248,7 +256,7 @@ describe('UpdateReservationStrategy', () => {
     cacheServiceMock.updateUpdateState.mockResolvedValue(nextState);
     cacheServiceMock.getHistory.mockResolvedValue([]);
     datesServiceMock.getReservationIndexByData.mockResolvedValue(12);
-    datesServiceMock.updateReservation.mockResolvedValue({
+    updateReservationQueueServiceMock.updateReservation.mockResolvedValue({
       status: StatusEnum.NO_AVAILABILITY,
       message: 'sin lugar',
       error: true,
@@ -278,7 +286,7 @@ describe('UpdateReservationStrategy', () => {
     cacheServiceMock.updateUpdateState.mockResolvedValue(nextState);
     cacheServiceMock.getHistory.mockResolvedValue([]);
     datesServiceMock.getReservationIndexByData.mockResolvedValue(12);
-    datesServiceMock.updateReservation.mockResolvedValue({
+    updateReservationQueueServiceMock.updateReservation.mockResolvedValue({
       status: StatusEnum.SUCCESS,
       message: 'Reserva actualizada',
       error: false,

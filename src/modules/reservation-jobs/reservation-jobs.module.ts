@@ -4,6 +4,8 @@ import { DatesModule } from '../dates/dates.module';
 import { CreateReservationQueueService } from './service/create-reservation-queue.service';
 import { CreateReservationWorkerService } from './service/create-reservation-worker.service';
 import { ReservationJobsRedisService } from './service/reservation-jobs-redis.service';
+import { UpdateReservationQueueService } from './service/update-reservation-queue.service';
+import { UpdateReservationWorkerService } from './service/update-reservation-worker.service';
 
 @Global()
 @Module({
@@ -12,7 +14,13 @@ import { ReservationJobsRedisService } from './service/reservation-jobs-redis.se
     ReservationJobsRedisService,
     CreateReservationQueueService,
     CreateReservationWorkerService,
+    UpdateReservationQueueService,
+    UpdateReservationWorkerService,
   ],
-  exports: [ReservationJobsRedisService, CreateReservationQueueService],
+  exports: [
+    ReservationJobsRedisService,
+    CreateReservationQueueService,
+    UpdateReservationQueueService,
+  ],
 })
 export class ReservationJobsModule {}

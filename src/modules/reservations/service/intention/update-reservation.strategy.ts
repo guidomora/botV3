@@ -12,6 +12,7 @@ import { DatesService } from 'src/modules/dates/service/dates.service';
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { getMissingUpdateFields } from '../helpers/get-missing-update-fields.helper';
+import { UpdateReservationQueueService } from 'src/modules/reservation-jobs/service/update-reservation-queue.service';
 
 @Injectable()
 export class UpdateReservationStrategy implements IntentionStrategyInterface {
@@ -20,6 +21,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
 
   constructor(
     private readonly datesService: DatesService,
+    private readonly updateReservationQueueService: UpdateReservationQueueService,
     private readonly aiService: AiService,
     private readonly cacheService: CacheService,
   ) {}
@@ -162,7 +164,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
     }
 
     try {
-      const reply = await this.datesService.updateReservation(nextState);
+      const reply = await this.updateReservationQueueService.updateReservation(nextState);
       await this.cacheService.appendEntityMessage(
         waId,
         reply.message,
