@@ -1,9 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import * as bodyParser from 'body-parser';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Request } from 'express';
 import {
   AGENDA_SYNC_SIGNATURE_HEADER,
   AGENDA_SYNC_TIMESTAMP_HEADER,
@@ -16,10 +18,31 @@ async function bootstrap() {
 
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.setGlobalPrefix('bot');
-  app.enableCors({
-    origin: 'http://localhost:3001',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', INTERNAL_API_TOKEN_HEADER],
+  app.enableCors((req: Request, callback: (error: Error | null, options: CorsOptions) => void) => {
+    const origin = req.header('Origin');
+    const allowedHeaders = ['Content-Type', INTERNAL_API_TOKEN_HEADER];
+
+    if (origin === 'http://localhost:3001') {
+      callback(null, {
+        origin: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders,
+      });
+      return;
+    }
+
+    if (origin === 'http://localhost:3002') {
+      callback(null, {
+        origin: true,
+        methods: ['POST', 'OPTIONS'],
+        allowedHeaders,
+      });
+      return;
+    }
+
+    callback(null, {
+      origin: false,
+    });
   });
   app.useGlobalPipes(
     new ValidationPipe({
