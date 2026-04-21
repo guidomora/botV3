@@ -113,4 +113,8 @@ export class GoogleSheetsDatesSheetAdapter implements DatesSheetPort {
   deleteOldRows(rowStart: number, rowEnd: number, sheetIndex: number): Promise<void> {
     return this.googleSheetsService.deleteOldRows(rowStart, rowEnd, sheetIndex);
   }
+
+  deleteClosedDaysBefore(date: string): Promise<number> {
+    return this.googleSheetsService.deleteClosedDaysBefore(date);
+  }
 }
