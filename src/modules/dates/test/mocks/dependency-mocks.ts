@@ -59,5 +59,6 @@ export const googleSheetsServiceMock = () => ({
 export const googleTemporalSheetsServiceMock = () => ({
   addMissingField: jest.fn(),
   findTemporalRowIndexByWaId: jest.fn(),
+  findExpiredRows: jest.fn(),
   clearFields: jest.fn(),
 });

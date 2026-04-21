@@ -38,6 +38,7 @@ export function buildEmptyRow(waId: string): string[] {
     waId,
     status: TemporalStatusEnum.NO_DATA,
     intent: 'create',
+    updatedAt: new Date().toISOString(),
   };
   return objectToRowArray(obj);
 }

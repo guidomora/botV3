@@ -9,6 +9,7 @@ export interface TemporalDataType {
   quantity?: string;
   waId?: string;
   intent?: string;
+  updatedAt?: string;
 }
 
 export enum TemporalStatusEnum {
@@ -32,3 +33,10 @@ export type AddMissingFieldOutput = {
   message?: string;
   errorStatus?: StatusEnum;
 };
+
+export interface TemporalCleanupCandidate {
+  rowIndex: number;
+  waId: string;
+  status: TemporalStatusEnum;
+  updatedAt: string;
+}

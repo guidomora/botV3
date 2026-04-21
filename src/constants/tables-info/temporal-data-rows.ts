@@ -10,6 +10,7 @@ export const COL_MAP = {
   waId: 'G',
   status: 'H',
   intent: 'I',
+  updatedAt: 'J',
 } as const;
 
 export type ColumnKey = keyof typeof COL_MAP;
@@ -24,6 +25,7 @@ export const ROW_ORDER: ColumnKey[] = [
   'waId',
   'status',
   'intent',
+  'updatedAt',
 ];
 
 export const REQUIRED_SLOTS: (keyof TemporalDataType)[] = [
