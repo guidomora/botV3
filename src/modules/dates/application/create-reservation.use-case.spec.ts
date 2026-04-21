@@ -27,6 +27,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should create a reservation in place when slot row is empty', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
@@ -54,6 +55,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should create a new row when the current slot is already occupied', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
@@ -88,6 +90,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should return no date found when slot does not exist', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(-1);
 
     const result = await useCase.createReservation(createReservationRequestMock);
@@ -101,6 +104,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should return duplicate reservation response when phone already has same day booking', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(true);
 
@@ -110,6 +114,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should exclude the current reservation row when creating from an update flow', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
@@ -132,6 +137,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should reject large reservations that require manual handling', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
@@ -150,6 +156,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should allow large reservations when the caller explicitly enables them', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
@@ -174,6 +181,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should return no availability when capacity is exhausted', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
@@ -209,6 +217,7 @@ describe('CreateReservationRowUseCase', () => {
   });
 
   it('should skip availability refresh when requested by an orchestrator', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDate.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getAvailabilityFromReservations.mockResolvedValue({
@@ -223,5 +232,14 @@ describe('CreateReservationRowUseCase', () => {
     });
 
     expect(googleSheetsServiceMock.refreshAvailabilityForDate).not.toHaveBeenCalled();
+  });
+
+  it('should reject reservations for a closed day', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(true);
+
+    const result = await useCase.createReservation(createReservationRequestMock);
+
+    expect(result.status).toBe(StatusEnum.CLOSED_DAY);
+    expect(googleSheetsServiceMock.getDate).not.toHaveBeenCalled();
   });
 });

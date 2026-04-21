@@ -82,6 +82,10 @@ export class GoogleSheetsDatesSheetAdapter implements DatesSheetPort {
     );
   }
 
+  isDayClosed(date: string): Promise<boolean> {
+    return this.googleSheetsService.isDayClosed(date);
+  }
+
   getDayAvailability(date: string): Promise<string[][]> {
     return this.googleSheetsService.getDayAvailability(date);
   }

@@ -50,6 +50,11 @@ export class UpdateReservationUseCase {
       return targetReservationDateValidation;
     }
 
+    const targetDayOpenValidation = await this.validateTargetDayIsOpen(context);
+    if (targetDayOpenValidation) {
+      return targetDayOpenValidation;
+    }
+
     const currentReservationIndex = await this.findCurrentReservationIndex(context);
     if (currentReservationIndex === -1) {
       return {
@@ -180,6 +185,23 @@ export class UpdateReservationUseCase {
     };
 
     return this.datesSheetPort.getDateIndexByData(searchIndexObject);
+  }
+
+  private async validateTargetDayIsOpen(
+    context: UpdateReservationContextType,
+  ): Promise<ServiceResponse | null> {
+    const isDayClosed = await this.datesSheetPort.isDayClosed(context.targetDate);
+
+    if (!isDayClosed) {
+      return null;
+    }
+
+    return {
+      status: StatusEnum.CLOSED_DAY,
+      message:
+        'La fecha seleccionada corresponde a un dia en el que el restaurante permanece cerrado. Por favor elegi otra fecha.',
+      error: true,
+    };
   }
 
   private async validateNoSameDayDuplicate(

@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBody,
   ApiBadRequestResponse,
@@ -8,6 +19,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
@@ -25,6 +37,10 @@ import { DeleteDashboardReservationDto } from '../dto/delete-dashboard-reservati
 import { DeleteDashboardReservationResponseDto } from '../dto/delete-dashboard-reservation-response.dto';
 import { CreateDashboardReservationDto } from '../dto/create-dashboard-reservation.dto';
 import { CreateDashboardReservationResponseDto } from '../dto/create-dashboard-reservation-response.dto';
+import { ReservationClosedDayParamDto } from '../dto/reservation-closed-day-param.dto';
+import { CloseDashboardDayDto } from '../dto/close-dashboard-day.dto';
+import { CloseDashboardDayResponseDto } from '../dto/close-dashboard-day-response.dto';
+import { OpenDashboardDayResponseDto } from '../dto/open-dashboard-day-response.dto';
 
 const formatIsoDateToSheetDate = (date: string): string => {
   const [year, month, day] = date.split('-');
@@ -209,5 +225,70 @@ export class ReservationsController {
     @Body() body: DeleteDashboardReservationDto,
   ): Promise<DeleteDashboardReservationResponseDto> {
     return this.reservationsDashboardService.deleteReservation(body);
+  }
+
+  @Put('closed-days/:date')
+  @ApiOperation({
+    summary: 'Cerrar un dia de agenda desde el dashboard',
+    description:
+      'Marca una fecha como cerrada para bloquear nuevas reservas y reprogramaciones hacia ese dia.',
+  })
+  @ApiParam({
+    name: 'date',
+    description: 'Fecha a cerrar en formato ISO yyyy-mm-dd.',
+    example: '2026-04-16',
+  })
+  @ApiBody({
+    type: CloseDashboardDayDto,
+    required: false,
+  })
+  @ApiOkResponse({
+    description: 'Dia cerrado correctamente.',
+    type: CloseDashboardDayResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'La fecha del path o el body son invalidos.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'La fecha no existe en la agenda.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  closeDay(
+    @Param() params: ReservationClosedDayParamDto,
+    @Body() body: CloseDashboardDayDto = {},
+  ): Promise<CloseDashboardDayResponseDto> {
+    return this.reservationsDashboardService.closeDay({
+      date: params.date,
+      reason: body.reason,
+    });
+  }
+
+  @Delete('closed-days/:date')
+  @ApiOperation({
+    summary: 'Reabrir un dia de agenda desde el dashboard',
+    description: 'Quita el estado cerrado de una fecha para permitir nuevas reservas nuevamente.',
+  })
+  @ApiParam({
+    name: 'date',
+    description: 'Fecha a reabrir en formato ISO yyyy-mm-dd.',
+    example: '2026-04-16',
+  })
+  @ApiOkResponse({
+    description: 'Dia reabierto correctamente.',
+    type: OpenDashboardDayResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'La fecha del path es invalida.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  openDay(@Param() params: ReservationClosedDayParamDto): Promise<OpenDashboardDayResponseDto> {
+    return this.reservationsDashboardService.openDay(params.date);
   }
 }

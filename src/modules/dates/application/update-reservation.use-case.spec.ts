@@ -78,6 +78,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should return no date found when current reservation does not exist', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(-1);
 
     const result = await useCase.updateReservation(buildUpdateReservationMock());
@@ -88,6 +89,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should return duplicate same day response when phone already has another booking that day', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(true);
 
@@ -98,6 +100,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should reject update when resulting quantity becomes a large reservation', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -111,6 +114,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should allow large reservation updates when the caller explicitly enables them', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -139,6 +143,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should reject same-slot updates when there is no remaining availability', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -158,6 +163,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should update reservation in place when date and time do not change', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -189,6 +195,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should use current row quantity when newQuantity is not numeric', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -217,6 +224,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should reject moved reservation when target slot has no availability', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -236,6 +244,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should return generic error when moving reservation and creation fails', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -262,6 +271,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should move reservation to another date and refresh both dates', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -327,6 +337,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should move reservation within the same date and refresh availability once', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(27);
     googleSheetsServiceMock.hasReservationByDateAndPhone.mockResolvedValue(false);
     googleSheetsServiceMock.getRowValues.mockResolvedValue(updateCurrentRowValuesMock);
@@ -375,6 +386,7 @@ describe('UpdateReservationUseCase', () => {
   });
 
   it('should use normalized name to find the current reservation', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(false);
     googleSheetsServiceMock.getDateIndexByData.mockResolvedValue(-1);
 
     await useCase.updateReservation(buildUpdateReservationMock({ currentName: 'Guido' }));
@@ -384,6 +396,15 @@ describe('UpdateReservationUseCase', () => {
       time: '20:00',
       name: 'guido',
       phone: '54-9-1154916243',
+    });
+  });
+
+  it('should reject updates when the target day is closed', async () => {
+    googleSheetsServiceMock.isDayClosed.mockResolvedValue(true);
+
+    await expect(useCase.updateReservation(buildUpdateReservationMock())).resolves.toMatchObject({
+      status: StatusEnum.CLOSED_DAY,
+      error: true,
     });
   });
 });

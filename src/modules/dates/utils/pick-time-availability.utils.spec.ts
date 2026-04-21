@@ -4,6 +4,7 @@ import { pickAvailabilityForTime } from './pick-time-availability.utils';
 describe('pickAvailabilityForTime', () => {
   const day: AvailabilityResponse = {
     date_label: 'domingo 01 de marzo 2030 01/03/2030',
+    is_closed_day: false,
     columns: ['time', 'available_tables'],
     slots: [
       { time: '12:00', available_tables: 42 },

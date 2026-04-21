@@ -4,6 +4,7 @@ export * from './create-reservation.type';
 
 export * from './large-reservation-validation.type';
 export * from './update-reservation-context.type';
+export * from './dashboard-available-date.type';
 export * from './dashboard-available-dates.type';
 export * from './dashboard-reservation.type';
 export * from './dashboard-reservation-slot.type';
@@ -12,3 +13,5 @@ export * from './daily-reservation-slots.type';
 export * from './dashboard-update-reservation.type';
 export * from './dashboard-delete-reservation.type';
 export * from './dashboard-create-reservation.type';
+export * from './dashboard-close-day.type';
+export * from './dashboard-open-day.type';

@@ -157,6 +157,22 @@ export class DatesService {
         };
       }
 
+      const isDayClosed = await this.datesSheetPort.isDayClosed(date);
+      if (isDayClosed) {
+        const cleanedReservation = await this.datesTemporalSheetPort.clearFields(waId, [
+          'date',
+          'time',
+        ]);
+
+        return {
+          status: TemporalStatusEnum.IN_PROGRESS,
+          missingFields: cleanedReservation.missingFields,
+          reservationData: cleanedReservation.snapshot,
+          message: 'Ese dia el restaurante permanece cerrado. Por favor elegi otra fecha.',
+          errorStatus: StatusEnum.CLOSED_DAY,
+        };
+      }
+
       const dayAvailability = await this.getDayAvailability(date);
 
       if (dayAvailability.slots.length === 0) {
@@ -262,12 +278,42 @@ export class DatesService {
   }
 
   async getDayAvailability(date: string): Promise<AvailabilityResponse> {
+    const isClosedDay = await this.datesSheetPort.isDayClosed(date);
+
+    if (isClosedDay) {
+      return {
+        date_label: (await this.resolveAgendaDateLabel(date)) ?? date,
+        is_closed_day: true,
+        columns: ['time', 'available_tables'],
+        slots: [],
+        summary: {
+          first_time: null,
+          last_time: null,
+        },
+      };
+    }
+
     const dates = await this.datesSheetPort.getDayAvailability(date);
     this.logger.log('Day availability checked');
     return formatAvailabilityResponse(dates);
   }
 
   async getDayAndTimeAvailability(date: string, time: string): Promise<AvailabilityResponse> {
+    const isClosedDay = await this.datesSheetPort.isDayClosed(date);
+
+    if (isClosedDay) {
+      return {
+        date_label: (await this.resolveAgendaDateLabel(date)) ?? date,
+        is_closed_day: true,
+        columns: ['time', 'available_tables'],
+        slots: [],
+        summary: {
+          first_time: null,
+          last_time: null,
+        },
+      };
+    }
+
     const dates = await this.datesSheetPort.getDayAvailability(date);
 
     const formatedDayAvailability = formatAvailabilityResponse(dates);
@@ -299,6 +345,10 @@ export class DatesService {
 
   async resolveAgendaDateLabel(date: string): Promise<string | null> {
     return this.datesSheetPort.getAgendaDateLabel(date);
+  }
+
+  async isDayClosed(date: string): Promise<boolean> {
+    return this.datesSheetPort.isDayClosed(date);
   }
 
   async findReservationByLookup(

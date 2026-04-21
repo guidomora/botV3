@@ -1,12 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { DashboardAvailableDate } from 'src/lib';
 
 export class AvailableReservationDatesResponseDto {
   @ApiProperty({
-    description:
-      'Fechas cargadas en agenda y disponibles para consultar desde el dashboard, en formato ISO.',
-    example: ['2026-04-01', '2026-04-02', '2026-04-03'],
+    description: 'Fechas cargadas en agenda para consultar desde el dashboard, con su estado.',
+    example: [
+      { date: '2026-04-01', isClosed: false },
+      { date: '2026-04-02', isClosed: true },
+    ],
     isArray: true,
-    type: String,
+    type: Object,
   })
-  dates!: string[];
+  dates!: DashboardAvailableDate[];
 }

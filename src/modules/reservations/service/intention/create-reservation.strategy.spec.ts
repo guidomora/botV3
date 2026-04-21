@@ -162,6 +162,7 @@ describe('CreateReservationStrategy', () => {
   it('should suggest alternative availability on failed reservation due to no availability', async () => {
     const suggestedAvailability = {
       date_label: 'domingo 29 de marzo 2026 29/03/2026',
+      is_closed_day: false,
       columns: ['time', 'available_tables'] as ['time', 'available_tables'],
       slots: [{ time: '22:00', available_tables: 2 }],
       summary: { first_time: '22:00', last_time: '22:00' },

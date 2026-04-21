@@ -247,6 +247,7 @@ describe('UpdateReservationStrategy', () => {
     };
     const availability = {
       date_label: 'lunes 30 de marzo 2026 30/03/2026',
+      is_closed_day: false,
       columns: ['time', 'available_tables'] as ['time', 'available_tables'],
       slots: [{ time: '23:00', available_tables: 1 }],
       summary: { first_time: '23:00', last_time: '23:00' },

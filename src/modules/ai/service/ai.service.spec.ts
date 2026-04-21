@@ -37,6 +37,7 @@ describe('AiService', () => {
 
   const availability: AvailabilityResponse = {
     date_label: 'domingo 16 de marzo 2026 16/03/2026',
+    is_closed_day: false,
     columns: ['time', 'available_tables'],
     slots: [{ time: '21:00', available_tables: 4 }],
     summary: {

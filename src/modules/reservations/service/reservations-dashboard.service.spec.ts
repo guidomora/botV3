@@ -6,6 +6,8 @@ import { DeleteDashboardReservationUseCase } from '../application/delete-dashboa
 import { ReservationsDashboardService } from './reservations-dashboard.service';
 import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
 import { CreateDashboardReservationUseCase } from '../application/create-dashboard-reservation.use-case';
+import { CloseDashboardDayUseCase } from '../application/close-dashboard-day.use-case';
+import { OpenDashboardDayUseCase } from '../application/open-dashboard-day.use-case';
 
 describe('ReservationsDashboardService', () => {
   let service: ReservationsDashboardService;
@@ -15,10 +17,12 @@ describe('ReservationsDashboardService', () => {
   let getDailyReservationsSummaryUseCase: jest.Mocked<GetDailyReservationsSummaryUseCase>;
   let deleteDashboardReservationUseCase: jest.Mocked<DeleteDashboardReservationUseCase>;
   let updateDashboardReservationUseCase: jest.Mocked<UpdateDashboardReservationUseCase>;
+  let closeDashboardDayUseCase: jest.Mocked<CloseDashboardDayUseCase>;
+  let openDashboardDayUseCase: jest.Mocked<OpenDashboardDayUseCase>;
 
   beforeEach(() => {
     getAvailableReservationDatesUseCase = {
-      execute: jest.fn<Promise<string[]>, []>(),
+      execute: jest.fn(),
     } as unknown as jest.Mocked<GetAvailableReservationDatesUseCase>;
 
     getDailyReservationsSummaryUseCase = {
@@ -41,6 +45,14 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn(),
     } as unknown as jest.Mocked<DeleteDashboardReservationUseCase>;
 
+    closeDashboardDayUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<CloseDashboardDayUseCase>;
+
+    openDashboardDayUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<OpenDashboardDayUseCase>;
+
     service = new ReservationsDashboardService(
       createDashboardReservationUseCase,
       getAvailableReservationDatesUseCase,
@@ -48,20 +60,22 @@ describe('ReservationsDashboardService', () => {
       getDailyReservationsSummaryUseCase,
       deleteDashboardReservationUseCase,
       updateDashboardReservationUseCase,
+      closeDashboardDayUseCase,
+      openDashboardDayUseCase,
     );
   });
 
   it('should delegate available dates retrieval to the use case', async () => {
     getAvailableReservationDatesUseCase.execute.mockResolvedValue([
-      '2026-04-01',
-      '2026-04-02',
-      '2026-04-03',
+      { date: '2026-04-01', isClosed: false },
+      { date: '2026-04-02', isClosed: true },
+      { date: '2026-04-03', isClosed: false },
     ]);
 
     await expect(service.getAvailableDates()).resolves.toEqual([
-      '2026-04-01',
-      '2026-04-02',
-      '2026-04-03',
+      { date: '2026-04-01', isClosed: false },
+      { date: '2026-04-02', isClosed: true },
+      { date: '2026-04-03', isClosed: false },
     ]);
     expect(getAvailableReservationDatesUseCase.execute.mock.calls).toHaveLength(1);
   });
@@ -219,5 +233,39 @@ describe('ReservationsDashboardService', () => {
     });
 
     expect(deleteDashboardReservationUseCase.execute.mock.calls[0]).toEqual([payload]);
+  });
+
+  it('should delegate day close to the use case', async () => {
+    closeDashboardDayUseCase.execute.mockResolvedValue({
+      date: '2026-04-16',
+      isClosed: true,
+      reason: 'Cerrado por mantenimiento',
+      existingReservationsCount: 2,
+      warning:
+        'La fecha fue cerrada, pero todavia existen 2 reservas activas que deberan ser gestionadas manualmente.',
+    });
+
+    await expect(
+      service.closeDay({ date: '2026-04-16', reason: 'Cerrado por mantenimiento' }),
+    ).resolves.toEqual({
+      date: '2026-04-16',
+      isClosed: true,
+      reason: 'Cerrado por mantenimiento',
+      existingReservationsCount: 2,
+      warning:
+        'La fecha fue cerrada, pero todavia existen 2 reservas activas que deberan ser gestionadas manualmente.',
+    });
+  });
+
+  it('should delegate day reopen to the use case', async () => {
+    openDashboardDayUseCase.execute.mockResolvedValue({
+      date: '2026-04-16',
+      isClosed: false,
+    });
+
+    await expect(service.openDay('2026-04-16')).resolves.toEqual({
+      date: '2026-04-16',
+      isClosed: false,
+    });
   });
 });

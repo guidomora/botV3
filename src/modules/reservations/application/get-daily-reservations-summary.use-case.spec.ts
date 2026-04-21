@@ -12,6 +12,9 @@ describe('GetDailyReservationsSummaryUseCase', () => {
       getAvailableDates: jest.fn(),
       getReservationsByDate: jest.fn<Promise<DashboardReservation[]>, [string]>(),
       getAvailabilitySlotsByDate: jest.fn<Promise<DashboardReservationSlot[]>, [string]>(),
+      closeDay: jest.fn(),
+      openDay: jest.fn(),
+      isDayClosed: jest.fn(),
     };
 
     useCase = new GetDailyReservationsSummaryUseCase(reservationsDashboardReadPort);

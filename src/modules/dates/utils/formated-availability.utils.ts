@@ -8,6 +8,7 @@ export const formatAvailabilityResponse = (availabilityData: string[][]): Availa
   if (rows.length === 0) {
     return {
       date_label: null,
+      is_closed_day: false,
       columns: ['time', 'available_tables'],
       slots: [],
       summary: { first_time: null, last_time: null },
@@ -36,6 +37,7 @@ export const formatAvailabilityResponse = (availabilityData: string[][]): Availa
 
   return {
     date_label,
+    is_closed_day: false,
     columns: ['time', 'available_tables'],
     slots,
     summary: {

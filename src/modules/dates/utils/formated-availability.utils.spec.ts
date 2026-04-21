@@ -14,6 +14,7 @@ describe('formatAvailabilityResponse', () => {
 
     expect(result).toEqual({
       date_label: 'domingo 01 de marzo 2030 01/03/2030',
+      is_closed_day: false,
       columns: ['time', 'available_tables'],
       slots: [
         { time: '16:00', available_tables: 42 },
@@ -28,6 +29,7 @@ describe('formatAvailabilityResponse', () => {
 
     expect(result).toEqual({
       date_label: null,
+      is_closed_day: false,
       columns: ['time', 'available_tables'],
       slots: [],
       summary: { first_time: null, last_time: null },

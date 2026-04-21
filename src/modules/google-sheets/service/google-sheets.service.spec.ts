@@ -255,7 +255,7 @@ describe('Given GoogleSheetsService', () => {
 
   describe('When getDayAvailability is called', () => {
     it('Should return only requested date rows with available capacity', async () => {
-      repository.getDates.mockResolvedValue(availabilityRowsMock);
+      repository.getDates.mockResolvedValueOnce([]).mockResolvedValueOnce(availabilityRowsMock);
 
       const result = await service.getDayAvailability('martes 03 de marzo 2026 03/03/2026');
 
@@ -267,21 +267,74 @@ describe('Given GoogleSheetsService', () => {
   });
 
   describe('When getAvailableReservationDates is called', () => {
-    it('Should return unique agenda dates in ascending ISO order', async () => {
-      repository.getDates.mockResolvedValue([
-        ['Fecha'],
-        ['viernes 10 de abril 2026 10/04/2026'],
-        ['jueves 09 de abril 2026 09/04/2026'],
-        ['viernes 10 de abril 2026 10/04/2026'],
-        ['miercoles 15 de abril 2026 15/04/2026'],
-        ['fila sin fecha valida'],
-      ]);
+    it('Should return unique agenda dates in ascending ISO order with closed-day status', async () => {
+      repository.getDates
+        .mockResolvedValueOnce([
+          ['Fecha'],
+          ['viernes 10 de abril 2026 10/04/2026'],
+          ['jueves 09 de abril 2026 09/04/2026'],
+          ['viernes 10 de abril 2026 10/04/2026'],
+          ['miercoles 15 de abril 2026 15/04/2026'],
+          ['fila sin fecha valida'],
+        ])
+        .mockResolvedValueOnce([
+          ['2026-04-10', 'Cerrado por mantenimiento', '2026-04-01T10:00:00.000Z'],
+        ]);
 
       await expect(service.getAvailableReservationDates()).resolves.toEqual([
-        '2026-04-09',
-        '2026-04-10',
-        '2026-04-15',
+        { date: '2026-04-09', isClosed: false },
+        { date: '2026-04-10', isClosed: true },
+        { date: '2026-04-15', isClosed: false },
       ]);
+    });
+  });
+
+  describe('When closed days are managed', () => {
+    it('Should return true when the requested day is in ClosedDays', async () => {
+      repository.getDates.mockResolvedValue([
+        ['date', 'reason', 'createdAt'],
+        ['2026-04-10', 'Mantenimiento', '2026-04-01T10:00:00.000Z'],
+      ]);
+
+      await expect(service.isDayClosed('viernes 10 de abril 2026 10/04/2026')).resolves.toBe(true);
+    });
+
+    it('Should append a closed day only once', async () => {
+      repository.getDates.mockResolvedValueOnce([]);
+
+      await service.closeDay({
+        date: '2026-04-10',
+        reason: 'Mantenimiento',
+      });
+
+      expect(repository.appendRow.mock.calls).toHaveLength(1);
+      expect(repository.appendRow.mock.calls[0][0]).toBe('ClosedDays!A:C');
+      expect(repository.appendRow.mock.calls[0][1][0][0]).toBe('2026-04-10');
+      expect(repository.appendRow.mock.calls[0][1][0][1]).toBe('Mantenimiento');
+    });
+
+    it('Should not append duplicated closed days', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['2026-04-10', 'Mantenimiento', '2026-04-01T10:00:00.000Z'],
+      ]);
+
+      await service.closeDay({
+        date: '2026-04-10',
+        reason: 'Mantenimiento',
+      });
+
+      expect(repository.appendRow.mock.calls).toHaveLength(0);
+    });
+
+    it('Should delete the row when reopening a closed day', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['date', 'reason', 'createdAt'],
+        ['2026-04-10', 'Mantenimiento', '2026-04-01T10:00:00.000Z'],
+      ]);
+
+      await service.openDay('2026-04-10');
+
+      expect(repository.deleteRow.mock.calls[0]).toEqual([2, 3]);
     });
   });
 
@@ -359,7 +412,7 @@ describe('Given GoogleSheetsService', () => {
 
   describe('When getAvailabilitySlotsByDate is called', () => {
     it('Should map daily availability rows into slots', async () => {
-      repository.getDates.mockResolvedValue(availabilityRowsMock);
+      repository.getDates.mockResolvedValueOnce([]).mockResolvedValueOnce(availabilityRowsMock);
 
       await expect(
         service.getAvailabilitySlotsByDate('martes 03 de marzo 2026 03/03/2026'),

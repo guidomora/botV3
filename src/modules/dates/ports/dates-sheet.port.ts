@@ -32,6 +32,7 @@ export interface DatesSheetPort {
     requestedPeople?: number,
     excludedRowIndex?: number,
   ): Promise<Availability>;
+  isDayClosed(date: string): Promise<boolean>;
   getDayAvailability(date: string): Promise<string[][]>;
   updateAvailabilityFromReservations(updateParams: UpdateParams): Promise<void>;
   refreshAvailabilityForDate(date: string): Promise<void>;

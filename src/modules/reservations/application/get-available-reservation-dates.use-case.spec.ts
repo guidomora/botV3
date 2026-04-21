@@ -11,6 +11,9 @@ describe('GetAvailableReservationDatesUseCase', () => {
       getAvailableDates: jest.fn<Promise<DashboardAvailableDates>, []>(),
       getReservationsByDate: jest.fn(),
       getAvailabilitySlotsByDate: jest.fn(),
+      closeDay: jest.fn(),
+      openDay: jest.fn(),
+      isDayClosed: jest.fn(),
     };
 
     useCase = new GetAvailableReservationDatesUseCase(reservationsDashboardReadPort);
@@ -18,12 +21,16 @@ describe('GetAvailableReservationDatesUseCase', () => {
 
   it('should return available reservation dates from dashboard port', async () => {
     reservationsDashboardReadPort.getAvailableDates.mockResolvedValue([
-      '2026-04-01',
-      '2026-04-02',
-      '2026-04-03',
+      { date: '2026-04-01', isClosed: false },
+      { date: '2026-04-02', isClosed: true },
+      { date: '2026-04-03', isClosed: false },
     ]);
 
-    await expect(useCase.execute()).resolves.toEqual(['2026-04-01', '2026-04-02', '2026-04-03']);
+    await expect(useCase.execute()).resolves.toEqual([
+      { date: '2026-04-01', isClosed: false },
+      { date: '2026-04-02', isClosed: true },
+      { date: '2026-04-03', isClosed: false },
+    ]);
     expect(reservationsDashboardReadPort.getAvailableDates.mock.calls).toHaveLength(1);
   });
 });

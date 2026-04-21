@@ -45,6 +45,7 @@ describe('AvailabilityStrategy', () => {
   it('should answer day availability when date exists without time', async () => {
     const availability = {
       date_label: 'domingo 29 de marzo 2026 29/03/2026',
+      is_closed_day: false,
       columns: ['time', 'available_tables'] as ['time', 'available_tables'],
       slots: [{ time: '21:00', available_tables: 3 }],
       summary: { first_time: '21:00', last_time: '21:00' },
@@ -71,6 +72,7 @@ describe('AvailabilityStrategy', () => {
   it('should answer date and time availability when both are provided', async () => {
     const availability = {
       date_label: 'domingo 29 de marzo 2026 29/03/2026',
+      is_closed_day: false,
       columns: ['time', 'available_tables'] as ['time', 'available_tables'],
       slots: [{ time: '21:00', available_tables: 1 }],
       summary: { first_time: '21:00', last_time: '21:00' },
