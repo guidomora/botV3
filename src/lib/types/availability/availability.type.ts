@@ -11,6 +11,7 @@ export interface AvailabilitySlot {
 
 export interface AvailabilityResponse {
   date_label: string | null;
+  is_closed_day: boolean;
   columns: ['time', 'available_tables'];
   slots: AvailabilitySlot[];
   summary: {

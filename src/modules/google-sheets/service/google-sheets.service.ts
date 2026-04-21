@@ -5,6 +5,8 @@ import { SHEETS_NAMES } from 'src/constants/sheets-name/sheets-name';
 import { AddDataType } from 'src/lib/types/add-data.type';
 import {
   Availability,
+  DashboardAvailableDates,
+  DashboardCloseDayType,
   computeOnlineMaxCapacity,
   DashboardReservation,
   DashboardReservationSlot,
@@ -23,6 +25,9 @@ export class GoogleSheetsService {
   private readonly logger = new Logger(GoogleSheetsService.name);
   constructor(private readonly googleSheetsRepository: GoogleSheetsRepository) {}
 
+  private static readonly CLOSED_DAYS_RANGE = `${SheetsName.CLOSED_DAYS}!A:C`;
+  private static readonly CLOSED_DAYS_SHEET_INDEX = 3;
+
   private formatCalendarDateToIso(date: string): string | null {
     const calendarDate = extractCalendarDate(date);
 
@@ -33,6 +38,48 @@ export class GoogleSheetsService {
     const [day, month, year] = calendarDate.split('/');
 
     return `${year}-${month}-${day}`;
+  }
+
+  private getNormalizedIsoDate(date: string): string | null {
+    const trimmedDate = date.trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
+      return trimmedDate;
+    }
+
+    return this.formatCalendarDateToIso(trimmedDate);
+  }
+
+  private async getClosedDayEntries(): Promise<
+    { rowIndex: number; date: string; reason: string | null; createdAt: string | null }[]
+  > {
+    const rows = await this.googleSheetsRepository.getDates(GoogleSheetsService.CLOSED_DAYS_RANGE);
+
+    return rows
+      .map((row, index) => {
+        const normalizedDate = this.getNormalizedIsoDate(String(row[0] ?? ''));
+
+        if (!normalizedDate) {
+          return null;
+        }
+
+        return {
+          rowIndex: index + 1,
+          date: normalizedDate,
+          reason: row[1] ? String(row[1]) : null,
+          createdAt: row[2] ? String(row[2]) : null,
+        };
+      })
+      .filter(
+        (
+          entry,
+        ): entry is {
+          rowIndex: number;
+          date: string;
+          reason: string | null;
+          createdAt: string | null;
+        } => entry !== null,
+      );
   }
 
   private phonesMatch(leftPhone?: string | null, rightPhone?: string | null): boolean {
@@ -336,7 +383,63 @@ export class GoogleSheetsService {
     };
   }
 
+  async isDayClosed(date: string): Promise<boolean> {
+    const normalizedDate = this.getNormalizedIsoDate(date);
+
+    if (!normalizedDate) {
+      return false;
+    }
+
+    const closedDays = await this.getClosedDayEntries();
+    return closedDays.some((closedDay) => closedDay.date === normalizedDate);
+  }
+
+  async closeDay(payload: DashboardCloseDayType): Promise<void> {
+    const normalizedDate = this.getNormalizedIsoDate(payload.date);
+
+    if (!normalizedDate) {
+      throw new Error(`Formato de fecha invalido para ClosedDays: ${payload.date}`);
+    }
+
+    const closedDays = await this.getClosedDayEntries();
+    const alreadyClosed = closedDays.some((closedDay) => closedDay.date === normalizedDate);
+
+    if (alreadyClosed) {
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+
+    await this.googleSheetsRepository.appendRow(GoogleSheetsService.CLOSED_DAYS_RANGE, [
+      [normalizedDate, payload.reason?.trim() || '', createdAt],
+    ]);
+  }
+
+  async openDay(date: string): Promise<void> {
+    const normalizedDate = this.getNormalizedIsoDate(date);
+
+    if (!normalizedDate) {
+      return;
+    }
+
+    const closedDays = await this.getClosedDayEntries();
+    const closedDay = closedDays.find((entry) => entry.date === normalizedDate);
+
+    if (!closedDay) {
+      return;
+    }
+
+    await this.googleSheetsRepository.deleteRow(
+      closedDay.rowIndex,
+      GoogleSheetsService.CLOSED_DAYS_SHEET_INDEX,
+    );
+  }
+
   async getDayAvailability(date: string): Promise<string[][]> {
+    if (await this.isDayClosed(date)) {
+      return [];
+    }
+
     const range = `${SHEETS_NAMES[1]}!A:D`;
 
     try {
@@ -351,15 +454,23 @@ export class GoogleSheetsService {
     }
   }
 
-  async getAvailableReservationDates(): Promise<string[]> {
+  async getAvailableReservationDates(): Promise<DashboardAvailableDates> {
     const range = `${SHEETS_NAMES[1]}!A:A`;
 
     try {
-      const data = await this.googleSheetsRepository.getDates(range);
+      const [data, closedDays] = await Promise.all([
+        this.googleSheetsRepository.getDates(range),
+        this.getClosedDayEntries(),
+      ]);
+      const closedDaysSet = new Set(closedDays.map((closedDay) => closedDay.date));
 
       return [...new Set(data.map((row) => this.formatCalendarDateToIso(String(row[0] ?? ''))))]
-        .filter((date): date is string => !!date)
-        .sort((leftDate, rightDate) => leftDate.localeCompare(rightDate));
+        .filter((date): date is string => Boolean(date))
+        .sort((leftDate, rightDate) => leftDate.localeCompare(rightDate))
+        .map((date) => ({
+          date,
+          isClosed: closedDaysSet.has(date),
+        }));
     } catch (error) {
       this.googleSheetsRepository.failure(error);
     }

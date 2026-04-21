@@ -34,6 +34,16 @@ export class CreateReservationRowUseCase {
           status: StatusEnum.DATE_ALREADY_PASSED,
         };
       }
+      const isDayClosed = await this.datesSheetPort.isDayClosed(date!);
+      if (isDayClosed) {
+        return {
+          error: true,
+          message:
+            'La fecha seleccionada corresponde a un dia en el que el restaurante permanece cerrado. Por favor elegi otra fecha.',
+          status: StatusEnum.CLOSED_DAY,
+        };
+      }
+
       const index = await this.datesSheetPort.getDate(date!, time!);
 
       if (index === -1) {

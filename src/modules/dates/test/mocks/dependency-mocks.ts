@@ -36,6 +36,7 @@ export const googleSheetsServiceMock = () => ({
   getDate: jest.fn(),
   hasReservationByDateAndPhone: jest.fn(),
   getAvailabilityFromReservations: jest.fn(),
+  isDayClosed: jest.fn(),
   getRowValues: jest.fn(),
   createReservation: jest.fn(),
   updateAvailabilityFromReservations: jest.fn(),
@@ -50,6 +51,8 @@ export const googleSheetsServiceMock = () => ({
   deleteReservation: jest.fn(),
   getDateIndexByDate: jest.fn(),
   deleteOldRows: jest.fn(),
+  closeDay: jest.fn(),
+  openDay: jest.fn(),
 });
 
 export const googleTemporalSheetsServiceMock = () => ({

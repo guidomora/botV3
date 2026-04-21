@@ -382,6 +382,7 @@ describe('DatesService', () => {
 
     await expect(service.getDayAvailability(futureReservationDateLabelMock)).resolves.toEqual({
       date_label: futureReservationDateLabelMock,
+      is_closed_day: false,
       columns: ['time', 'available_tables'],
       slots: [
         { time: '16:00', available_tables: 42 },
@@ -398,6 +399,7 @@ describe('DatesService', () => {
       service.getDayAndTimeAvailability(futureReservationDateLabelMock, '17:00'),
     ).resolves.toEqual({
       date_label: futureReservationDateLabelMock,
+      is_closed_day: false,
       columns: ['time', 'available_tables'],
       slots: [{ time: '17:00', available_tables: 40 }],
       summary: { first_time: '17:00', last_time: '17:00' },
@@ -411,6 +413,7 @@ describe('DatesService', () => {
       service.getDayAndTimeAvailability(futureReservationDateLabelMock, '17:30'),
     ).resolves.toEqual({
       date_label: futureReservationDateLabelMock,
+      is_closed_day: false,
       columns: ['time', 'available_tables'],
       slots: [
         { time: '17:00', available_tables: 40 },

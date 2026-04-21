@@ -3,9 +3,12 @@ import {
   DashboardCreateReservationResult,
   DashboardCreateReservationType,
   DashboardAvailableDates,
+  DashboardCloseDayResult,
+  DashboardCloseDayType,
   DashboardDeleteReservationResult,
   DashboardDeleteReservationType,
   DailyReservationSlots,
+  DashboardOpenDayResult,
   DashboardUpdateReservationResult,
   DashboardUpdateReservationType,
   DailyReservationsSummary,
@@ -16,6 +19,8 @@ import { GetDailyReservationsSummaryUseCase } from '../application/get-daily-res
 import { DeleteDashboardReservationUseCase } from '../application/delete-dashboard-reservation.use-case';
 import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
 import { CreateDashboardReservationUseCase } from '../application/create-dashboard-reservation.use-case';
+import { CloseDashboardDayUseCase } from '../application/close-dashboard-day.use-case';
+import { OpenDashboardDayUseCase } from '../application/open-dashboard-day.use-case';
 
 @Injectable()
 export class ReservationsDashboardService {
@@ -26,6 +31,8 @@ export class ReservationsDashboardService {
     private readonly getDailyReservationsSummaryUseCase: GetDailyReservationsSummaryUseCase,
     private readonly deleteDashboardReservationUseCase: DeleteDashboardReservationUseCase,
     private readonly updateDashboardReservationUseCase: UpdateDashboardReservationUseCase,
+    private readonly closeDashboardDayUseCase: CloseDashboardDayUseCase,
+    private readonly openDashboardDayUseCase: OpenDashboardDayUseCase,
   ) {}
 
   async getAvailableDates(): Promise<DashboardAvailableDates> {
@@ -56,5 +63,13 @@ export class ReservationsDashboardService {
     payload: DashboardDeleteReservationType,
   ): Promise<DashboardDeleteReservationResult> {
     return this.deleteDashboardReservationUseCase.execute(payload);
+  }
+
+  async closeDay(payload: DashboardCloseDayType): Promise<DashboardCloseDayResult> {
+    return this.closeDashboardDayUseCase.execute(payload);
+  }
+
+  async openDay(date: string): Promise<DashboardOpenDayResult> {
+    return this.openDashboardDayUseCase.execute(date);
   }
 }

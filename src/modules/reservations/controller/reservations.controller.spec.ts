@@ -13,6 +13,8 @@ describe('ReservationsController', () => {
     getDailySummary: jest.fn(),
     deleteReservation: jest.fn(),
     updateReservation: jest.fn(),
+    closeDay: jest.fn(),
+    openDay: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -66,13 +68,17 @@ describe('ReservationsController', () => {
 
   it('should return available reservation dates for dashboard calendar', async () => {
     reservationsDashboardServiceMock.getAvailableDates.mockResolvedValue([
-      '2026-04-01',
-      '2026-04-02',
-      '2026-04-03',
+      { date: '2026-04-01', isClosed: false },
+      { date: '2026-04-02', isClosed: true },
+      { date: '2026-04-03', isClosed: false },
     ]);
 
     await expect(controller.getAvailableDates()).resolves.toEqual({
-      dates: ['2026-04-01', '2026-04-02', '2026-04-03'],
+      dates: [
+        { date: '2026-04-01', isClosed: false },
+        { date: '2026-04-02', isClosed: true },
+        { date: '2026-04-03', isClosed: false },
+      ],
     });
 
     expect(reservationsDashboardServiceMock.getAvailableDates).toHaveBeenCalledTimes(1);
@@ -207,5 +213,44 @@ describe('ReservationsController', () => {
     });
 
     expect(reservationsDashboardServiceMock.deleteReservation).toHaveBeenCalledWith(body);
+  });
+
+  it('should delegate close day request to dashboard service', async () => {
+    reservationsDashboardServiceMock.closeDay.mockResolvedValue({
+      date: '2026-04-16',
+      isClosed: true,
+      reason: 'Cerrado por mantenimiento',
+      existingReservationsCount: 1,
+      warning:
+        'La fecha fue cerrada, pero todavia existen 1 reservas activas que deberan ser gestionadas manualmente.',
+    });
+
+    await expect(
+      controller.closeDay(
+        { date: '2026-04-16' },
+        {
+          reason: 'Cerrado por mantenimiento',
+        },
+      ),
+    ).resolves.toEqual({
+      date: '2026-04-16',
+      isClosed: true,
+      reason: 'Cerrado por mantenimiento',
+      existingReservationsCount: 1,
+      warning:
+        'La fecha fue cerrada, pero todavia existen 1 reservas activas que deberan ser gestionadas manualmente.',
+    });
+  });
+
+  it('should delegate open day request to dashboard service', async () => {
+    reservationsDashboardServiceMock.openDay.mockResolvedValue({
+      date: '2026-04-16',
+      isClosed: false,
+    });
+
+    await expect(controller.openDay({ date: '2026-04-16' })).resolves.toEqual({
+      date: '2026-04-16',
+      isClosed: false,
+    });
   });
 });
