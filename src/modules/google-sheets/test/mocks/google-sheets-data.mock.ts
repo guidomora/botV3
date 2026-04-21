@@ -38,4 +38,5 @@ export const temporalRowMock = [
   'wa-123',
   'IN_PROGRESS',
   'create',
+  '2026-03-03T20:00:00.000Z',
 ];

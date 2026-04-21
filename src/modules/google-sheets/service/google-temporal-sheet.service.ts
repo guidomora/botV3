@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GoogleTemporalSheetsRepository } from '../domain/repository/google-temporal-sheet.repository';
-import { AddMissingFieldInput, TemporalDataType } from 'src/lib';
+import { AddMissingFieldInput, TemporalCleanupCandidate, TemporalDataType } from 'src/lib';
 import { SHEETS_NAMES } from 'src/constants';
 import { TemporalStatusEnum } from 'src/lib';
 import { computeStatus, objectToRowArray, buildEmptyRow } from '../helpers/temporal-data.helper';
@@ -54,6 +54,7 @@ export class GoogleTemporalSheetsService {
     apply('quantity', values.quantity);
 
     const { status, missingFields } = computeStatus(next);
+    next.updatedAt = new Date().toISOString();
     next.status = status;
     const fullRow = objectToRowArray(next);
     await this.googleTemporalSheetsRepository.updateFullRow(sheetName, rowIndex, fullRow);
@@ -92,6 +93,7 @@ export class GoogleTemporalSheetsService {
     }
 
     const { status, missingFields } = computeStatus(next);
+    next.updatedAt = new Date().toISOString();
     next.status = status;
 
     await this.googleTemporalSheetsRepository.updateFullRow(
@@ -110,11 +112,16 @@ export class GoogleTemporalSheetsService {
     };
   }
 
+  async findExpiredRows(cutoffIso: string): Promise<TemporalCleanupCandidate[]> {
+    const sheetName = SHEETS_NAMES[2];
+    return this.googleTemporalSheetsRepository.findExpiredRows(sheetName, cutoffIso);
+  }
+
   private rowArrayToObject(row: string[], waIdFallback: string) {
     const safe = [...row];
     while (safe.length < 10) safe.push(' ');
 
-    const [date, time, name, phone, service, quantity, waId, status, intent] = safe;
+    const [date, time, name, phone, service, quantity, waId, status, intent, updatedAt] = safe;
     return {
       date: date || ' ',
       time: time || ' ',
@@ -125,6 +132,7 @@ export class GoogleTemporalSheetsService {
       waId: waId || waIdFallback,
       status: (status as TemporalStatusEnum) || TemporalStatusEnum.NO_DATA,
       intent: intent || 'create',
+      updatedAt: updatedAt || ' ',
     };
   }
 }

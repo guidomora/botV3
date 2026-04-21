@@ -26,6 +26,7 @@ describe('Given GoogleTemporalSheetsService', () => {
         'wa-123',
         'NO_DATA',
         'create',
+        '2026-03-03T18:00:00.000Z',
       ]);
 
       const result = await service.addMissingField({
@@ -51,6 +52,7 @@ describe('Given GoogleTemporalSheetsService', () => {
         'wa-321',
         'NO_DATA',
         'create',
+        '2026-03-05T18:00:00.000Z',
       ]);
 
       await service.addMissingField({
@@ -97,6 +99,28 @@ describe('Given GoogleTemporalSheetsService', () => {
 
       await expect(service.findTemporalRowIndexByWaId('wa-abc')).resolves.toBe(10);
       expect(repository.findRowIndexByWaId.mock.calls).toHaveLength(1);
+    });
+  });
+
+  describe('When findExpiredRows is called', () => {
+    it('Should delegate cleanup candidate lookup to repository', async () => {
+      const candidates = [
+        {
+          rowIndex: 7,
+          waId: 'wa-expired',
+          status: TemporalStatusEnum.IN_PROGRESS,
+          updatedAt: '2026-03-03T10:00:00.000Z',
+        },
+      ];
+      repository.findExpiredRows.mockResolvedValue(candidates);
+
+      await expect(service.findExpiredRows('2026-03-03T16:00:00.000Z')).resolves.toEqual(
+        candidates,
+      );
+      expect(repository.findExpiredRows.mock.calls[0]).toEqual([
+        expect.any(String),
+        '2026-03-03T16:00:00.000Z',
+      ]);
     });
   });
 

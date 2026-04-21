@@ -4,8 +4,8 @@ import { DeleteReservation, GetIndexParams, UpdateParams } from 'src/lib';
 import { Logger } from '@nestjs/common';
 import { GenerateDatetime } from '../dateTime-build/generate-datetime';
 import { parseDate } from '../utils/parseDate';
-import { DATES_SHEET_PORT } from '../dates.tokens';
-import { DatesSheetPort } from '../ports';
+import { DATES_SHEET_PORT, DATES_TEMPORAL_SHEET_PORT } from '../dates.tokens';
+import { DatesSheetPort, DatesTemporalSheetPort } from '../ports';
 
 @Injectable()
 export class DeleteReservationUseCase {
@@ -14,6 +14,8 @@ export class DeleteReservationUseCase {
 
   constructor(
     @Inject(DATES_SHEET_PORT) private readonly datesSheetPort: DatesSheetPort,
+    @Inject(DATES_TEMPORAL_SHEET_PORT)
+    private readonly datesTemporalSheetPort: DatesTemporalSheetPort,
     private readonly generateDatetime: GenerateDatetime,
   ) {}
 
@@ -76,6 +78,7 @@ export class DeleteReservationUseCase {
 
   async deleteOldRows() {
     try {
+      const deletedTemporalRows = await this.deleteExpiredTemporalRows();
       const retentionDays = this.getRetentionDays();
       const deleteTillDate = this.generateDatetime.createPastDay(retentionDays - 1);
       const oldestRegisteredDate = await this.datesSheetPort.getFirstRowValue(
@@ -84,7 +87,10 @@ export class DeleteReservationUseCase {
 
       if (oldestRegisteredDate === 'no hay valores') {
         this.logger.log('No hay filas antiguas para eliminar porque la agenda esta vacia.');
-        return 'No hay filas antiguas para eliminar.';
+        return this.buildDeleteOldRowsMessage(
+          'No hay filas antiguas para eliminar.',
+          deletedTemporalRows,
+        );
       }
 
       const oldestDate = parseDate(oldestRegisteredDate);
@@ -94,14 +100,20 @@ export class DeleteReservationUseCase {
         this.logger.log(
           `No hay filas antiguas para eliminar. La agenda ya conserva ${retentionDays} dias hacia atras.`,
         );
-        return 'No hay filas antiguas para eliminar.';
+        return this.buildDeleteOldRowsMessage(
+          'No hay filas antiguas para eliminar.',
+          deletedTemporalRows,
+        );
       }
 
       const rowEndFirstSheet = await this.datesSheetPort.getDateIndexByDate(deleteTillDate, 0);
 
       if (rowEndFirstSheet === -1) {
         this.logger.warn('No se encontro la fecha de corte para la hoja de reservas');
-        return 'No se encontro la fecha de corte.';
+        return this.buildDeleteOldRowsMessage(
+          'No se encontro la fecha de corte.',
+          deletedTemporalRows,
+        );
       }
 
       await this.datesSheetPort.deleteOldRows(this.rowStart, rowEndFirstSheet, 0);
@@ -115,7 +127,10 @@ export class DeleteReservationUseCase {
 
       if (rowEndSecondSheet === -1) {
         this.logger.warn('No se encontro la fecha de corte para la hoja de disponibilidad');
-        return 'No se encontro la fecha de corte.';
+        return this.buildDeleteOldRowsMessage(
+          'No se encontro la fecha de corte.',
+          deletedTemporalRows,
+        );
       }
 
       await this.datesSheetPort.deleteOldRows(this.rowStart, rowEndSecondSheet, 1);
@@ -139,7 +154,10 @@ export class DeleteReservationUseCase {
         );
       }
 
-      return `Se eliminaron las filas anteriores a ${deleteTillDate}.`;
+      return this.buildDeleteOldRowsMessage(
+        `Se eliminaron las filas anteriores a ${deleteTillDate}.`,
+        deletedTemporalRows,
+      );
     } catch (error) {
       this.logger.error(`Error al eliminar las filas antiguas`, error);
       throw error;
@@ -156,5 +174,33 @@ export class DeleteReservationUseCase {
     }
 
     return retentionDays;
+  }
+
+  private async deleteExpiredTemporalRows(): Promise<number> {
+    const expirationWindowMs = 6 * 60 * 60 * 1000;
+    const cutoffIso = new Date(Date.now() - expirationWindowMs).toISOString();
+    const expiredRows = await this.datesTemporalSheetPort.findExpiredRows(cutoffIso);
+
+    if (expiredRows.length === 0) {
+      this.logger.log(`No hubo filas temporales expiradas para eliminar hasta ${cutoffIso}.`);
+      return 0;
+    }
+
+    for (const row of [...expiredRows].sort((left, right) => right.rowIndex - left.rowIndex)) {
+      await this.datesSheetPort.deleteRow(row.rowIndex, 2);
+      this.logger.log(
+        `Fila temporal expirada eliminada para waId ${row.waId} con estado ${row.status} y updatedAt ${row.updatedAt}`,
+      );
+    }
+
+    return expiredRows.length;
+  }
+
+  private buildDeleteOldRowsMessage(baseMessage: string, deletedTemporalRows: number): string {
+    if (deletedTemporalRows === 0) {
+      return baseMessage;
+    }
+
+    return `${baseMessage} Ademas se eliminaron ${deletedTemporalRows} filas temporales expiradas.`;
   }
 }

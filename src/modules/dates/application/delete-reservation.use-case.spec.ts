@@ -8,22 +8,26 @@ import {
 import {
   generateDatetimeMock as buildGenerateDatetimeMock,
   googleSheetsServiceMock as buildGoogleSheetsServiceMock,
+  googleTemporalSheetsServiceMock as buildGoogleTemporalSheetsServiceMock,
 } from '../test/mocks/dependency-mocks';
-import { DatesSheetPort } from '../ports';
+import { DatesSheetPort, DatesTemporalSheetPort } from '../ports';
 
 describe('DeleteReservationUseCase', () => {
   let useCase: DeleteReservationUseCase;
 
   const googleSheetsServiceMock = buildGoogleSheetsServiceMock();
+  const googleTemporalSheetsServiceMock = buildGoogleTemporalSheetsServiceMock();
   const generateDatetimeMock = buildGenerateDatetimeMock();
 
   beforeEach(() => {
     Object.values(googleSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
+    Object.values(googleTemporalSheetsServiceMock).forEach((mockFn) => mockFn.mockReset());
     Object.values(generateDatetimeMock).forEach((mockFn) => mockFn.mockReset());
     process.env.AGENDA_DAYS_BACK_TO_KEEP = '15';
 
     useCase = new DeleteReservationUseCase(
       googleSheetsServiceMock as unknown as DatesSheetPort,
+      googleTemporalSheetsServiceMock as unknown as DatesTemporalSheetPort,
       generateDatetimeMock as unknown as GenerateDatetime,
     );
   });
@@ -97,6 +101,7 @@ describe('DeleteReservationUseCase', () => {
 
   it('should delete old rows in both sheets when cutoff date exists', async () => {
     generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([]);
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue(
       'viernes 14 de febrero 2030 14/02/2030',
     );
@@ -117,6 +122,7 @@ describe('DeleteReservationUseCase', () => {
 
   it('should skip deletion when there are no rows in the availability sheet', async () => {
     generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([]);
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue('no hay valores');
 
     await expect(useCase.deleteOldRows()).resolves.toBe('No hay filas antiguas para eliminar.');
@@ -128,6 +134,7 @@ describe('DeleteReservationUseCase', () => {
 
   it('should skip deletion when retention window is already satisfied', async () => {
     generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([]);
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue(
       'martes 10 de marzo 2030 10/03/2030',
     );
@@ -141,6 +148,7 @@ describe('DeleteReservationUseCase', () => {
 
   it('should stop when first sheet cutoff date is not found', async () => {
     generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([]);
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue(
       'viernes 14 de febrero 2030 14/02/2030',
     );
@@ -154,6 +162,7 @@ describe('DeleteReservationUseCase', () => {
 
   it('should stop when second sheet cutoff date is not found', async () => {
     generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([]);
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue(
       'viernes 14 de febrero 2030 14/02/2030',
     );
@@ -167,6 +176,7 @@ describe('DeleteReservationUseCase', () => {
 
   it('should rethrow unexpected errors while deleting old rows', async () => {
     generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([]);
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue(
       'viernes 14 de febrero 2030 14/02/2030',
     );
@@ -177,9 +187,43 @@ describe('DeleteReservationUseCase', () => {
 
   it('should throw when retention env is invalid', async () => {
     process.env.AGENDA_DAYS_BACK_TO_KEEP = '0';
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([]);
 
     await expect(useCase.deleteOldRows()).rejects.toThrow(
       'La variable de entorno AGENDA_DAYS_BACK_TO_KEEP debe ser un numero entero mayor a 0.',
     );
+  });
+
+  it('should delete expired temporal rows before cleaning agenda rows', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2030-03-02T18:00:00.000Z'));
+    generateDatetimeMock.createPastDay.mockReturnValue('lunes 02 de marzo 2030 02/03/2030');
+    googleTemporalSheetsServiceMock.findExpiredRows.mockResolvedValue([
+      {
+        rowIndex: 9,
+        waId: 'wa-older',
+        status: 'IN_PROGRESS',
+        updatedAt: '2030-03-02T08:00:00.000Z',
+      },
+      {
+        rowIndex: 5,
+        waId: 'wa-oldest',
+        status: 'NO_DATA',
+        updatedAt: '2030-03-02T07:00:00.000Z',
+      },
+    ]);
+    googleSheetsServiceMock.getFirstRowValue.mockResolvedValue('no hay valores');
+
+    await expect(useCase.deleteOldRows()).resolves.toBe(
+      'No hay filas antiguas para eliminar. Ademas se eliminaron 2 filas temporales expiradas.',
+    );
+
+    expect(googleTemporalSheetsServiceMock.findExpiredRows).toHaveBeenCalledWith(
+      '2030-03-02T12:00:00.000Z',
+    );
+    expect(googleSheetsServiceMock.deleteRow).toHaveBeenNthCalledWith(1, 9, 2);
+    expect(googleSheetsServiceMock.deleteRow).toHaveBeenNthCalledWith(2, 5, 2);
+
+    jest.useRealTimers();
   });
 });

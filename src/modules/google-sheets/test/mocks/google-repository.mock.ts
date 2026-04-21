@@ -25,6 +25,7 @@ export const createGoogleSheetsRepositoryMock = (): jest.Mocked<GoogleSheetsRepo
 export const createGoogleTemporalRepositoryMock = (): jest.Mocked<GoogleTemporalSheetsRepository> =>
   ({
     findRowIndexByWaId: jest.fn(),
+    findExpiredRows: jest.fn(),
     appendSeedRow: jest.fn(),
     readRowByIndex: jest.fn(),
     updateFullRow: jest.fn(),

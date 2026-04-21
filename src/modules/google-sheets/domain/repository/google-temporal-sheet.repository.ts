@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { JWT } from 'google-auth-library';
 import { sheets_v4, google } from 'googleapis';
-import { GoogleSheetsOpts, ProviderError, ProviderName } from 'src/lib';
+import {
+  GoogleSheetsOpts,
+  ProviderError,
+  ProviderName,
+  TemporalCleanupCandidate,
+  TemporalStatusEnum,
+} from 'src/lib';
 import { Logger } from '@nestjs/common';
 
 @Injectable()
@@ -42,9 +48,49 @@ export class GoogleTemporalSheetsRepository {
     }
   }
 
+  async findExpiredRows(sheetName: string, cutoffIso: string): Promise<TemporalCleanupCandidate[]> {
+    try {
+      const range = `${sheetName}!A:J`;
+      const res = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.sheetId,
+        range,
+      });
+      const values = (res.data.values ?? []) as string[][];
+
+      return values
+        .slice(1)
+        .map((row, index) => {
+          const status = row[7] as TemporalStatusEnum | undefined;
+          const waId = row[6] ?? '';
+          const updatedAt = row[9] ?? '';
+
+          if (!waId || !updatedAt || !status) {
+            return null;
+          }
+
+          if (
+            ![TemporalStatusEnum.NO_DATA, TemporalStatusEnum.IN_PROGRESS].includes(status) ||
+            updatedAt >= cutoffIso
+          ) {
+            return null;
+          }
+
+          return {
+            rowIndex: index + 2,
+            waId,
+            status,
+            updatedAt,
+          };
+        })
+        .filter((candidate): candidate is TemporalCleanupCandidate => candidate !== null);
+    } catch (err) {
+      this.failure(err, 'No se pudieron buscar filas temporales expiradas');
+    }
+  }
+
   async appendSeedRow(sheetName: string, rowArray: string[]): Promise<number> {
     try {
-      const range = `${sheetName}!G:I`;
+      const range = `${sheetName}!A:J`;
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.sheetId,
         range,
@@ -61,7 +107,7 @@ export class GoogleTemporalSheetsRepository {
 
   async readRowByIndex(sheetName: string, rowIndex: number): Promise<string[]> {
     try {
-      const range = `${sheetName}!A${rowIndex}:I${rowIndex}`;
+      const range = `${sheetName}!A${rowIndex}:J${rowIndex}`;
       const res = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.sheetId,
         range,
@@ -74,10 +120,10 @@ export class GoogleTemporalSheetsRepository {
     }
   }
 
-  /** Actualiza una fila completa con un array con 9 columnas (A..I) */
+  /** Actualiza una fila completa con un array con 10 columnas (A..J) */
   async updateFullRow(sheetName: string, rowIndex: number, rowArray: string[]): Promise<void> {
     try {
-      const range = `${sheetName}!A${rowIndex}:I${rowIndex}`;
+      const range = `${sheetName}!A${rowIndex}:J${rowIndex}`;
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.sheetId,
         range,

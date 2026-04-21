@@ -65,7 +65,7 @@ describe('Given GoogleTemporalSheetsRepository', () => {
       await expect(repository.appendSeedRow('Temporal', temporalRowMock)).resolves.toBe(-1);
       expect(sheetsMock.spreadsheets.values.append).toHaveBeenCalledWith(
         expect.objectContaining({
-          range: 'Temporal!G:I',
+          range: 'Temporal!A:J',
           requestBody: { values: [temporalRowMock] },
         }),
       );
@@ -101,12 +101,12 @@ describe('Given GoogleTemporalSheetsRepository', () => {
   });
 
   describe('When updateFullRow is called', () => {
-    it('Should update full A:I range', async () => {
+    it('Should update full A:J range', async () => {
       await repository.updateFullRow('Temporal', 20, temporalRowMock);
 
       expect(sheetsMock.spreadsheets.values.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          range: 'Temporal!A20:I20',
+          range: 'Temporal!A20:J20',
           requestBody: { values: [temporalRowMock] },
         }),
       );
@@ -117,6 +117,84 @@ describe('Given GoogleTemporalSheetsRepository', () => {
 
       await expect(
         repository.updateFullRow('Temporal', 20, temporalRowMock),
+      ).rejects.toBeInstanceOf(ProviderError);
+    });
+  });
+
+  describe('When findExpiredRows is called', () => {
+    it('Should return only stale in-progress or empty rows', async () => {
+      sheetsMock.spreadsheets.values.get.mockResolvedValue({
+        data: {
+          values: [
+            [
+              'Fecha',
+              'Hora',
+              'Cliente',
+              'Telefono',
+              'Servicio',
+              'Cantidad',
+              'WaId',
+              'Status',
+              'Intent',
+              'UpdatedAt',
+            ],
+            [
+              ' ',
+              ' ',
+              ' ',
+              ' ',
+              'Food',
+              ' ',
+              'wa-old',
+              'NO_DATA',
+              'create',
+              '2026-03-03T08:00:00.000Z',
+            ],
+            [
+              ' ',
+              ' ',
+              ' ',
+              ' ',
+              'Food',
+              ' ',
+              'wa-active',
+              'IN_PROGRESS',
+              'create',
+              '2026-03-03T18:00:00.000Z',
+            ],
+            [
+              ' ',
+              ' ',
+              ' ',
+              ' ',
+              'Food',
+              ' ',
+              'wa-completed',
+              'COMPLETED',
+              'create',
+              '2026-03-03T07:00:00.000Z',
+            ],
+          ],
+        },
+      });
+
+      await expect(
+        repository.findExpiredRows('Temporal', '2026-03-03T12:00:00.000Z'),
+      ).resolves.toEqual([
+        {
+          rowIndex: 2,
+          waId: 'wa-old',
+          status: 'NO_DATA',
+          updatedAt: '2026-03-03T08:00:00.000Z',
+        },
+      ]);
+    });
+
+    it('Should throw ProviderError when expired row lookup fails', async () => {
+      sheetsMock.spreadsheets.values.get.mockRejectedValue(new Error('expired-lookup-failed'));
+
+      await expect(
+        repository.findExpiredRows('Temporal', '2026-03-03T12:00:00.000Z'),
       ).rejects.toBeInstanceOf(ProviderError);
     });
   });

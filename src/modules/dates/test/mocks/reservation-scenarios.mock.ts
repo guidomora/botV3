@@ -10,11 +10,13 @@ export const temporalCompletedSnapshotMock = {
   name: 'Guido',
   phone: '1154916243',
   quantity: '4',
+  updatedAt: '2026-03-29T20:00:00.000Z',
 };
 
 export const temporalInProgressSnapshotMock = {
   date: futureReservationDateLabelMock,
   name: 'guido',
+  updatedAt: '2026-03-29T20:00:00.000Z',
 };
 
 export const temporalCompletedRowMock = {
@@ -32,6 +34,7 @@ export const temporalInProgressRowMock = {
   snapshot: temporalInProgressSnapshotMock,
   previousSnapshot: {
     name: 'guido',
+    updatedAt: '2026-03-29T19:00:00.000Z',
   },
 };
 
@@ -48,6 +51,7 @@ export const temporalDateClearedRowMock = {
     service: 'Food',
     waId: '5491154916243',
     intent: 'create',
+    updatedAt: '2026-03-29T20:00:00.000Z',
   },
   previousSnapshot: {
     date: futureReservationDateLabelMock,
@@ -58,6 +62,7 @@ export const temporalDateClearedRowMock = {
     service: 'Food',
     waId: '5491154916243',
     intent: 'create',
+    updatedAt: '2026-03-29T19:00:00.000Z',
   },
 };
 
@@ -74,6 +79,7 @@ export const temporalTimeClearedRowMock = {
     service: 'Food',
     waId: '5491154916243',
     intent: 'create',
+    updatedAt: '2026-03-29T20:00:00.000Z',
   },
   previousSnapshot: {
     date: futureReservationDateLabelMock,
@@ -84,6 +90,7 @@ export const temporalTimeClearedRowMock = {
     service: 'Food',
     waId: '5491154916243',
     intent: 'create',
+    updatedAt: '2026-03-29T19:00:00.000Z',
   },
 };
 

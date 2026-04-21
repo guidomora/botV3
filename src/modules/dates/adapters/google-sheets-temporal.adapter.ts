@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { TemporalDataRows } from 'src/constants/tables-info/temporal-data-rows';
-import { AddMissingFieldInput, TemporalDataType } from 'src/lib/types/google-sheet';
+import {
+  AddMissingFieldInput,
+  TemporalCleanupCandidate,
+  TemporalDataType,
+} from 'src/lib/types/google-sheet';
 import { GoogleTemporalSheetsService } from 'src/modules/google-sheets/service/google-temporal-sheet.service';
 import { DatesTemporalSheetPort } from '../ports';
 
@@ -14,6 +18,10 @@ export class GoogleSheetsTemporalAdapter implements DatesTemporalSheetPort {
 
   findTemporalRowIndexByWaId(waId: string): Promise<number> {
     return this.googleTemporalSheetsService.findTemporalRowIndexByWaId(waId);
+  }
+
+  findExpiredRows(cutoffIso: string): Promise<TemporalCleanupCandidate[]> {
+    return this.googleTemporalSheetsService.findExpiredRows(cutoffIso);
   }
 
   clearFields(waId: string, fields: (keyof TemporalDataType)[]): Promise<TemporalDataRows> {
