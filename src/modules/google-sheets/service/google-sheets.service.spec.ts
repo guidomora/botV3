@@ -336,6 +336,35 @@ describe('Given GoogleSheetsService', () => {
 
       expect(repository.deleteRow.mock.calls[0]).toEqual([2, 3]);
     });
+
+    it('Should delete only closed days older than the cutoff in reverse row order', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['date', 'reason', 'createdAt'],
+        ['2026-04-01', 'Mantenimiento', '2026-03-20T10:00:00.000Z'],
+        ['2026-04-15', 'Evento', '2026-04-01T10:00:00.000Z'],
+        ['2026-03-28', 'Feriado', '2026-03-01T10:00:00.000Z'],
+      ]);
+
+      await expect(
+        service.deleteClosedDaysBefore('viernes 10 de abril 2026 10/04/2026'),
+      ).resolves.toBe(2);
+
+      expect(repository.deleteRow.mock.calls).toEqual([
+        [4, 3],
+        [2, 3],
+      ]);
+    });
+
+    it('Should skip closed-day cleanup when nothing is older than the cutoff', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['date', 'reason', 'createdAt'],
+        ['2026-04-10', 'Mantenimiento', '2026-04-01T10:00:00.000Z'],
+      ]);
+
+      await expect(service.deleteClosedDaysBefore('2026-04-10')).resolves.toBe(0);
+
+      expect(repository.deleteRow.mock.calls).toHaveLength(0);
+    });
   });
 
   describe('When getReservationsByDate is called', () => {

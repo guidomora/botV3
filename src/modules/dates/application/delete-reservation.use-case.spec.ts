@@ -100,6 +100,7 @@ describe('DeleteReservationUseCase', () => {
     googleSheetsServiceMock.getFirstRowValue.mockResolvedValue(
       'viernes 14 de febrero 2030 14/02/2030',
     );
+    googleSheetsServiceMock.deleteClosedDaysBefore.mockResolvedValue(2);
     googleSheetsServiceMock.getDateIndexByDate.mockResolvedValueOnce(12).mockResolvedValueOnce(20);
 
     await expect(useCase.deleteOldRows()).resolves.toBe(
@@ -108,6 +109,9 @@ describe('DeleteReservationUseCase', () => {
 
     expect(googleSheetsServiceMock.deleteOldRows).toHaveBeenNthCalledWith(1, 4, 12, 0);
     expect(googleSheetsServiceMock.deleteOldRows).toHaveBeenNthCalledWith(2, 4, 20, 1);
+    expect(googleSheetsServiceMock.deleteClosedDaysBefore).toHaveBeenCalledWith(
+      'lunes 02 de marzo 2030 02/03/2030',
+    );
     expect(generateDatetimeMock.createPastDay).toHaveBeenCalledWith(14);
   });
 
@@ -119,6 +123,7 @@ describe('DeleteReservationUseCase', () => {
 
     expect(googleSheetsServiceMock.getDateIndexByDate).not.toHaveBeenCalled();
     expect(googleSheetsServiceMock.deleteOldRows).not.toHaveBeenCalled();
+    expect(googleSheetsServiceMock.deleteClosedDaysBefore).not.toHaveBeenCalled();
   });
 
   it('should skip deletion when retention window is already satisfied', async () => {
@@ -131,6 +136,7 @@ describe('DeleteReservationUseCase', () => {
 
     expect(googleSheetsServiceMock.getDateIndexByDate).not.toHaveBeenCalled();
     expect(googleSheetsServiceMock.deleteOldRows).not.toHaveBeenCalled();
+    expect(googleSheetsServiceMock.deleteClosedDaysBefore).not.toHaveBeenCalled();
   });
 
   it('should stop when first sheet cutoff date is not found', async () => {
@@ -143,6 +149,7 @@ describe('DeleteReservationUseCase', () => {
     await expect(useCase.deleteOldRows()).resolves.toBe('No se encontro la fecha de corte.');
 
     expect(googleSheetsServiceMock.deleteOldRows).not.toHaveBeenCalled();
+    expect(googleSheetsServiceMock.deleteClosedDaysBefore).not.toHaveBeenCalled();
   });
 
   it('should stop when second sheet cutoff date is not found', async () => {
@@ -155,6 +162,7 @@ describe('DeleteReservationUseCase', () => {
     await expect(useCase.deleteOldRows()).resolves.toBe('No se encontro la fecha de corte.');
 
     expect(googleSheetsServiceMock.deleteOldRows).toHaveBeenCalledTimes(1);
+    expect(googleSheetsServiceMock.deleteClosedDaysBefore).not.toHaveBeenCalled();
   });
 
   it('should rethrow unexpected errors while deleting old rows', async () => {

@@ -435,6 +435,30 @@ export class GoogleSheetsService {
     );
   }
 
+  async deleteClosedDaysBefore(date: string): Promise<number> {
+    const normalizedCutoffDate = this.getNormalizedIsoDate(date);
+
+    if (!normalizedCutoffDate) {
+      throw new Error(`Formato de fecha invalido para limpiar ClosedDays: ${date}`);
+    }
+
+    const closedDays = await this.getClosedDayEntries();
+    const rowsToDelete = closedDays.filter((closedDay) => closedDay.date < normalizedCutoffDate);
+
+    if (rowsToDelete.length === 0) {
+      return 0;
+    }
+
+    for (const closedDay of rowsToDelete.sort((left, right) => right.rowIndex - left.rowIndex)) {
+      await this.googleSheetsRepository.deleteRow(
+        closedDay.rowIndex,
+        GoogleSheetsService.CLOSED_DAYS_SHEET_INDEX,
+      );
+    }
+
+    return rowsToDelete.length;
+  }
+
   async getDayAvailability(date: string): Promise<string[][]> {
     if (await this.isDayClosed(date)) {
       return [];

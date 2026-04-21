@@ -125,6 +125,20 @@ export class DeleteReservationUseCase {
         DeleteReservationUseCase.name,
       );
 
+      const deletedClosedDays = await this.datesSheetPort.deleteClosedDaysBefore(deleteTillDate);
+
+      if (deletedClosedDays > 0) {
+        this.logger.log(
+          `Dias cerrados antiguos eliminados correctamente. Registros borrados=${deletedClosedDays} hasta ${deleteTillDate}`,
+          DeleteReservationUseCase.name,
+        );
+      } else {
+        this.logger.log(
+          `No hubo dias cerrados antiguos para eliminar hasta ${deleteTillDate}.`,
+          DeleteReservationUseCase.name,
+        );
+      }
+
       return `Se eliminaron las filas anteriores a ${deleteTillDate}.`;
     } catch (error) {
       this.logger.error(`Error al eliminar las filas antiguas`, error);
