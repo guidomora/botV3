@@ -5,4 +5,5 @@ export const SHEETS_NAMES: string[] = [
   SheetsName.AVAILABLE_BOOKINGS,
   SheetsName.TEMPORAL_DATA,
   SheetsName.CLOSED_DAYS,
+  SheetsName.CLOSED_SLOTS,
 ];

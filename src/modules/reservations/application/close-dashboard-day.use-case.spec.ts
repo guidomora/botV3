@@ -17,6 +17,7 @@ describe('CloseDashboardDayUseCase', () => {
       getReservationsByDate: jest.fn(),
       getAvailabilitySlotsByDate: jest.fn(),
       closeDay: jest.fn(),
+      closeSlot: jest.fn(),
       openDay: jest.fn(),
       isDayClosed: jest.fn(),
     };

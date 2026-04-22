@@ -3,4 +3,5 @@ export enum SheetsName {
   AVAILABLE_BOOKINGS = 'ReservasDisponibles',
   TEMPORAL_DATA = 'InfoTemporal',
   CLOSED_DAYS = 'ClosedDays',
+  CLOSED_SLOTS = 'ClosedSlots',
 }

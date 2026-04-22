@@ -230,6 +230,7 @@ describe('Given GoogleSheetsService', () => {
   describe('When getAvailabilityFromReservations is called', () => {
     it('Should validate capacity using only forward slots impacted by the reservation', async () => {
       repository.getDates
+        .mockResolvedValueOnce([])
         .mockResolvedValueOnce([
           ['Fecha', 'Hora', 'Mesas reservadas', 'Mesas disponibles'],
           ['martes 03 de marzo 2026 03/03/2026', '20:00', '0', '40'],
@@ -255,7 +256,10 @@ describe('Given GoogleSheetsService', () => {
 
   describe('When getDayAvailability is called', () => {
     it('Should return only requested date rows with available capacity', async () => {
-      repository.getDates.mockResolvedValueOnce([]).mockResolvedValueOnce(availabilityRowsMock);
+      repository.getDates
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(availabilityRowsMock)
+        .mockResolvedValueOnce([]);
 
       const result = await service.getDayAvailability('martes 03 de marzo 2026 03/03/2026');
 
@@ -263,6 +267,19 @@ describe('Given GoogleSheetsService', () => {
         ['martes 03 de marzo 2026 03/03/2026', '19:00', '2', '10'],
         ['martes 03 de marzo 2026 03/03/2026', '21:00', '3', '8'],
       ]);
+    });
+
+    it('Should exclude rows overlapped by closed slots', async () => {
+      repository.getDates
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(availabilityRowsMock)
+        .mockResolvedValueOnce([
+          ['2026-03-03', '20:00', '22:00', 'Evento privado', '2026-03-01T10:00:00.000Z'],
+        ]);
+
+      const result = await service.getDayAvailability('martes 03 de marzo 2026 03/03/2026');
+
+      expect(result).toEqual([]);
     });
   });
 
@@ -367,6 +384,37 @@ describe('Given GoogleSheetsService', () => {
     });
   });
 
+  describe('When closed slots are managed', () => {
+    it('Should consolidate overlapping and contiguous ranges for the same date', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['2026-04-10', '12:00', '14:00', 'Primer motivo', '2026-04-01T10:00:00.000Z'],
+        ['2026-04-10', '14:00', '15:00', 'Segundo motivo', '2026-04-01T11:00:00.000Z'],
+      ]);
+
+      await expect(
+        service.closeSlot({
+          date: '2026-04-10',
+          fromTime: '13:00',
+          toTime: '16:00',
+          reason: 'Ultimo motivo',
+        }),
+      ).resolves.toEqual({
+        fromTime: '12:00',
+        toTime: '16:00',
+        reason: 'Ultimo motivo',
+      });
+
+      expect(repository.deleteRow.mock.calls).toEqual([
+        [2, 4],
+        [1, 4],
+      ]);
+      expect(repository.appendRow.mock.calls[0][0]).toBe('ClosedSlots!A:E');
+      expect(repository.appendRow.mock.calls[0][1]).toEqual([
+        ['2026-04-10', '12:00', '16:00', 'Ultimo motivo', expect.any(String)],
+      ]);
+    });
+  });
+
   describe('When getReservationsByDate is called', () => {
     it('Should map reservation rows for the requested date', async () => {
       repository.getReservationsByDate.mockResolvedValue([
@@ -441,13 +489,32 @@ describe('Given GoogleSheetsService', () => {
 
   describe('When getAvailabilitySlotsByDate is called', () => {
     it('Should map daily availability rows into slots', async () => {
-      repository.getDates.mockResolvedValueOnce([]).mockResolvedValueOnce(availabilityRowsMock);
+      repository.getDates
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(availabilityRowsMock)
+        .mockResolvedValueOnce([]);
 
       await expect(
         service.getAvailabilitySlotsByDate('martes 03 de marzo 2026 03/03/2026'),
       ).resolves.toEqual([
-        { time: '19:00', reserved: 2, available: 10 },
-        { time: '21:00', reserved: 3, available: 8 },
+        { time: '19:00', reserved: 2, available: 10, isClosed: false, reason: null },
+        { time: '21:00', reserved: 3, available: 8, isClosed: false, reason: null },
+      ]);
+    });
+
+    it('Should mark slots covered by partial closures', async () => {
+      repository.getDates
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(availabilityRowsMock)
+        .mockResolvedValueOnce([
+          ['2026-03-03', '20:00', '22:00', 'Evento privado', '2026-03-01T10:00:00.000Z'],
+        ]);
+
+      await expect(
+        service.getAvailabilitySlotsByDate('martes 03 de marzo 2026 03/03/2026'),
+      ).resolves.toEqual([
+        { time: '19:00', reserved: 2, available: 10, isClosed: true, reason: 'Evento privado' },
+        { time: '21:00', reserved: 3, available: 8, isClosed: true, reason: 'Evento privado' },
       ]);
     });
   });

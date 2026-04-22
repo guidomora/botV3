@@ -40,6 +40,8 @@ import { CreateDashboardReservationResponseDto } from '../dto/create-dashboard-r
 import { ReservationClosedDayParamDto } from '../dto/reservation-closed-day-param.dto';
 import { CloseDashboardDayDto } from '../dto/close-dashboard-day.dto';
 import { CloseDashboardDayResponseDto } from '../dto/close-dashboard-day-response.dto';
+import { CloseDashboardSlotDto } from '../dto/close-dashboard-slot.dto';
+import { CloseDashboardSlotResponseDto } from '../dto/close-dashboard-slot-response.dto';
 import { OpenDashboardDayResponseDto } from '../dto/open-dashboard-day-response.dto';
 
 const formatIsoDateToSheetDate = (date: string): string => {
@@ -263,6 +265,47 @@ export class ReservationsController {
   ): Promise<CloseDashboardDayResponseDto> {
     return this.reservationsDashboardService.closeDay({
       date: params.date,
+      reason: body.reason,
+    });
+  }
+
+  @Put('closed-slots/:date')
+  @ApiOperation({
+    summary: 'Cerrar una franja horaria de agenda desde el dashboard',
+    description:
+      'Marca una franja horaria de una fecha como cerrada para bloquear nuevas reservas y reprogramaciones hacia ese rango.',
+  })
+  @ApiParam({
+    name: 'date',
+    description: 'Fecha a cerrar parcialmente en formato ISO yyyy-mm-dd.',
+    example: '2026-04-16',
+  })
+  @ApiBody({
+    type: CloseDashboardSlotDto,
+  })
+  @ApiOkResponse({
+    description: 'Franja horaria cerrada correctamente.',
+    type: CloseDashboardSlotResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'La fecha del path o el body son invalidos.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'La fecha no existe en la agenda.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  closeSlot(
+    @Param() params: ReservationClosedDayParamDto,
+    @Body() body: CloseDashboardSlotDto,
+  ): Promise<CloseDashboardSlotResponseDto> {
+    return this.reservationsDashboardService.closeSlot({
+      date: params.date,
+      fromTime: body.fromTime,
+      toTime: body.toTime,
       reason: body.reason,
     });
   }
