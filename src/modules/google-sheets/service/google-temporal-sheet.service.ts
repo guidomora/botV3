@@ -6,6 +6,7 @@ import { TemporalStatusEnum } from 'src/lib';
 import { computeStatus, objectToRowArray, buildEmptyRow } from '../helpers/temporal-data.helper';
 import { Logger } from '@nestjs/common';
 import { TemporalDataRows } from 'src/constants/tables-info/temporal-data-rows';
+import { formatSystemTimestamp } from '../helpers/system-timestamp.helper';
 
 @Injectable()
 export class GoogleTemporalSheetsService {
@@ -54,7 +55,7 @@ export class GoogleTemporalSheetsService {
     apply('quantity', values.quantity);
 
     const { status, missingFields } = computeStatus(next);
-    next.updatedAt = new Date().toISOString();
+    next.updatedAt = formatSystemTimestamp();
     next.status = status;
     const fullRow = objectToRowArray(next);
     await this.googleTemporalSheetsRepository.updateFullRow(sheetName, rowIndex, fullRow);
@@ -93,7 +94,7 @@ export class GoogleTemporalSheetsService {
     }
 
     const { status, missingFields } = computeStatus(next);
-    next.updatedAt = new Date().toISOString();
+    next.updatedAt = formatSystemTimestamp();
     next.status = status;
 
     await this.googleTemporalSheetsRepository.updateFullRow(
