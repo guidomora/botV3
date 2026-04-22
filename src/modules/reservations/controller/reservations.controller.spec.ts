@@ -14,6 +14,7 @@ describe('ReservationsController', () => {
     deleteReservation: jest.fn(),
     updateReservation: jest.fn(),
     closeDay: jest.fn(),
+    closeSlot: jest.fn(),
     openDay: jest.fn(),
   };
 
@@ -89,8 +90,8 @@ describe('ReservationsController', () => {
       date: '2026-04-10',
       sheetDate: '10/04/2026',
       slots: [
-        { time: '20:00', reserved: 10, available: 32 },
-        { time: '21:00', reserved: 18, available: 24 },
+        { time: '20:00', reserved: 10, available: 32, isClosed: false, reason: null },
+        { time: '21:00', reserved: 18, available: 24, isClosed: false, reason: null },
       ],
     });
 
@@ -98,8 +99,8 @@ describe('ReservationsController', () => {
       date: '2026-04-10',
       sheetDate: '10/04/2026',
       slots: [
-        { time: '20:00', reserved: 10, available: 32 },
-        { time: '21:00', reserved: 18, available: 24 },
+        { time: '20:00', reserved: 10, available: 32, isClosed: false, reason: null },
+        { time: '21:00', reserved: 18, available: 24, isClosed: false, reason: null },
       ],
     });
 
@@ -239,6 +240,39 @@ describe('ReservationsController', () => {
       existingReservationsCount: 1,
       warning:
         'La fecha fue cerrada, pero todavia existen 1 reservas activas que deberan ser gestionadas manualmente.',
+    });
+  });
+
+  it('should delegate close slot request to dashboard service', async () => {
+    reservationsDashboardServiceMock.closeSlot.mockResolvedValue({
+      date: '2026-04-16',
+      fromTime: '12:00',
+      toTime: '15:00',
+      isClosed: true,
+      reason: 'Evento privado',
+      existingReservationsCount: 1,
+      warning:
+        'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
+    });
+
+    await expect(
+      controller.closeSlot(
+        { date: '2026-04-16' },
+        {
+          fromTime: '13:00',
+          toTime: '15:00',
+          reason: 'Evento privado',
+        },
+      ),
+    ).resolves.toEqual({
+      date: '2026-04-16',
+      fromTime: '12:00',
+      toTime: '15:00',
+      isClosed: true,
+      reason: 'Evento privado',
+      existingReservationsCount: 1,
+      warning:
+        'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
     });
   });
 

@@ -7,6 +7,7 @@ import { ReservationsDashboardService } from './reservations-dashboard.service';
 import { UpdateDashboardReservationUseCase } from '../application/update-dashboard-reservation.use-case';
 import { CreateDashboardReservationUseCase } from '../application/create-dashboard-reservation.use-case';
 import { CloseDashboardDayUseCase } from '../application/close-dashboard-day.use-case';
+import { CloseDashboardSlotUseCase } from '../application/close-dashboard-slot.use-case';
 import { OpenDashboardDayUseCase } from '../application/open-dashboard-day.use-case';
 
 describe('ReservationsDashboardService', () => {
@@ -18,6 +19,7 @@ describe('ReservationsDashboardService', () => {
   let deleteDashboardReservationUseCase: jest.Mocked<DeleteDashboardReservationUseCase>;
   let updateDashboardReservationUseCase: jest.Mocked<UpdateDashboardReservationUseCase>;
   let closeDashboardDayUseCase: jest.Mocked<CloseDashboardDayUseCase>;
+  let closeDashboardSlotUseCase: jest.Mocked<CloseDashboardSlotUseCase>;
   let openDashboardDayUseCase: jest.Mocked<OpenDashboardDayUseCase>;
 
   beforeEach(() => {
@@ -49,6 +51,10 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn(),
     } as unknown as jest.Mocked<CloseDashboardDayUseCase>;
 
+    closeDashboardSlotUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<CloseDashboardSlotUseCase>;
+
     openDashboardDayUseCase = {
       execute: jest.fn(),
     } as unknown as jest.Mocked<OpenDashboardDayUseCase>;
@@ -61,6 +67,7 @@ describe('ReservationsDashboardService', () => {
       deleteDashboardReservationUseCase,
       updateDashboardReservationUseCase,
       closeDashboardDayUseCase,
+      closeDashboardSlotUseCase,
       openDashboardDayUseCase,
     );
   });
@@ -147,8 +154,8 @@ describe('ReservationsDashboardService', () => {
       date: '2026-04-10',
       sheetDate: '10/04/2026',
       slots: [
-        { time: '20:00', reserved: 10, available: 32 },
-        { time: '21:00', reserved: 18, available: 24 },
+        { time: '20:00', reserved: 10, available: 32, isClosed: false, reason: null },
+        { time: '21:00', reserved: 18, available: 24, isClosed: true, reason: 'Evento privado' },
       ],
     });
 
@@ -156,8 +163,8 @@ describe('ReservationsDashboardService', () => {
       date: '2026-04-10',
       sheetDate: '10/04/2026',
       slots: [
-        { time: '20:00', reserved: 10, available: 32 },
-        { time: '21:00', reserved: 18, available: 24 },
+        { time: '20:00', reserved: 10, available: 32, isClosed: false, reason: null },
+        { time: '21:00', reserved: 18, available: 24, isClosed: true, reason: 'Evento privado' },
       ],
     });
     expect(getDailyReservationSlotsUseCase.execute.mock.calls[0]).toEqual([
@@ -254,6 +261,37 @@ describe('ReservationsDashboardService', () => {
       existingReservationsCount: 2,
       warning:
         'La fecha fue cerrada, pero todavia existen 2 reservas activas que deberan ser gestionadas manualmente.',
+    });
+  });
+
+  it('should delegate slot close to the use case', async () => {
+    closeDashboardSlotUseCase.execute.mockResolvedValue({
+      date: '2026-04-16',
+      fromTime: '12:00',
+      toTime: '15:00',
+      isClosed: true,
+      reason: 'Evento privado',
+      existingReservationsCount: 1,
+      warning:
+        'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
+    });
+
+    await expect(
+      service.closeSlot({
+        date: '2026-04-16',
+        fromTime: '13:00',
+        toTime: '15:00',
+        reason: 'Evento privado',
+      }),
+    ).resolves.toEqual({
+      date: '2026-04-16',
+      fromTime: '12:00',
+      toTime: '15:00',
+      isClosed: true,
+      reason: 'Evento privado',
+      existingReservationsCount: 1,
+      warning:
+        'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
     });
   });
 

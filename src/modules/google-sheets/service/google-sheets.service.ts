@@ -7,6 +7,7 @@ import {
   Availability,
   DashboardAvailableDates,
   DashboardCloseDayType,
+  DashboardCloseSlotType,
   computeOnlineMaxCapacity,
   DashboardReservation,
   DashboardReservationSlot,
@@ -27,6 +28,8 @@ export class GoogleSheetsService {
 
   private static readonly CLOSED_DAYS_RANGE = `${SheetsName.CLOSED_DAYS}!A:C`;
   private static readonly CLOSED_DAYS_SHEET_INDEX = 3;
+  private static readonly CLOSED_SLOTS_RANGE = `${SheetsName.CLOSED_SLOTS}!A:E`;
+  private static readonly CLOSED_SLOTS_SHEET_INDEX = 4;
 
   private formatCalendarDateToIso(date: string): string | null {
     const calendarDate = extractCalendarDate(date);
@@ -80,6 +83,233 @@ export class GoogleSheetsService {
           createdAt: string | null;
         } => entry !== null,
       );
+  }
+
+  private toMinutes(time: string): number | null {
+    const match = /^(\d{2}):(\d{2})$/.exec(time.trim());
+
+    if (!match) {
+      return null;
+    }
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+
+    if (hours > 23 || minutes > 59) {
+      return null;
+    }
+
+    return hours * 60 + minutes;
+  }
+
+  private getSlotEndTime(time: string): string {
+    const startMinutes = this.toMinutes(time);
+
+    if (startMinutes === null) {
+      return time;
+    }
+
+    const endMinutes = startMinutes + this.getReservationDurationMinutes();
+    const normalizedEndMinutes = endMinutes % (24 * 60);
+    const hours = Math.floor(normalizedEndMinutes / 60)
+      .toString()
+      .padStart(2, '0');
+    const minutes = (normalizedEndMinutes % 60).toString().padStart(2, '0');
+
+    return `${hours}:${minutes}`;
+  }
+
+  private hasTimeOverlap(
+    leftStartTime: string,
+    leftEndTime: string,
+    rightStartTime: string,
+    rightEndTime: string,
+  ): boolean {
+    const leftStart = this.toMinutes(leftStartTime);
+    const leftEnd = this.toMinutes(leftEndTime);
+    const rightStart = this.toMinutes(rightStartTime);
+    const rightEnd = this.toMinutes(rightEndTime);
+
+    if (leftStart === null || leftEnd === null || rightStart === null || rightEnd === null) {
+      return false;
+    }
+
+    return leftStart < rightEnd && rightStart < leftEnd;
+  }
+
+  private async getClosedSlotEntries(): Promise<
+    {
+      rowIndex: number;
+      date: string;
+      fromTime: string;
+      toTime: string;
+      reason: string | null;
+      createdAt: string | null;
+    }[]
+  > {
+    const rows = await this.googleSheetsRepository.getDates(GoogleSheetsService.CLOSED_SLOTS_RANGE);
+
+    return rows
+      .map((row, index) => {
+        const normalizedDate = this.getNormalizedIsoDate(String(row[0] ?? ''));
+        const fromTime = String(row[1] ?? '').trim();
+        const toTime = String(row[2] ?? '').trim();
+        const fromMinutes = this.toMinutes(fromTime);
+        const toMinutes = this.toMinutes(toTime);
+
+        if (
+          !normalizedDate ||
+          fromMinutes === null ||
+          toMinutes === null ||
+          fromMinutes >= toMinutes
+        ) {
+          return null;
+        }
+
+        return {
+          rowIndex: index + 1,
+          date: normalizedDate,
+          fromTime,
+          toTime,
+          reason: row[3] ? String(row[3]) : null,
+          createdAt: row[4] ? String(row[4]) : null,
+        };
+      })
+      .filter(
+        (
+          entry,
+        ): entry is {
+          rowIndex: number;
+          date: string;
+          fromTime: string;
+          toTime: string;
+          reason: string | null;
+          createdAt: string | null;
+        } => entry !== null,
+      );
+  }
+
+  private consolidateClosedSlotEntries(
+    entries: {
+      date: string;
+      fromTime: string;
+      toTime: string;
+      reason: string | null;
+      createdAt: string | null;
+      rowIndex?: number;
+    }[],
+  ): {
+    date: string;
+    fromTime: string;
+    toTime: string;
+    reason: string | null;
+    createdAt: string;
+  }[] {
+    return [...entries]
+      .sort((left, right) => {
+        const leftStart = this.toMinutes(left.fromTime) ?? 0;
+        const rightStart = this.toMinutes(right.fromTime) ?? 0;
+
+        if (leftStart !== rightStart) {
+          return leftStart - rightStart;
+        }
+
+        const leftCreatedAt = left.createdAt ?? '';
+        const rightCreatedAt = right.createdAt ?? '';
+
+        if (leftCreatedAt !== rightCreatedAt) {
+          return leftCreatedAt.localeCompare(rightCreatedAt);
+        }
+
+        return (left.rowIndex ?? 0) - (right.rowIndex ?? 0);
+      })
+      .reduce<
+        {
+          date: string;
+          fromTime: string;
+          toTime: string;
+          reason: string | null;
+          createdAt: string;
+        }[]
+      >((accumulator, currentEntry) => {
+        const lastEntry = accumulator[accumulator.length - 1];
+        const currentCreatedAt = currentEntry.createdAt ?? new Date().toISOString();
+
+        if (
+          !lastEntry ||
+          lastEntry.date !== currentEntry.date ||
+          (this.toMinutes(currentEntry.fromTime) ?? 0) > (this.toMinutes(lastEntry.toTime) ?? 0)
+        ) {
+          accumulator.push({
+            date: currentEntry.date,
+            fromTime: currentEntry.fromTime,
+            toTime: currentEntry.toTime,
+            reason: currentEntry.reason,
+            createdAt: currentCreatedAt,
+          });
+
+          return accumulator;
+        }
+
+        if ((this.toMinutes(currentEntry.toTime) ?? 0) > (this.toMinutes(lastEntry.toTime) ?? 0)) {
+          lastEntry.toTime = currentEntry.toTime;
+        }
+
+        if (currentCreatedAt >= lastEntry.createdAt) {
+          lastEntry.reason = currentEntry.reason;
+          lastEntry.createdAt = currentCreatedAt;
+        }
+
+        return accumulator;
+      }, []);
+  }
+
+  private getClosedSlotsByDate(
+    closedSlots: {
+      date: string;
+      fromTime: string;
+      toTime: string;
+      reason: string | null;
+      createdAt: string | null;
+    }[],
+    date: string,
+  ): { fromTime: string; toTime: string; reason: string | null }[] {
+    const normalizedDate = this.getNormalizedIsoDate(date);
+
+    if (!normalizedDate) {
+      return [];
+    }
+
+    return closedSlots
+      .filter((entry) => entry.date === normalizedDate)
+      .map(({ fromTime, toTime, reason }) => ({
+        fromTime,
+        toTime,
+        reason,
+      }));
+  }
+
+  private async getAvailabilityBlockedByClosedSlot(
+    date: string,
+    time: string,
+  ): Promise<Availability | null> {
+    const closedSlots = await this.getClosedSlotEntries();
+    const dayClosedSlots = this.getClosedSlotsByDate(closedSlots, date);
+    const slotEndTime = this.getSlotEndTime(time);
+
+    const isClosed = dayClosedSlots.some((closedSlot) =>
+      this.hasTimeOverlap(time, slotEndTime, closedSlot.fromTime, closedSlot.toTime),
+    );
+
+    if (!isClosed) {
+      return null;
+    }
+
+    return {
+      isAvailable: false,
+      reservations: 0,
+      available: 0,
+    };
   }
 
   private phonesMatch(leftPhone?: string | null, rightPhone?: string | null): boolean {
@@ -311,6 +541,15 @@ export class GoogleSheetsService {
   }
 
   async getAvailability(date: string, time: string): Promise<Availability> {
+    const availabilityBlockedByClosedSlot = await this.getAvailabilityBlockedByClosedSlot(
+      date,
+      time,
+    );
+
+    if (availabilityBlockedByClosedSlot) {
+      return availabilityBlockedByClosedSlot;
+    }
+
     let isAvailable = false;
 
     const index = await this.getDate(date, time, `${SHEETS_NAMES[1]}!A:C`);
@@ -354,6 +593,15 @@ export class GoogleSheetsService {
     requestedPeople: number = 1,
     excludedRowIndex?: number,
   ): Promise<Availability> {
+    const availabilityBlockedByClosedSlot = await this.getAvailabilityBlockedByClosedSlot(
+      date,
+      time,
+    );
+
+    if (availabilityBlockedByClosedSlot) {
+      return availabilityBlockedByClosedSlot;
+    }
+
     const availabilityRows = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[1]}!A:D`);
     const allReservations = await this.googleSheetsRepository.getDates(`${SHEETS_NAMES[0]}!A:F`);
 
@@ -415,6 +663,63 @@ export class GoogleSheetsService {
     ]);
   }
 
+  async closeSlot(
+    payload: DashboardCloseSlotType,
+  ): Promise<{ fromTime: string; toTime: string; reason: string | null }> {
+    const normalizedDate = this.getNormalizedIsoDate(payload.date);
+    const fromTime = payload.fromTime.trim();
+    const toTime = payload.toTime.trim();
+    const normalizedReason = payload.reason?.trim() || null;
+    const fromMinutes = this.toMinutes(fromTime);
+    const toMinutes = this.toMinutes(toTime);
+
+    if (!normalizedDate || fromMinutes === null || toMinutes === null || fromMinutes >= toMinutes) {
+      throw new Error(`Formato invalido para ClosedSlots: ${payload.date} ${fromTime}-${toTime}`);
+    }
+
+    const existingClosedSlots = await this.getClosedSlotEntries();
+    const sameDateEntries = existingClosedSlots.filter((entry) => entry.date === normalizedDate);
+    const consolidatedEntries = this.consolidateClosedSlotEntries([
+      ...sameDateEntries,
+      {
+        date: normalizedDate,
+        fromTime,
+        toTime,
+        reason: normalizedReason,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+
+    for (const entry of sameDateEntries.sort((left, right) => right.rowIndex - left.rowIndex)) {
+      await this.googleSheetsRepository.deleteRow(
+        entry.rowIndex,
+        GoogleSheetsService.CLOSED_SLOTS_SHEET_INDEX,
+      );
+    }
+
+    await this.googleSheetsRepository.appendRow(
+      GoogleSheetsService.CLOSED_SLOTS_RANGE,
+      consolidatedEntries.map((entry) => [
+        entry.date,
+        entry.fromTime,
+        entry.toTime,
+        entry.reason ?? '',
+        entry.createdAt,
+      ]),
+    );
+
+    const consolidatedEntry =
+      consolidatedEntries.find((entry) =>
+        this.hasTimeOverlap(entry.fromTime, entry.toTime, fromTime, toTime),
+      ) ?? consolidatedEntries[consolidatedEntries.length - 1];
+
+    return {
+      fromTime: consolidatedEntry.fromTime,
+      toTime: consolidatedEntry.toTime,
+      reason: consolidatedEntry.reason,
+    };
+  }
+
   async openDay(date: string): Promise<void> {
     const normalizedDate = this.getNormalizedIsoDate(date);
 
@@ -467,10 +772,26 @@ export class GoogleSheetsService {
     const range = `${SHEETS_NAMES[1]}!A:D`;
 
     try {
-      const data = await this.googleSheetsRepository.getDates(range);
+      const [data, closedSlots] = await Promise.all([
+        this.googleSheetsRepository.getDates(range),
+        this.getClosedSlotEntries(),
+      ]);
       const allDaysRows = data.filter((row) => row[0] !== 'Fecha');
+      const dayClosedSlots = this.getClosedSlotsByDate(closedSlots, date);
 
-      const requestedDayRows = allDaysRows.filter((r) => datesMatch(r[0], date) && r[3] != '0');
+      const requestedDayRows = allDaysRows.filter(
+        (r) =>
+          datesMatch(r[0], date) &&
+          r[3] != '0' &&
+          !dayClosedSlots.some((closedSlot) =>
+            this.hasTimeOverlap(
+              String(r[1] ?? ''),
+              this.getSlotEndTime(String(r[1] ?? '')),
+              closedSlot.fromTime,
+              closedSlot.toTime,
+            ),
+          ),
+      );
 
       return requestedDayRows;
     } catch (error) {
@@ -544,12 +865,40 @@ export class GoogleSheetsService {
   }
 
   async getAvailabilitySlotsByDate(date: string): Promise<DashboardReservationSlot[]> {
-    const rows = await this.getDayAvailability(date);
+    if (await this.isDayClosed(date)) {
+      return [];
+    }
+
+    const [data, closedSlots] = await Promise.all([
+      this.googleSheetsRepository.getDates(`${SHEETS_NAMES[1]}!A:D`),
+      this.getClosedSlotEntries(),
+    ]);
+    const dayClosedSlots = this.getClosedSlotsByDate(closedSlots, date);
+    const rows = data.filter(
+      (row) => row[0] !== 'Fecha' && datesMatch(row[0], date) && row[1] && row[3] != '0',
+    );
 
     return rows.map((row) => ({
       time: String(row[1] ?? ''),
       reserved: Number(row[2] ?? 0),
       available: Number(row[3] ?? 0),
+      isClosed: dayClosedSlots.some((closedSlot) =>
+        this.hasTimeOverlap(
+          String(row[1] ?? ''),
+          this.getSlotEndTime(String(row[1] ?? '')),
+          closedSlot.fromTime,
+          closedSlot.toTime,
+        ),
+      ),
+      reason:
+        dayClosedSlots.find((closedSlot) =>
+          this.hasTimeOverlap(
+            String(row[1] ?? ''),
+            this.getSlotEndTime(String(row[1] ?? '')),
+            closedSlot.fromTime,
+            closedSlot.toTime,
+          ),
+        )?.reason ?? null,
     }));
   }
 

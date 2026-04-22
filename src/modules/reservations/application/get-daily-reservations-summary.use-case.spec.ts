@@ -13,6 +13,7 @@ describe('GetDailyReservationsSummaryUseCase', () => {
       getReservationsByDate: jest.fn<Promise<DashboardReservation[]>, [string]>(),
       getAvailabilitySlotsByDate: jest.fn<Promise<DashboardReservationSlot[]>, [string]>(),
       closeDay: jest.fn(),
+      closeSlot: jest.fn(),
       openDay: jest.fn(),
       isDayClosed: jest.fn(),
     };
@@ -40,8 +41,8 @@ describe('GetDailyReservationsSummaryUseCase', () => {
       },
     ]);
     reservationsDashboardReadPort.getAvailabilitySlotsByDate.mockResolvedValue([
-      { time: '20:00', reserved: 10, available: 32 },
-      { time: '21:00', reserved: 18, available: 24 },
+      { time: '20:00', reserved: 10, available: 32, isClosed: false, reason: null },
+      { time: '21:00', reserved: 18, available: 24, isClosed: true, reason: 'Evento privado' },
     ]);
 
     await expect(useCase.execute('2026-04-10', '10/04/2026')).resolves.toEqual({
@@ -69,8 +70,8 @@ describe('GetDailyReservationsSummaryUseCase', () => {
         },
       ],
       slots: [
-        { time: '20:00', reserved: 10, available: 32 },
-        { time: '21:00', reserved: 18, available: 24 },
+        { time: '20:00', reserved: 10, available: 32, isClosed: false, reason: null },
+        { time: '21:00', reserved: 18, available: 24, isClosed: true, reason: 'Evento privado' },
       ],
     });
   });

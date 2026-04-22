@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class DailyReservationSlotResponseDto {
   @ApiProperty({
@@ -18,4 +18,17 @@ export class DailyReservationSlotResponseDto {
     example: 30,
   })
   available!: number;
+
+  @ApiProperty({
+    description: 'Indica si la franja se encuentra cerrada operativamente.',
+    example: false,
+  })
+  isClosed!: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Motivo operativo del cierre parcial si aplica.',
+    example: 'Evento privado',
+    nullable: true,
+  })
+  reason!: string | null;
 }

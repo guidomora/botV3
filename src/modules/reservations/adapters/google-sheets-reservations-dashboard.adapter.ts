@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   DashboardAvailableDates,
   DashboardCloseDayType,
+  DashboardCloseSlotType,
   DashboardReservation,
   DashboardReservationSlot,
 } from 'src/lib';
@@ -26,6 +27,12 @@ export class GoogleSheetsReservationsDashboardAdapter implements ReservationsDas
 
   closeDay(payload: DashboardCloseDayType): Promise<void> {
     return this.googleSheetsService.closeDay(payload);
+  }
+
+  closeSlot(
+    payload: DashboardCloseSlotType,
+  ): Promise<{ fromTime: string; toTime: string; reason: string | null }> {
+    return this.googleSheetsService.closeSlot(payload);
   }
 
   openDay(date: string): Promise<void> {
