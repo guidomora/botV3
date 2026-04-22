@@ -2,6 +2,7 @@ import { TemporalStatusEnum } from 'src/lib';
 import { createGoogleTemporalRepositoryMock } from '../test/mocks/google-repository.mock';
 import { temporalRowMock } from '../test/mocks/google-sheets-data.mock';
 import { GoogleTemporalSheetsService } from './google-temporal-sheet.service';
+import { formatSystemTimestamp } from '../helpers/system-timestamp.helper';
 
 describe('Given GoogleTemporalSheetsService', () => {
   let repository = createGoogleTemporalRepositoryMock();
@@ -15,6 +16,8 @@ describe('Given GoogleTemporalSheetsService', () => {
 
   describe('When addMissingField is called', () => {
     it('Should create seed row when waId does not exist and then update row', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2026-03-03T18:45:00.000Z'));
       repository.findRowIndexByWaId.mockResolvedValueOnce(-1).mockResolvedValueOnce(12);
       repository.readRowByIndex.mockResolvedValue([
         ' ',
@@ -38,9 +41,12 @@ describe('Given GoogleTemporalSheetsService', () => {
       expect(repository.updateFullRow.mock.calls).toHaveLength(1);
       expect(result.status).toBe(TemporalStatusEnum.IN_PROGRESS);
       expect(result.changedFields).toEqual(expect.arrayContaining(['date', 'time', 'quantity']));
+      jest.useRealTimers();
     });
 
     it('Should normalize input values and keep status in progress when data is partial', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2026-03-05T18:45:00.000Z'));
       repository.findRowIndexByWaId.mockResolvedValue(8);
       repository.readRowByIndex.mockResolvedValue([
         ' ',
@@ -69,6 +75,8 @@ describe('Given GoogleTemporalSheetsService', () => {
         8,
         expect.arrayContaining(['viernes 05/03/2026', ' ', 'ana lopez']),
       ]);
+      expect(repository.updateFullRow.mock.calls[0][2][9]).toBe(formatSystemTimestamp());
+      jest.useRealTimers();
     });
 
     it('Should throw when seeded row cannot be found again', async () => {
@@ -126,6 +134,8 @@ describe('Given GoogleTemporalSheetsService', () => {
 
   describe('When clearFields is called', () => {
     it('Should blank requested fields and persist the updated temporal row', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2026-03-03T22:30:00.000Z'));
       repository.findRowIndexByWaId.mockResolvedValue(5);
       repository.readRowByIndex.mockResolvedValue(temporalRowMock);
 
@@ -138,6 +148,8 @@ describe('Given GoogleTemporalSheetsService', () => {
       ]);
       expect(result.status).toBe(TemporalStatusEnum.IN_PROGRESS);
       expect(result.missingFields).toEqual(expect.arrayContaining(['date', 'time']));
+      expect(repository.updateFullRow.mock.calls[0][2][9]).toBe(formatSystemTimestamp());
+      jest.useRealTimers();
     });
 
     it('Should throw when temporal row does not exist', async () => {

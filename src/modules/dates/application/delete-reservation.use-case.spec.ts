@@ -219,7 +219,7 @@ describe('DeleteReservationUseCase', () => {
     );
 
     expect(googleTemporalSheetsServiceMock.findExpiredRows).toHaveBeenCalledWith(
-      '2030-03-02T12:00:00.000Z',
+      '2030-03-02T15:00:00.000Z',
     );
     expect(googleSheetsServiceMock.deleteRow).toHaveBeenNthCalledWith(1, 9, 2);
     expect(googleSheetsServiceMock.deleteRow).toHaveBeenNthCalledWith(2, 5, 2);

@@ -148,7 +148,7 @@ describe('Given GoogleTemporalSheetsRepository', () => {
               'wa-old',
               'NO_DATA',
               'create',
-              '2026-03-03T08:00:00.000Z',
+              '2026-03-03T08:00:00.000-03:00',
             ],
             [
               ' ',
@@ -160,7 +160,7 @@ describe('Given GoogleTemporalSheetsRepository', () => {
               'wa-active',
               'IN_PROGRESS',
               'create',
-              '2026-03-03T18:00:00.000Z',
+              '2026-03-03T18:00:00.000-03:00',
             ],
             [
               ' ',
@@ -172,7 +172,7 @@ describe('Given GoogleTemporalSheetsRepository', () => {
               'wa-completed',
               'COMPLETED',
               'create',
-              '2026-03-03T07:00:00.000Z',
+              '2026-03-03T07:00:00.000-03:00',
             ],
           ],
         },
@@ -185,9 +185,24 @@ describe('Given GoogleTemporalSheetsRepository', () => {
           rowIndex: 2,
           waId: 'wa-old',
           status: 'NO_DATA',
-          updatedAt: '2026-03-03T08:00:00.000Z',
+          updatedAt: '2026-03-03T08:00:00.000-03:00',
         },
       ]);
+    });
+
+    it('Should ignore rows with invalid timestamps', async () => {
+      sheetsMock.spreadsheets.values.get.mockResolvedValue({
+        data: {
+          values: [
+            ['Fecha', 'Hora', 'Cliente', 'Telefono', 'Servicio', 'Cantidad', 'WaId', 'Status'],
+            [' ', ' ', ' ', ' ', 'Food', ' ', 'wa-invalid', 'IN_PROGRESS', 'create', 'not-a-date'],
+          ],
+        },
+      });
+
+      await expect(
+        repository.findExpiredRows('Temporal', '2026-03-03T12:00:00.000Z'),
+      ).resolves.toEqual([]);
     });
 
     it('Should throw ProviderError when expired row lookup fails', async () => {

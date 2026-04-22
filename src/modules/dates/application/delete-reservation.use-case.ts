@@ -177,7 +177,7 @@ export class DeleteReservationUseCase {
   }
 
   private async deleteExpiredTemporalRows(): Promise<number> {
-    const expirationWindowMs = 6 * 60 * 60 * 1000;
+    const expirationWindowMs = 3 * 60 * 60 * 1000;
     const cutoffIso = new Date(Date.now() - expirationWindowMs).toISOString();
     const expiredRows = await this.datesTemporalSheetPort.findExpiredRows(cutoffIso);
 

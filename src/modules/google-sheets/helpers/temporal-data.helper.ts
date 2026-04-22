@@ -1,5 +1,6 @@
 import { ROW_ORDER, REQUIRED_SLOTS } from 'src/constants/tables-info/temporal-data-rows';
 import { TemporalDataType, TemporalStatusEnum } from 'src/lib';
+import { formatSystemTimestamp } from './system-timestamp.helper';
 
 type TemporalRowData = TemporalDataType & { status?: TemporalStatusEnum };
 
@@ -38,7 +39,7 @@ export function buildEmptyRow(waId: string): string[] {
     waId,
     status: TemporalStatusEnum.NO_DATA,
     intent: 'create',
-    updatedAt: new Date().toISOString(),
+    updatedAt: formatSystemTimestamp(),
   };
   return objectToRowArray(obj);
 }

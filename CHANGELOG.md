@@ -1,17 +1,23 @@
 ### History
 
-### 18/04/26
+### 22/04/26
 
-- Race condition support added to create, edit and delete
-- Redis connection, queues and workers implemented
-- TODO:
 - MCP Server implementation
-- a feature to mark an entire day as unavailable at sheets
+- Closed day feature added
+- Closed by slots feature added
+- Temporal sheet cleanup feature added
+- TODO:
+- send message with the cause to users when a day is closed and they had a reservation
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 18/04/26
+
+- Race condition support added to create, edit and delete
+- Redis connection, queues and workers implemented
 
 ### 16/04/26
 

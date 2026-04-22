@@ -57,20 +57,23 @@ export class GoogleTemporalSheetsRepository {
       });
       const values = (res.data.values ?? []) as string[][];
 
+      const cutoffTimestamp = Date.parse(cutoffIso);
+
       return values
         .slice(1)
         .map((row, index) => {
           const status = row[7] as TemporalStatusEnum | undefined;
           const waId = row[6] ?? '';
           const updatedAt = row[9] ?? '';
+          const updatedAtTimestamp = Date.parse(updatedAt);
 
-          if (!waId || !updatedAt || !status) {
+          if (!waId || !updatedAt || !status || Number.isNaN(updatedAtTimestamp)) {
             return null;
           }
 
           if (
             ![TemporalStatusEnum.NO_DATA, TemporalStatusEnum.IN_PROGRESS].includes(status) ||
-            updatedAt >= cutoffIso
+            updatedAtTimestamp >= cutoffTimestamp
           ) {
             return null;
           }
