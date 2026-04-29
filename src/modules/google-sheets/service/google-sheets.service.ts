@@ -8,6 +8,7 @@ import {
   DashboardAvailableDates,
   DashboardCloseDayType,
   DashboardCloseSlotType,
+  DashboardOpenSlotType,
   computeOnlineMaxCapacity,
   DashboardReservation,
   DashboardReservationSlot,
@@ -262,6 +263,83 @@ export class GoogleSheetsService {
 
         return accumulator;
       }, []);
+  }
+
+  private subtractOpenRangeFromClosedSlotEntries(
+    entries: {
+      date: string;
+      fromTime: string;
+      toTime: string;
+      reason: string | null;
+      createdAt: string | null;
+    }[],
+    fromTime: string,
+    toTime: string,
+  ): {
+    date: string;
+    fromTime: string;
+    toTime: string;
+    reason: string | null;
+    createdAt: string;
+  }[] {
+    const openStart = this.toMinutes(fromTime);
+    const openEnd = this.toMinutes(toTime);
+
+    if (openStart === null || openEnd === null || openStart >= openEnd) {
+      return [];
+    }
+
+    return entries.flatMap((entry) => {
+      const closedStart = this.toMinutes(entry.fromTime);
+      const closedEnd = this.toMinutes(entry.toTime);
+      const createdAt = entry.createdAt ?? new Date().toISOString();
+
+      if (closedStart === null || closedEnd === null) {
+        return [];
+      }
+
+      if (closedEnd <= openStart || closedStart >= openEnd) {
+        return [
+          {
+            date: entry.date,
+            fromTime: entry.fromTime,
+            toTime: entry.toTime,
+            reason: entry.reason,
+            createdAt,
+          },
+        ];
+      }
+
+      const remainingEntries: {
+        date: string;
+        fromTime: string;
+        toTime: string;
+        reason: string | null;
+        createdAt: string;
+      }[] = [];
+
+      if (closedStart < openStart) {
+        remainingEntries.push({
+          date: entry.date,
+          fromTime: entry.fromTime,
+          toTime: fromTime,
+          reason: entry.reason,
+          createdAt,
+        });
+      }
+
+      if (openEnd < closedEnd) {
+        remainingEntries.push({
+          date: entry.date,
+          fromTime: toTime,
+          toTime: entry.toTime,
+          reason: entry.reason,
+          createdAt,
+        });
+      }
+
+      return remainingEntries;
+    });
   }
 
   private getClosedSlotsByDate(
@@ -738,6 +816,58 @@ export class GoogleSheetsService {
       closedDay.rowIndex,
       GoogleSheetsService.CLOSED_DAYS_SHEET_INDEX,
     );
+  }
+
+  async openSlot(payload: DashboardOpenSlotType): Promise<number> {
+    const normalizedDate = this.getNormalizedIsoDate(payload.date);
+    const fromTime = payload.fromTime.trim();
+    const toTime = payload.toTime.trim();
+    const fromMinutes = this.toMinutes(fromTime);
+    const toMinutes = this.toMinutes(toTime);
+
+    if (!normalizedDate || fromMinutes === null || toMinutes === null || fromMinutes >= toMinutes) {
+      throw new Error(
+        `Formato invalido para reabrir ClosedSlots: ${payload.date} ${fromTime}-${toTime}`,
+      );
+    }
+
+    const existingClosedSlots = await this.getClosedSlotEntries();
+    const sameDateEntries = existingClosedSlots.filter((entry) => entry.date === normalizedDate);
+    const reopenedSlotsCount = sameDateEntries.filter((entry) =>
+      this.hasTimeOverlap(entry.fromTime, entry.toTime, fromTime, toTime),
+    ).length;
+
+    if (sameDateEntries.length === 0) {
+      return 0;
+    }
+
+    const remainingEntries = this.subtractOpenRangeFromClosedSlotEntries(
+      sameDateEntries,
+      fromTime,
+      toTime,
+    );
+
+    for (const entry of sameDateEntries.sort((left, right) => right.rowIndex - left.rowIndex)) {
+      await this.googleSheetsRepository.deleteRow(
+        entry.rowIndex,
+        GoogleSheetsService.CLOSED_SLOTS_SHEET_INDEX,
+      );
+    }
+
+    if (remainingEntries.length > 0) {
+      await this.googleSheetsRepository.appendRow(
+        GoogleSheetsService.CLOSED_SLOTS_RANGE,
+        remainingEntries.map((entry) => [
+          entry.date,
+          entry.fromTime,
+          entry.toTime,
+          entry.reason ?? '',
+          entry.createdAt,
+        ]),
+      );
+    }
+
+    return reopenedSlotsCount;
   }
 
   async deleteClosedDaysBefore(date: string): Promise<number> {

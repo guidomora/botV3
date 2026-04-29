@@ -11,6 +11,8 @@ import {
   DashboardDeleteReservationType,
   DailyReservationSlots,
   DashboardOpenDayResult,
+  DashboardOpenSlotResult,
+  DashboardOpenSlotType,
   DashboardUpdateReservationResult,
   DashboardUpdateReservationType,
   DailyReservationsSummary,
@@ -24,6 +26,7 @@ import { CreateDashboardReservationUseCase } from '../application/create-dashboa
 import { CloseDashboardDayUseCase } from '../application/close-dashboard-day.use-case';
 import { CloseDashboardSlotUseCase } from '../application/close-dashboard-slot.use-case';
 import { OpenDashboardDayUseCase } from '../application/open-dashboard-day.use-case';
+import { OpenDashboardSlotUseCase } from '../application/open-dashboard-slot.use-case';
 
 @Injectable()
 export class ReservationsDashboardService {
@@ -37,6 +40,7 @@ export class ReservationsDashboardService {
     private readonly closeDashboardDayUseCase: CloseDashboardDayUseCase,
     private readonly closeDashboardSlotUseCase: CloseDashboardSlotUseCase,
     private readonly openDashboardDayUseCase: OpenDashboardDayUseCase,
+    private readonly openDashboardSlotUseCase: OpenDashboardSlotUseCase,
   ) {}
 
   async getAvailableDates(): Promise<DashboardAvailableDates> {
@@ -79,5 +83,9 @@ export class ReservationsDashboardService {
 
   async openDay(date: string): Promise<DashboardOpenDayResult> {
     return this.openDashboardDayUseCase.execute(date);
+  }
+
+  async openSlot(payload: DashboardOpenSlotType): Promise<DashboardOpenSlotResult> {
+    return this.openDashboardSlotUseCase.execute(payload);
   }
 }
