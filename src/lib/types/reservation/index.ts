@@ -16,3 +16,4 @@ export * from './dashboard-create-reservation.type';
 export * from './dashboard-close-day.type';
 export * from './dashboard-close-slot.type';
 export * from './dashboard-open-day.type';
+export * from './dashboard-open-slot.type';

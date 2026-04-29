@@ -19,6 +19,7 @@ describe('CloseDashboardDayUseCase', () => {
       closeDay: jest.fn(),
       closeSlot: jest.fn(),
       openDay: jest.fn(),
+      openSlot: jest.fn(),
       isDayClosed: jest.fn(),
     };
 

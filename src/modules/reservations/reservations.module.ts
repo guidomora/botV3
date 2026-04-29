@@ -21,6 +21,7 @@ import { CreateDashboardReservationUseCase } from './application/create-dashboar
 import { CloseDashboardDayUseCase } from './application/close-dashboard-day.use-case';
 import { CloseDashboardSlotUseCase } from './application/close-dashboard-slot.use-case';
 import { OpenDashboardDayUseCase } from './application/open-dashboard-day.use-case';
+import { OpenDashboardSlotUseCase } from './application/open-dashboard-slot.use-case';
 import { reservationsProviders } from './reservations.providers';
 import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
 
@@ -39,6 +40,7 @@ import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
     CloseDashboardDayUseCase,
     CloseDashboardSlotUseCase,
     OpenDashboardDayUseCase,
+    OpenDashboardSlotUseCase,
     InternalApiTokenGuard,
     CreateReservationStrategy,
     DeleteReservationStrategy,

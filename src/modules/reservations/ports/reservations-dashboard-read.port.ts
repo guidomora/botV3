@@ -2,6 +2,7 @@ import {
   DashboardAvailableDates,
   DashboardCloseDayType,
   DashboardCloseSlotType,
+  DashboardOpenSlotType,
   DashboardReservation,
   DashboardReservationSlot,
 } from 'src/lib';
@@ -15,5 +16,6 @@ export interface ReservationsDashboardReadPort {
     payload: DashboardCloseSlotType,
   ): Promise<{ fromTime: string; toTime: string; reason: string | null }>;
   openDay(date: string): Promise<void>;
+  openSlot(payload: DashboardOpenSlotType): Promise<number>;
   isDayClosed(date: string): Promise<boolean>;
 }

@@ -9,6 +9,7 @@ import { CreateDashboardReservationUseCase } from '../application/create-dashboa
 import { CloseDashboardDayUseCase } from '../application/close-dashboard-day.use-case';
 import { CloseDashboardSlotUseCase } from '../application/close-dashboard-slot.use-case';
 import { OpenDashboardDayUseCase } from '../application/open-dashboard-day.use-case';
+import { OpenDashboardSlotUseCase } from '../application/open-dashboard-slot.use-case';
 
 describe('ReservationsDashboardService', () => {
   let service: ReservationsDashboardService;
@@ -21,6 +22,7 @@ describe('ReservationsDashboardService', () => {
   let closeDashboardDayUseCase: jest.Mocked<CloseDashboardDayUseCase>;
   let closeDashboardSlotUseCase: jest.Mocked<CloseDashboardSlotUseCase>;
   let openDashboardDayUseCase: jest.Mocked<OpenDashboardDayUseCase>;
+  let openDashboardSlotUseCase: jest.Mocked<OpenDashboardSlotUseCase>;
 
   beforeEach(() => {
     getAvailableReservationDatesUseCase = {
@@ -59,6 +61,10 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn(),
     } as unknown as jest.Mocked<OpenDashboardDayUseCase>;
 
+    openDashboardSlotUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<OpenDashboardSlotUseCase>;
+
     service = new ReservationsDashboardService(
       createDashboardReservationUseCase,
       getAvailableReservationDatesUseCase,
@@ -69,6 +75,7 @@ describe('ReservationsDashboardService', () => {
       closeDashboardDayUseCase,
       closeDashboardSlotUseCase,
       openDashboardDayUseCase,
+      openDashboardSlotUseCase,
     );
   });
 
@@ -305,5 +312,31 @@ describe('ReservationsDashboardService', () => {
       date: '2026-04-16',
       isClosed: false,
     });
+  });
+
+  it('should delegate slot reopen to the use case', async () => {
+    openDashboardSlotUseCase.execute.mockResolvedValue({
+      date: '2026-04-16',
+      fromTime: '13:00',
+      toTime: '14:00',
+      isClosed: false,
+      reopenedSlotsCount: 1,
+    });
+
+    const payload = {
+      date: '2026-04-16',
+      fromTime: '13:00',
+      toTime: '14:00',
+    };
+
+    await expect(service.openSlot(payload)).resolves.toEqual({
+      date: '2026-04-16',
+      fromTime: '13:00',
+      toTime: '14:00',
+      isClosed: false,
+      reopenedSlotsCount: 1,
+    });
+
+    expect(openDashboardSlotUseCase.execute.mock.calls[0]).toEqual([payload]);
   });
 });

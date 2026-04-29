@@ -3,6 +3,7 @@ import {
   DashboardAvailableDates,
   DashboardCloseDayType,
   DashboardCloseSlotType,
+  DashboardOpenSlotType,
   DashboardReservation,
   DashboardReservationSlot,
 } from 'src/lib';
@@ -37,6 +38,10 @@ export class GoogleSheetsReservationsDashboardAdapter implements ReservationsDas
 
   openDay(date: string): Promise<void> {
     return this.googleSheetsService.openDay(date);
+  }
+
+  openSlot(payload: DashboardOpenSlotType): Promise<number> {
+    return this.googleSheetsService.openSlot(payload);
   }
 
   isDayClosed(date: string): Promise<boolean> {

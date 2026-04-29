@@ -43,6 +43,8 @@ import { CloseDashboardDayResponseDto } from '../dto/close-dashboard-day-respons
 import { CloseDashboardSlotDto } from '../dto/close-dashboard-slot.dto';
 import { CloseDashboardSlotResponseDto } from '../dto/close-dashboard-slot-response.dto';
 import { OpenDashboardDayResponseDto } from '../dto/open-dashboard-day-response.dto';
+import { OpenDashboardSlotDto } from '../dto/open-dashboard-slot.dto';
+import { OpenDashboardSlotResponseDto } from '../dto/open-dashboard-slot-response.dto';
 
 const formatIsoDateToSheetDate = (date: string): string => {
   const [year, month, day] = date.split('-');
@@ -333,5 +335,45 @@ export class ReservationsController {
   })
   openDay(@Param() params: ReservationClosedDayParamDto): Promise<OpenDashboardDayResponseDto> {
     return this.reservationsDashboardService.openDay(params.date);
+  }
+
+  @Delete('closed-slots/:date')
+  @ApiOperation({
+    summary: 'Reabrir una franja horaria de agenda desde el dashboard',
+    description:
+      'Quita total o parcialmente un cierre de franja horaria para una fecha que no este cerrada por dia completo.',
+  })
+  @ApiParam({
+    name: 'date',
+    description: 'Fecha a reabrir parcialmente en formato ISO yyyy-mm-dd.',
+    example: '2026-04-16',
+  })
+  @ApiBody({
+    type: OpenDashboardSlotDto,
+  })
+  @ApiOkResponse({
+    description: 'Franja horaria reabierta correctamente.',
+    type: OpenDashboardSlotResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'La fecha del path o el body son invalidos.',
+    type: ValidationErrorResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'La fecha no existe en la agenda o esta cerrada por dia completo.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  openSlot(
+    @Param() params: ReservationClosedDayParamDto,
+    @Body() body: OpenDashboardSlotDto,
+  ): Promise<OpenDashboardSlotResponseDto> {
+    return this.reservationsDashboardService.openSlot({
+      date: params.date,
+      fromTime: body.fromTime,
+      toTime: body.toTime,
+    });
   }
 }

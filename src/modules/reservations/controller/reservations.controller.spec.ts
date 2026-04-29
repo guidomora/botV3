@@ -16,6 +16,7 @@ describe('ReservationsController', () => {
     closeDay: jest.fn(),
     closeSlot: jest.fn(),
     openDay: jest.fn(),
+    openSlot: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -285,6 +286,38 @@ describe('ReservationsController', () => {
     await expect(controller.openDay({ date: '2026-04-16' })).resolves.toEqual({
       date: '2026-04-16',
       isClosed: false,
+    });
+  });
+
+  it('should delegate open slot request to dashboard service', async () => {
+    reservationsDashboardServiceMock.openSlot.mockResolvedValue({
+      date: '2026-04-16',
+      fromTime: '13:00',
+      toTime: '14:00',
+      isClosed: false,
+      reopenedSlotsCount: 1,
+    });
+
+    await expect(
+      controller.openSlot(
+        { date: '2026-04-16' },
+        {
+          fromTime: '13:00',
+          toTime: '14:00',
+        },
+      ),
+    ).resolves.toEqual({
+      date: '2026-04-16',
+      fromTime: '13:00',
+      toTime: '14:00',
+      isClosed: false,
+      reopenedSlotsCount: 1,
+    });
+
+    expect(reservationsDashboardServiceMock.openSlot).toHaveBeenCalledWith({
+      date: '2026-04-16',
+      fromTime: '13:00',
+      toTime: '14:00',
     });
   });
 });

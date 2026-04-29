@@ -413,6 +413,63 @@ describe('Given GoogleSheetsService', () => {
         ['2026-04-10', '12:00', '16:00', 'Ultimo motivo', expect.any(String)],
       ]);
     });
+
+    it('Should split a closed slot when reopening an inner range', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['2026-04-10', '10:00', '14:00', 'Evento privado', '2026-04-01T10:00:00.000Z'],
+      ]);
+
+      await expect(
+        service.openSlot({
+          date: '2026-04-10',
+          fromTime: '11:00',
+          toTime: '12:00',
+        }),
+      ).resolves.toBe(1);
+
+      expect(repository.deleteRow.mock.calls).toEqual([[1, 4]]);
+      expect(repository.appendRow.mock.calls[0][0]).toBe('ClosedSlots!A:E');
+      expect(repository.appendRow.mock.calls[0][1]).toEqual([
+        ['2026-04-10', '10:00', '11:00', 'Evento privado', '2026-04-01T10:00:00.000Z'],
+        ['2026-04-10', '12:00', '14:00', 'Evento privado', '2026-04-01T10:00:00.000Z'],
+      ]);
+    });
+
+    it('Should trim the end of a closed slot when reopening a trailing range', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['2026-04-10', '10:00', '14:00', 'Evento privado', '2026-04-01T10:00:00.000Z'],
+      ]);
+
+      await expect(
+        service.openSlot({
+          date: '2026-04-10',
+          fromTime: '13:00',
+          toTime: '14:00',
+        }),
+      ).resolves.toBe(1);
+
+      expect(repository.deleteRow.mock.calls).toEqual([[1, 4]]);
+      expect(repository.appendRow.mock.calls[0][1]).toEqual([
+        ['2026-04-10', '10:00', '13:00', 'Evento privado', '2026-04-01T10:00:00.000Z'],
+      ]);
+    });
+
+    it('Should remove the closed slot when reopening the whole range', async () => {
+      repository.getDates.mockResolvedValueOnce([
+        ['2026-04-10', '10:00', '14:00', 'Evento privado', '2026-04-01T10:00:00.000Z'],
+      ]);
+
+      await expect(
+        service.openSlot({
+          date: '2026-04-10',
+          fromTime: '10:00',
+          toTime: '14:00',
+        }),
+      ).resolves.toBe(1);
+
+      expect(repository.deleteRow.mock.calls).toEqual([[1, 4]]);
+      expect(repository.appendRow.mock.calls).toHaveLength(0);
+    });
   });
 
   describe('When getReservationsByDate is called', () => {
