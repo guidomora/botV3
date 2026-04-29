@@ -1,6 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleSheetsService } from './service/google-sheets.service';
+import { GoogleSheetsClosedScheduleService } from './service/google-sheets-closed-schedule.service';
 import { GoogleSheetsRepository } from './domain/repository/google-sheets.repository';
 import { GoogleTemporalSheetsService } from './service/google-temporal-sheet.service';
 import { GoogleTemporalSheetsRepository } from './domain/repository/google-temporal-sheet.repository';
@@ -51,6 +52,7 @@ export class GoogleSheetsModule {
           },
           inject: [ConfigService],
         },
+        GoogleSheetsClosedScheduleService,
         GoogleSheetsService,
         GoogleTemporalSheetsService,
       ],
