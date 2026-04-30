@@ -32,6 +32,10 @@ export class GoogleSheetsClosedScheduleService {
       GoogleSheetsClosedScheduleService.CLOSED_DAYS_RANGE,
     );
 
+    return this.mapClosedDayEntries(rows);
+  }
+
+  private mapClosedDayEntries(rows: string[][]): ClosedDayEntry[] {
     return rows
       .map<ClosedDayEntry | null>((row, index) => {
         const normalizedDate = getNormalizedIsoDate(String(row[0] ?? ''));
@@ -136,7 +140,10 @@ export class GoogleSheetsClosedScheduleService {
       throw new Error(`Formato de fecha invalido para ClosedDays: ${payload.date}`);
     }
 
-    const closedDays = await this.getClosedDayEntries();
+    const closedDayRows = await this.googleSheetsRepository.getDates(
+      GoogleSheetsClosedScheduleService.CLOSED_DAYS_RANGE,
+    );
+    const closedDays = this.mapClosedDayEntries(closedDayRows);
     const alreadyClosed = closedDays.some((closedDay) => closedDay.date === normalizedDate);
 
     if (alreadyClosed) {
@@ -144,11 +151,12 @@ export class GoogleSheetsClosedScheduleService {
     }
 
     const createdAt = new Date().toISOString();
+    const nextRow = closedDayRows.length + 1;
+    const range = `${SheetsName.CLOSED_DAYS}!A${nextRow}:C${nextRow}`;
 
-    await this.googleSheetsRepository.appendRow(
-      GoogleSheetsClosedScheduleService.CLOSED_DAYS_RANGE,
-      [[normalizedDate, payload.reason?.trim() || '', createdAt]],
-    );
+    await this.googleSheetsRepository.updateValues(range, [
+      [normalizedDate, payload.reason?.trim() || '', createdAt],
+    ]);
   }
 
   async closeSlot(

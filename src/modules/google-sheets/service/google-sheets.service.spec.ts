@@ -320,7 +320,7 @@ describe('Given GoogleSheetsService', () => {
       await expect(service.isDayClosed('viernes 10 de abril 2026 10/04/2026')).resolves.toBe(true);
     });
 
-    it('Should append a closed day only once', async () => {
+    it('Should write a closed day only once in the next A:C row', async () => {
       repository.getDates.mockResolvedValueOnce([]);
 
       await service.closeDay({
@@ -328,10 +328,10 @@ describe('Given GoogleSheetsService', () => {
         reason: 'Mantenimiento',
       });
 
-      expect(repository.appendRow.mock.calls).toHaveLength(1);
-      expect(repository.appendRow.mock.calls[0][0]).toBe('ClosedDays!A:C');
-      expect(repository.appendRow.mock.calls[0][1][0][0]).toBe('2026-04-10');
-      expect(repository.appendRow.mock.calls[0][1][0][1]).toBe('Mantenimiento');
+      expect(repository.updateValues.mock.calls).toHaveLength(1);
+      expect(repository.updateValues.mock.calls[0][0]).toBe('ClosedDays!A1:C1');
+      expect(repository.updateValues.mock.calls[0][1][0][0]).toBe('2026-04-10');
+      expect(repository.updateValues.mock.calls[0][1][0][1]).toBe('Mantenimiento');
     });
 
     it('Should not append duplicated closed days', async () => {

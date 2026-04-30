@@ -20,6 +20,18 @@ describe('Given GoogleSheetsClosedScheduleService', () => {
     await expect(service.isDayClosed('viernes 10 de abril 2026 10/04/2026')).resolves.toBe(true);
   });
 
+  it('Should close a day in the next A:C row when previous reasons are empty', async () => {
+    repository.getDates.mockResolvedValueOnce([['2026-04-10', '', '2026-04-01T10:00:00.000Z']]);
+
+    await service.closeDay({ date: '2026-04-11' });
+
+    expect(repository.appendRow.mock.calls).toHaveLength(0);
+    expect(repository.updateValues.mock.calls[0]).toEqual([
+      'ClosedDays!A2:C2',
+      [['2026-04-11', '', expect.any(String)]],
+    ]);
+  });
+
   it('Should close a slot by consolidating existing ranges for the same date', async () => {
     repository.getDates.mockResolvedValueOnce([
       ['2026-04-10', '12:00', '14:00', 'Primer motivo', '2026-04-01T10:00:00.000Z'],
