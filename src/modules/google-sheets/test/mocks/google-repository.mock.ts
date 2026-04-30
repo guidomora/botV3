@@ -11,6 +11,7 @@ export const createGoogleSheetsRepositoryMock = (): jest.Mocked<GoogleSheetsRepo
     createReservation: jest.fn(),
     getAvailability: jest.fn(),
     updateAvailabilitySheet: jest.fn(),
+    updateValues: jest.fn(),
     insertRow: jest.fn(),
     deleteReservation: jest.fn(),
     deleteRow: jest.fn(),

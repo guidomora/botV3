@@ -101,6 +101,19 @@ export class GoogleSheetsRepository {
     }
   }
 
+  async updateValues(range: string, values: AddValue): Promise<void> {
+    try {
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.sheetId,
+        range,
+        valueInputOption: 'RAW',
+        requestBody: { values },
+      });
+    } catch (error) {
+      this.failure(error);
+    }
+  }
+
   async insertRow(rowIndex: number, sheetIndex: number) {
     try {
       const sheetId = await parseSpreadSheetId(this.sheetId, this.sheets, sheetIndex);
