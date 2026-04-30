@@ -5,6 +5,7 @@ import {
   reservationRowsMock,
 } from '../test/mocks/google-sheets-data.mock';
 import { createGoogleSheetsRepositoryMock } from '../test/mocks/google-repository.mock';
+import { GoogleSheetsClosedScheduleService } from './google-sheets-closed-schedule.service';
 import { GoogleSheetsService } from './google-sheets.service';
 
 describe('Given GoogleSheetsService', () => {
@@ -22,7 +23,10 @@ describe('Given GoogleSheetsService', () => {
       SLOT_INTERVAL_MINUTES: '60',
     };
     repository = createGoogleSheetsRepositoryMock();
-    service = new GoogleSheetsService(repository);
+    service = new GoogleSheetsService(
+      repository,
+      new GoogleSheetsClosedScheduleService(repository),
+    );
   });
 
   afterAll(() => {
