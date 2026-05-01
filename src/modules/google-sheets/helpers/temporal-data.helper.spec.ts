@@ -1,4 +1,5 @@
 import { TemporalStatusEnum } from 'src/lib';
+import { ROW_ORDER } from 'src/constants/tables-info/temporal-data-rows';
 import { buildEmptyRow, computeStatus, objectToRowArray } from './temporal-data.helper';
 
 describe('Given temporal-data helper', () => {
@@ -48,9 +49,10 @@ describe('Given temporal-data helper', () => {
         intent: 'create',
       });
 
-      expect(row).toHaveLength(9);
+      expect(row).toHaveLength(ROW_ORDER.length);
       expect(row[6]).toBe('wa-1');
       expect(row[7]).toBe(TemporalStatusEnum.IN_PROGRESS);
+      expect(row[9]).toBe(' ');
     });
 
     it('Should create default empty row preserving waId', () => {
@@ -58,6 +60,7 @@ describe('Given temporal-data helper', () => {
 
       expect(row[6]).toBe('wa-200');
       expect(row[7]).toBe(TemporalStatusEnum.NO_DATA);
+      expect(row[9]).not.toBe(' ');
     });
   });
 });
