@@ -255,8 +255,8 @@ describe('ReservationsDashboardService', () => {
       isClosed: true,
       reason: 'Cerrado por mantenimiento',
       existingReservationsCount: 2,
-      warning:
-        'La fecha fue cerrada, pero todavia existen 2 reservas activas que deberan ser gestionadas manualmente.',
+      notificationsQueuedCount: 2,
+      warning: null,
     });
 
     await expect(
@@ -266,8 +266,8 @@ describe('ReservationsDashboardService', () => {
       isClosed: true,
       reason: 'Cerrado por mantenimiento',
       existingReservationsCount: 2,
-      warning:
-        'La fecha fue cerrada, pero todavia existen 2 reservas activas que deberan ser gestionadas manualmente.',
+      notificationsQueuedCount: 2,
+      warning: null,
     });
   });
 
@@ -279,8 +279,8 @@ describe('ReservationsDashboardService', () => {
       isClosed: true,
       reason: 'Evento privado',
       existingReservationsCount: 1,
-      warning:
-        'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
+      notificationsQueuedCount: 1,
+      warning: null,
     });
 
     await expect(
@@ -297,8 +297,8 @@ describe('ReservationsDashboardService', () => {
       isClosed: true,
       reason: 'Evento privado',
       existingReservationsCount: 1,
-      warning:
-        'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
+      notificationsQueuedCount: 1,
+      warning: null,
     });
   });
 

@@ -15,6 +15,7 @@ export enum CacheTypeEnum {
   CANCEL = 'cancel',
   AVAILABILITY = 'availability',
   UPDATE = 'update',
+  AFFECTED_RESERVATION = 'affected-reservation',
   DATA = 'data',
   OTHER = 'other',
 }

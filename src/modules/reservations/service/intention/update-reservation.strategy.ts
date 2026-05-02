@@ -203,6 +203,7 @@ export class UpdateReservationStrategy implements IntentionStrategyInterface {
       }
 
       await this.cacheService.clearUpdateState(waId);
+      await this.cacheService.clearAffectedReservationState(waId);
       await this.cacheService.markFlowCompleted(waId);
 
       return { reply: reply.message };

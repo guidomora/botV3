@@ -38,10 +38,16 @@ export class CloseDashboardSlotResponseDto {
   })
   existingReservationsCount!: number;
 
+  @ApiProperty({
+    description: 'Cantidad de notificaciones de cierre encoladas para reservas afectadas.',
+    example: 2,
+  })
+  notificationsQueuedCount!: number;
+
   @ApiPropertyOptional({
     description: 'Warning operativo para el dashboard cuando ya existian reservas afectadas.',
     example:
-      'La franja fue cerrada, pero todavia existen 2 reservas activas afectadas que deberan ser gestionadas manualmente.',
+      'La franja fue cerrada, pero no se pudieron encolar las notificaciones a las reservas afectadas.',
     nullable: true,
   })
   warning!: string | null;

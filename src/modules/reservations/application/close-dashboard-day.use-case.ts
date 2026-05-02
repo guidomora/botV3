@@ -1,6 +1,7 @@
 import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
-import { DashboardCloseDayResult, DashboardCloseDayType } from 'src/lib';
+import { DashboardCloseDayResult, DashboardCloseDayType, DashboardReservation } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { ClosureNotificationQueueService } from 'src/modules/reservation-jobs/service/closure-notification-queue.service';
 import { ReservationsDashboardReadPort } from '../ports/reservations-dashboard-read.port';
 import { RESERVATIONS_DASHBOARD_READ_PORT } from '../reservations.tokens';
 
@@ -12,6 +13,7 @@ export class CloseDashboardDayUseCase {
     private readonly datesService: DatesService,
     @Inject(RESERVATIONS_DASHBOARD_READ_PORT)
     private readonly reservationsDashboardReadPort: ReservationsDashboardReadPort,
+    private readonly closureNotificationQueueService: ClosureNotificationQueueService,
   ) {}
 
   async execute(payload: DashboardCloseDayType): Promise<DashboardCloseDayResult> {
@@ -38,17 +40,54 @@ export class CloseDashboardDayUseCase {
     });
 
     const existingReservationsCount = existingReservations.length;
-    const warning =
-      existingReservationsCount > 0
-        ? `La fecha fue cerrada, pero todavia existen ${existingReservationsCount} reservas activas que deberan ser gestionadas manualmente.`
-        : null;
+    const notificationResult = await this.enqueueClosureNotifications({
+      date: normalizedDate,
+      sheetDate: agendaDateLabel,
+      reason: normalizedReason,
+      reservations: existingReservations,
+    });
 
     return {
       date: normalizedDate,
       isClosed: true,
       reason: normalizedReason,
       existingReservationsCount,
-      warning,
+      notificationsQueuedCount: notificationResult.queuedCount,
+      warning: notificationResult.warning,
     };
+  }
+
+  private async enqueueClosureNotifications(params: {
+    date: string;
+    sheetDate: string;
+    reason: string | null;
+    reservations: DashboardReservation[];
+  }): Promise<{ queuedCount: number; warning: string | null }> {
+    if (params.reservations.length === 0) {
+      return { queuedCount: 0, warning: null };
+    }
+
+    try {
+      const result = await this.closureNotificationQueueService.notifyClosure({
+        closureType: 'day',
+        date: params.date,
+        sheetDate: params.sheetDate,
+        reason: params.reason,
+        reservations: params.reservations,
+      });
+
+      return { queuedCount: result.queuedCount, warning: null };
+    } catch (error) {
+      this.logger.error(
+        `No se pudieron encolar notificaciones de cierre de dia date=${params.date}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      return {
+        queuedCount: 0,
+        warning:
+          'La fecha fue cerrada, pero no se pudieron encolar las notificaciones a las reservas afectadas.',
+      };
+    }
   }
 }

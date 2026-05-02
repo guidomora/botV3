@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PROVIDER_TEMPORARY_ERROR_MESSAGE } from 'src/constants';
 import {
+  AffectedReservationState,
   Intention,
   MultipleMessagesResponse,
   ProviderError,
@@ -17,6 +18,8 @@ import { inferActiveIntent } from 'src/modules/ai/utils';
 @Injectable()
 export class ReservationsService {
   private readonly logger = new Logger(ReservationsService.name);
+  private readonly affectedReservationClarificationReply =
+    '¿Querés que intentemos reprogramar tu reserva para otro día u horario, o preferís cancelarla?';
 
   constructor(
     private readonly aiService: AiService,
@@ -29,11 +32,14 @@ export class ReservationsService {
     simplifiedPayload: SimplifiedTwilioWebhookPayload,
   ): Promise<string> {
     await this.cacheService.appendEntityMessage(simplifiedPayload.waId, message, RoleEnum.USER);
+    const affectedReservation = await this.cacheService.getAffectedReservationState(
+      simplifiedPayload.waId,
+    );
 
     try {
       const hasExplicitAction = hasExplicitReservationAction(message);
 
-      if (!hasExplicitAction) {
+      if (!affectedReservation && !hasExplicitAction) {
         const isSocialCourtesy = await this.aiService.isSocialCourtesyMessage(message);
 
         if (isSocialCourtesy) {
@@ -50,11 +56,29 @@ export class ReservationsService {
       const history = await this.cacheService.getHistory(simplifiedPayload.waId);
       const activeIntent = inferActiveIntent(history);
       const shouldUseUpdateExtractor =
-        activeIntent === Intention.UPDATE || hasExplicitUpdateAction(message);
+        !affectedReservation &&
+        (activeIntent === Intention.UPDATE || hasExplicitUpdateAction(message));
 
-      const aiResponse = shouldUseUpdateExtractor
+      let aiResponse = shouldUseUpdateExtractor
         ? await this.aiService.interactUpdateWithAi(message, history)
         : await this.aiService.interactWithAi(message, history);
+
+      if (affectedReservation) {
+        const affectedReservationReply = await this.resolveAffectedReservationReply(
+          aiResponse,
+          simplifiedPayload,
+          affectedReservation,
+        );
+
+        if (affectedReservationReply) {
+          return affectedReservationReply;
+        }
+
+        if (aiResponse.intent === Intention.UPDATE) {
+          aiResponse = await this.aiService.interactUpdateWithAi(message, history);
+        }
+      }
+
       const result = await this.router.route(aiResponse, simplifiedPayload);
 
       return result.reply;
@@ -82,5 +106,47 @@ export class ReservationsService {
     }
 
     return error.message;
+  }
+
+  private async resolveAffectedReservationReply(
+    aiResponse: MultipleMessagesResponse,
+    simplifiedPayload: SimplifiedTwilioWebhookPayload,
+    affectedReservation: AffectedReservationState,
+  ): Promise<string | null> {
+    if (aiResponse.intent === Intention.UPDATE) {
+      await this.cacheService.updateUpdateState(simplifiedPayload.waId, {
+        currentName: affectedReservation.name,
+        phone: affectedReservation.phone,
+        currentDate: affectedReservation.date,
+        currentTime: affectedReservation.time,
+        currentQuantity: String(affectedReservation.quantity),
+        stage: 'reschedule',
+      });
+
+      return null;
+    }
+
+    if (aiResponse.intent === Intention.CANCEL) {
+      await this.cacheService.updateCancelState(simplifiedPayload.waId, {
+        name: affectedReservation.name,
+        phone: affectedReservation.phone,
+        date: affectedReservation.date,
+        time: affectedReservation.time,
+      });
+
+      return null;
+    }
+
+    if (aiResponse.intent === Intention.OTHER) {
+      await this.cacheService.appendEntityMessage(
+        simplifiedPayload.waId,
+        this.affectedReservationClarificationReply,
+        RoleEnum.ASSISTANT,
+      );
+
+      return this.affectedReservationClarificationReply;
+    }
+
+    return null;
   }
 }

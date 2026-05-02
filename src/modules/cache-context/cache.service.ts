@@ -2,6 +2,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   Intention,
+  AffectedReservationState,
   ChatMessage,
   RoleEnum,
   DeleteReservation,
@@ -132,6 +133,7 @@ export class CacheService {
       this.cacheManager.del(this.key(waId, CacheTypeEnum.DATA)),
       this.cacheManager.del(this.key(waId, CacheTypeEnum.CANCEL)),
       this.cacheManager.del(this.key(waId, CacheTypeEnum.UPDATE)),
+      this.cacheManager.del(this.key(waId, CacheTypeEnum.AFFECTED_RESERVATION)),
       this.cacheManager.del(this.lifecycleKey(waId)),
     ]);
 
@@ -233,6 +235,25 @@ export class CacheService {
 
   async clearUpdateState(waId: string) {
     await this.cacheManager.del(this.key(waId, CacheTypeEnum.UPDATE));
+  }
+
+  async getAffectedReservationState(waId: string): Promise<AffectedReservationState | null> {
+    const key = this.key(waId, CacheTypeEnum.AFFECTED_RESERVATION);
+    const data = await this.cacheManager.get<AffectedReservationState>(key);
+    this.logger.log(`Cache affected reservation state for ${waId}`, CacheService.name);
+    return data ?? null;
+  }
+
+  async setAffectedReservationState(waId: string, state: AffectedReservationState): Promise<void> {
+    const key = this.key(waId, CacheTypeEnum.AFFECTED_RESERVATION);
+    const ttl = await this.getHistoryTtlMs(waId);
+    await this.cacheManager.set(key, state, ttl);
+    this.logger.log(`Cache set affected reservation state for ${waId}`, CacheService.name);
+  }
+
+  async clearAffectedReservationState(waId: string): Promise<void> {
+    await this.cacheManager.del(this.key(waId, CacheTypeEnum.AFFECTED_RESERVATION));
+    this.logger.log(`Cache clear affected reservation state for ${waId}`, CacheService.name);
   }
 
   async setUpdateState(waId: string, state: UpdateReservationType) {

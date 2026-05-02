@@ -1,6 +1,12 @@
 import { Logger } from '@nestjs/common';
 import { PROVIDER_TEMPORARY_ERROR_MESSAGE } from 'src/constants';
-import { Intention, ProviderError, ProviderName, RoleEnum } from 'src/lib';
+import {
+  AffectedReservationState,
+  Intention,
+  ProviderError,
+  ProviderName,
+  RoleEnum,
+} from 'src/lib';
 import {
   aiCreateReservationResponseMock,
   aiUpdateReservationResponseMock,
@@ -16,6 +22,16 @@ describe('ReservationsService', () => {
   let aiServiceMock = createAiServiceMock();
   let routerMock = createIntentionsRouterMock();
   let cacheServiceMock = createCacheServiceMock();
+  const affectedReservationStateMock: AffectedReservationState = {
+    name: 'Juan Perez',
+    phone: '5491122334455',
+    date: 'jueves 16 de abril 2026 16/04/2026',
+    time: '21:00',
+    quantity: 4,
+    closureType: 'day',
+    closureReason: 'Cerrado por mantenimiento',
+    notifiedAt: 1_700_000_000_000,
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -23,6 +39,7 @@ describe('ReservationsService', () => {
     aiServiceMock = createAiServiceMock();
     routerMock = createIntentionsRouterMock();
     cacheServiceMock = createCacheServiceMock();
+    cacheServiceMock.getAffectedReservationState.mockResolvedValue(null);
 
     service = new ReservationsService(aiServiceMock, routerMock, cacheServiceMock);
   });
@@ -120,6 +137,109 @@ describe('ReservationsService', () => {
     expect(aiServiceMock.interactWithAi.mock.calls[0]).toEqual([
       'hola necesito ayuda',
       [{ role: RoleEnum.ASSISTANT, content: 'hola' }],
+    ]);
+  });
+
+  it('should ask for clarification when an affected reservation reply is ambiguous', async () => {
+    cacheServiceMock.getAffectedReservationState.mockResolvedValue(affectedReservationStateMock);
+    cacheServiceMock.getHistory.mockResolvedValue([
+      { role: RoleEnum.ASSISTANT, content: 'Tu reserva fue afectada por un cierre.' },
+    ]);
+    aiServiceMock.isSocialCourtesyMessage.mockResolvedValue(false);
+    aiServiceMock.interactWithAi.mockResolvedValue({ intent: Intention.OTHER });
+
+    await expect(service.conversationOrchestrator('ok', simplifiedPayloadMock)).resolves.toBe(
+      '¿Querés que intentemos reprogramar tu reserva para otro día u horario, o preferís cancelarla?',
+    );
+
+    expect(routerMock.route.mock.calls).toHaveLength(0);
+    expect(cacheServiceMock.appendEntityMessage.mock.calls.at(-1)).toEqual([
+      simplifiedPayloadMock.waId,
+      '¿Querés que intentemos reprogramar tu reserva para otro día u horario, o preferís cancelarla?',
+      RoleEnum.ASSISTANT,
+    ]);
+  });
+
+  it('should prefill update state and use dedicated update extractor when an affected reservation reply asks to reschedule', async () => {
+    cacheServiceMock.getAffectedReservationState.mockResolvedValue(affectedReservationStateMock);
+    cacheServiceMock.getHistory.mockResolvedValue([
+      { role: RoleEnum.ASSISTANT, content: 'Tu reserva fue afectada por un cierre.' },
+    ]);
+    aiServiceMock.interactWithAi.mockResolvedValue({ intent: Intention.UPDATE });
+    aiServiceMock.interactUpdateWithAi.mockResolvedValue({
+      intent: Intention.UPDATE,
+      currentDate: null,
+      currentTime: null,
+      currentName: null,
+      currentPhone: null,
+      newDate: 'viernes 17 de abril 2026 17/04/2026',
+      newTime: '21:00',
+      newName: null,
+      newQuantity: null,
+      useCurrentPhone: null,
+    });
+    routerMock.route.mockResolvedValue({ reply: 'Decime el nuevo horario' });
+
+    await expect(
+      service.conversationOrchestrator('la puedo pasar para mañana?', simplifiedPayloadMock),
+    ).resolves.toBe('Decime el nuevo horario');
+
+    expect(cacheServiceMock.updateUpdateState.mock.calls[0]).toEqual([
+      simplifiedPayloadMock.waId,
+      {
+        currentName: 'Juan Perez',
+        phone: '5491122334455',
+        currentDate: 'jueves 16 de abril 2026 16/04/2026',
+        currentTime: '21:00',
+        currentQuantity: '4',
+        stage: 'reschedule',
+      },
+    ]);
+    expect(aiServiceMock.interactUpdateWithAi.mock.calls[0]).toEqual([
+      'la puedo pasar para mañana?',
+      [{ role: RoleEnum.ASSISTANT, content: 'Tu reserva fue afectada por un cierre.' }],
+    ]);
+    expect(routerMock.route.mock.calls[0]).toEqual([
+      {
+        intent: Intention.UPDATE,
+        currentDate: null,
+        currentTime: null,
+        currentName: null,
+        currentPhone: null,
+        newDate: 'viernes 17 de abril 2026 17/04/2026',
+        newTime: '21:00',
+        newName: null,
+        newQuantity: null,
+        useCurrentPhone: null,
+      },
+      simplifiedPayloadMock,
+    ]);
+  });
+
+  it('should prefill cancel state when an affected reservation reply asks to cancel', async () => {
+    cacheServiceMock.getAffectedReservationState.mockResolvedValue(affectedReservationStateMock);
+    cacheServiceMock.getHistory.mockResolvedValue([
+      { role: RoleEnum.ASSISTANT, content: 'Tu reserva fue afectada por un cierre.' },
+    ]);
+    aiServiceMock.interactWithAi.mockResolvedValue({ intent: Intention.CANCEL });
+    routerMock.route.mockResolvedValue({ reply: 'Reserva cancelada' });
+
+    await expect(
+      service.conversationOrchestrator('cancelala', simplifiedPayloadMock),
+    ).resolves.toBe('Reserva cancelada');
+
+    expect(cacheServiceMock.updateCancelState.mock.calls[0]).toEqual([
+      simplifiedPayloadMock.waId,
+      {
+        name: 'Juan Perez',
+        phone: '5491122334455',
+        date: 'jueves 16 de abril 2026 16/04/2026',
+        time: '21:00',
+      },
+    ]);
+    expect(routerMock.route.mock.calls[0]).toEqual([
+      { intent: Intention.CANCEL },
+      simplifiedPayloadMock,
     ]);
   });
 

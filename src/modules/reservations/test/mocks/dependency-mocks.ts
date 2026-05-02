@@ -1,5 +1,6 @@
 import {
   AddMissingFieldOutput,
+  AffectedReservationState,
   DashboardReservation,
   DeleteReservation,
   Intention,
@@ -61,6 +62,9 @@ export const createCacheServiceMock = () =>
       [string, Partial<UpdateReservationType>]
     >(),
     clearUpdateState: jest.fn<Promise<void>, [string]>(),
+    getAffectedReservationState: jest.fn<Promise<AffectedReservationState | null>, [string]>(),
+    setAffectedReservationState: jest.fn<Promise<void>, [string, AffectedReservationState]>(),
+    clearAffectedReservationState: jest.fn<Promise<void>, [string]>(),
   }) as unknown as jest.Mocked<CacheService>;
 
 export const createDatesServiceMock = () =>

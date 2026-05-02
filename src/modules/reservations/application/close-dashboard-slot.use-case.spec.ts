@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { ClosureNotificationQueueService } from 'src/modules/reservation-jobs/service/closure-notification-queue.service';
 import { CloseDashboardSlotUseCase } from './close-dashboard-slot.use-case';
 import { ReservationsDashboardReadPort } from '../ports/reservations-dashboard-read.port';
 
@@ -10,6 +11,9 @@ describe('CloseDashboardSlotUseCase', () => {
   const datesServiceMock = {
     resolveAgendaDateLabel: jest.fn(),
   } as unknown as jest.Mocked<DatesService>;
+  const closureNotificationQueueServiceMock = {
+    notifyClosure: jest.fn(),
+  } as unknown as jest.Mocked<ClosureNotificationQueueService>;
 
   beforeEach(() => {
     reservationsDashboardReadPort = {
@@ -23,7 +27,12 @@ describe('CloseDashboardSlotUseCase', () => {
       isDayClosed: jest.fn(),
     };
 
-    useCase = new CloseDashboardSlotUseCase(datesServiceMock, reservationsDashboardReadPort);
+    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({ queuedCount: 0 });
+    useCase = new CloseDashboardSlotUseCase(
+      datesServiceMock,
+      reservationsDashboardReadPort,
+      closureNotificationQueueServiceMock,
+    );
     process.env.RESERVATION_DURATION_MINUTES = '120';
   });
 
@@ -66,6 +75,7 @@ describe('CloseDashboardSlotUseCase', () => {
       toTime: '15:00',
       reason: 'Evento privado',
     });
+    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({ queuedCount: 1 });
 
     await expect(
       useCase.execute({
@@ -81,8 +91,29 @@ describe('CloseDashboardSlotUseCase', () => {
       isClosed: true,
       reason: 'Evento privado',
       existingReservationsCount: 1,
-      warning:
-        'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
+      notificationsQueuedCount: 1,
+      warning: null,
     });
+
+    expect(closureNotificationQueueServiceMock.notifyClosure.mock.calls[0]).toEqual([
+      {
+        closureType: 'slot',
+        date: '2026-04-16',
+        sheetDate: 'jueves 16 de abril 2026 16/04/2026',
+        fromTime: '12:00',
+        toTime: '15:00',
+        reason: 'Evento privado',
+        reservations: [
+          {
+            date: 'jueves 16 de abril 2026 16/04/2026',
+            time: '12:30',
+            name: 'Juan Perez',
+            phone: '54-9-1122334455',
+            service: 'Cena',
+            quantity: 4,
+          },
+        ],
+      },
+    ]);
   });
 });

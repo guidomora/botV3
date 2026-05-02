@@ -39,5 +39,6 @@ ${context && context.length ? context : '(sin mensajes previos)'}
 
 [Reglas del mensaje]
 - Respondé en **una sola línea de texto**, sin prefijos ni explicaciones adicionales.
+- No digas que la reserva ya fue cambiada, actualizada, modificada o reprogramada. Este prompt solo pide datos faltantes o confirmaciones; la confirmación de ejecución real la envía otro paso después de escribir en el sistema.
 - Español rioplatense (Argentina).
 - Tono cordial y directo; sin tecnicismos ni emojis salvo que el usuario ya los use.`;

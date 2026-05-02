@@ -24,10 +24,17 @@ import { OpenDashboardDayUseCase } from './application/open-dashboard-day.use-ca
 import { OpenDashboardSlotUseCase } from './application/open-dashboard-slot.use-case';
 import { reservationsProviders } from './reservations.providers';
 import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
+import { ReservationJobsModule } from '../reservation-jobs/reservation-jobs.module';
 
 @Module({
   controllers: [ReservationsController],
-  imports: [DatesModule, AiModule, GoogleSheetsModule.forRoot(), CacheContextModule],
+  imports: [
+    DatesModule,
+    AiModule,
+    GoogleSheetsModule.forRoot(),
+    CacheContextModule,
+    ReservationJobsModule,
+  ],
   providers: [
     ReservationsService,
     ReservationsDashboardService,

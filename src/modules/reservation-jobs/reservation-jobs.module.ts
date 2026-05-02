@@ -1,6 +1,12 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CacheContextModule } from '../cache-context/cache.module';
 import { DatesModule } from '../dates/dates.module';
+import twilioConfig from '../whatsapp/twilio.config';
+import { whatsappProviders } from '../whatsapp/whatsapp.providers';
+import { ClosureNotificationProcessorService } from './service/closure-notification-processor.service';
+import { ClosureNotificationQueueService } from './service/closure-notification-queue.service';
+import { ClosureNotificationWorkerService } from './service/closure-notification-worker.service';
 import { CreateReservationQueueService } from './service/create-reservation-queue.service';
 import { CreateReservationWorkerService } from './service/create-reservation-worker.service';
 import { DeleteReservationQueueService } from './service/delete-reservation-queue.service';
@@ -11,7 +17,7 @@ import { UpdateReservationWorkerService } from './service/update-reservation-wor
 
 @Global()
 @Module({
-  imports: [ConfigModule, DatesModule],
+  imports: [ConfigModule, ConfigModule.forFeature(twilioConfig), DatesModule, CacheContextModule],
   providers: [
     ReservationJobsRedisService,
     CreateReservationQueueService,
@@ -20,12 +26,17 @@ import { UpdateReservationWorkerService } from './service/update-reservation-wor
     DeleteReservationWorkerService,
     UpdateReservationQueueService,
     UpdateReservationWorkerService,
+    ClosureNotificationQueueService,
+    ClosureNotificationWorkerService,
+    ClosureNotificationProcessorService,
+    ...whatsappProviders,
   ],
   exports: [
     ReservationJobsRedisService,
     CreateReservationQueueService,
     DeleteReservationQueueService,
     UpdateReservationQueueService,
+    ClosureNotificationQueueService,
   ],
 })
 export class ReservationJobsModule {}
