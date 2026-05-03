@@ -13,6 +13,10 @@ export const interactPrompt = (context: string, activeIntent: string | null) =>
 [STATE]
 - ACTIVE_INTENT: ${activeIntent ?? 'none'}
 - Si ya hay un intent activo, respetalo, a menos que el usuario indique lo contrario.
+- Si el contexto muestra que el restaurante aviso un cierre que afecta una reserva existente:
+  - Si el usuario quiere mover, pasar, cambiar o reprogramar la reserva, devuelve intent "update".
+  - Si el usuario quiere cancelar, anular, dejar sin efecto, no ir o dice que no le interesa reprogramar, devuelve intent "cancel".
+  - Si el usuario responde de forma ambigua sin elegir una accion (por ejemplo "ok", "bueno", "uh que lastima", "dale"), devuelve intent "other".
 
 [Contexto de la conversación]
 A continuación tienes el CONTEXTO (últimos mensajes del hilo). Úsalo para completar piezas faltantes y mantener coherencia.

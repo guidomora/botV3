@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
-import { DashboardCloseSlotResult, DashboardCloseSlotType } from 'src/lib';
+import { DashboardCloseSlotResult, DashboardCloseSlotType, DashboardReservation } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { ClosureNotificationQueueService } from 'src/modules/reservation-jobs/service/closure-notification-queue.service';
 import { ReservationsDashboardReadPort } from '../ports/reservations-dashboard-read.port';
 import { RESERVATIONS_DASHBOARD_READ_PORT } from '../reservations.tokens';
 
@@ -12,6 +13,7 @@ export class CloseDashboardSlotUseCase {
     private readonly datesService: DatesService,
     @Inject(RESERVATIONS_DASHBOARD_READ_PORT)
     private readonly reservationsDashboardReadPort: ReservationsDashboardReadPort,
+    private readonly closureNotificationQueueService: ClosureNotificationQueueService,
   ) {}
 
   async execute(payload: DashboardCloseSlotType): Promise<DashboardCloseSlotResult> {
@@ -34,20 +36,23 @@ export class CloseDashboardSlotUseCase {
 
     const existingReservations =
       await this.reservationsDashboardReadPort.getReservationsByDate(agendaDateLabel);
-    const affectedReservationsCount = existingReservations.filter((reservation) =>
+    const affectedReservations = existingReservations.filter((reservation) =>
       this.hasReservationOverlap(
         reservation.time,
         normalizedPayload.fromTime,
         normalizedPayload.toTime,
       ),
-    ).length;
+    );
 
     const consolidatedSlot = await this.reservationsDashboardReadPort.closeSlot(normalizedPayload);
-
-    const warning =
-      affectedReservationsCount > 0
-        ? `La franja fue cerrada, pero todavia existen ${affectedReservationsCount} reservas activas afectadas que deberan ser gestionadas manualmente.`
-        : null;
+    const notificationResult = await this.enqueueClosureNotifications({
+      date: normalizedPayload.date,
+      sheetDate: agendaDateLabel,
+      fromTime: consolidatedSlot.fromTime,
+      toTime: consolidatedSlot.toTime,
+      reason: consolidatedSlot.reason,
+      reservations: affectedReservations,
+    });
 
     return {
       date: normalizedPayload.date,
@@ -55,8 +60,9 @@ export class CloseDashboardSlotUseCase {
       toTime: consolidatedSlot.toTime,
       isClosed: true,
       reason: consolidatedSlot.reason,
-      existingReservationsCount: affectedReservationsCount,
-      warning,
+      existingReservationsCount: affectedReservations.length,
+      notificationsQueuedCount: notificationResult.queuedCount,
+      warning: notificationResult.warning,
     };
   }
 
@@ -121,5 +127,43 @@ export class CloseDashboardSlotUseCase {
     }
 
     return hours * 60 + minutes;
+  }
+
+  private async enqueueClosureNotifications(params: {
+    date: string;
+    sheetDate: string;
+    fromTime: string;
+    toTime: string;
+    reason: string | null;
+    reservations: DashboardReservation[];
+  }): Promise<{ queuedCount: number; warning: string | null }> {
+    if (params.reservations.length === 0) {
+      return { queuedCount: 0, warning: null };
+    }
+
+    try {
+      const result = await this.closureNotificationQueueService.notifyClosure({
+        closureType: 'slot',
+        date: params.date,
+        sheetDate: params.sheetDate,
+        fromTime: params.fromTime,
+        toTime: params.toTime,
+        reason: params.reason,
+        reservations: params.reservations,
+      });
+
+      return { queuedCount: result.queuedCount, warning: null };
+    } catch (error) {
+      this.logger.error(
+        `No se pudieron encolar notificaciones de cierre de franja date=${params.date} from=${params.fromTime} to=${params.toTime}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      return {
+        queuedCount: 0,
+        warning:
+          'La franja fue cerrada, pero no se pudieron encolar las notificaciones a las reservas afectadas.',
+      };
+    }
   }
 }

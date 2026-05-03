@@ -63,6 +63,7 @@ export class DeleteReservationStrategy implements IntentionStrategyInterface {
     );
 
     await this.cacheService.clearHistory(waId, CacheTypeEnum.CANCEL);
+    await this.cacheService.clearAffectedReservationState(waId);
 
     await this.cacheService.markFlowCompleted(waId);
 

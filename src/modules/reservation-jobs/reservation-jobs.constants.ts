@@ -4,3 +4,5 @@ export const UPDATE_RESERVATION_QUEUE_NAME = 'reservation-jobs-update-reservatio
 export const UPDATE_RESERVATION_JOB_NAME = 'update-reservation';
 export const DELETE_RESERVATION_QUEUE_NAME = 'reservation-jobs-delete-reservation';
 export const DELETE_RESERVATION_JOB_NAME = 'delete-reservation';
+export const CLOSURE_NOTIFICATION_QUEUE_NAME = 'reservation-jobs-closure-notification';
+export const CLOSURE_NOTIFICATION_JOB_NAME = 'notify-closure-reservation';

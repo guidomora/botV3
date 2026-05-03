@@ -8,5 +8,6 @@ export interface DashboardCloseDayResult {
   isClosed: true;
   reason: string | null;
   existingReservationsCount: number;
+  notificationsQueuedCount: number;
   warning: string | null;
 }

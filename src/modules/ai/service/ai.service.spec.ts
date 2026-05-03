@@ -232,6 +232,9 @@ describe('AiService', () => {
     ).resolves.toBe('Confirmame la nueva cantidad.');
 
     expect(openAiConfigSpy).toHaveBeenCalledWith(expect.stringContaining('guido actualizado'));
+    expect(openAiConfigSpy).toHaveBeenCalledWith(
+      expect.stringContaining('No digas que la reserva ya fue cambiada'),
+    );
   });
 
   it('should build update reservation phone prompt', async () => {

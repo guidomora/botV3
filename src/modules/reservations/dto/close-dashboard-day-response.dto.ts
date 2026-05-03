@@ -26,10 +26,16 @@ export class CloseDashboardDayResponseDto {
   })
   existingReservationsCount!: number;
 
+  @ApiProperty({
+    description: 'Cantidad de notificaciones de cierre encoladas para reservas afectadas.',
+    example: 3,
+  })
+  notificationsQueuedCount!: number;
+
   @ApiPropertyOptional({
     description: 'Warning operativo para el dashboard cuando ya existian reservas.',
     example:
-      'La fecha fue cerrada, pero todavia existen 3 reservas activas que deberan ser gestionadas manualmente.',
+      'La fecha fue cerrada, pero no se pudieron encolar las notificaciones a las reservas afectadas.',
     nullable: true,
   })
   warning!: string | null;
