@@ -141,6 +141,7 @@ export class DeleteReservationUseCase {
       );
 
       const deletedClosedDays = await this.datesSheetPort.deleteClosedDaysBefore(deleteTillDate);
+      const deletedClosedSlots = await this.datesSheetPort.deleteClosedSlotsBefore(deleteTillDate);
 
       if (deletedClosedDays > 0) {
         this.logger.log(
@@ -150,6 +151,18 @@ export class DeleteReservationUseCase {
       } else {
         this.logger.log(
           `No hubo dias cerrados antiguos para eliminar hasta ${deleteTillDate}.`,
+          DeleteReservationUseCase.name,
+        );
+      }
+
+      if (deletedClosedSlots > 0) {
+        this.logger.log(
+          `Franjas cerradas antiguas eliminadas correctamente. Registros borrados=${deletedClosedSlots} hasta ${deleteTillDate}`,
+          DeleteReservationUseCase.name,
+        );
+      } else {
+        this.logger.log(
+          `No hubo franjas cerradas antiguas para eliminar hasta ${deleteTillDate}.`,
           DeleteReservationUseCase.name,
         );
       }

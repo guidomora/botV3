@@ -117,4 +117,8 @@ export class GoogleSheetsDatesSheetAdapter implements DatesSheetPort {
   deleteClosedDaysBefore(date: string): Promise<number> {
     return this.googleSheetsService.deleteClosedDaysBefore(date);
   }
+
+  deleteClosedSlotsBefore(date: string): Promise<number> {
+    return this.googleSheetsService.deleteClosedSlotsBefore(date);
+  }
 }

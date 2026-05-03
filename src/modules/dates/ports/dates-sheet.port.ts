@@ -41,4 +41,5 @@ export interface DatesSheetPort {
   deleteRow(rowIndex: number, sheetNumber: number): Promise<void>;
   deleteOldRows(rowStart: number, rowEnd: number, sheetIndex: number): Promise<void>;
   deleteClosedDaysBefore(date: string): Promise<number>;
+  deleteClosedSlotsBefore(date: string): Promise<number>;
 }

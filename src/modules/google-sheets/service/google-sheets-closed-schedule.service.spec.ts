@@ -76,4 +76,22 @@ describe('Given GoogleSheetsClosedScheduleService', () => {
       ['2026-04-10', '12:00', '14:00', 'Evento privado', '2026-04-01T10:00:00.000Z'],
     ]);
   });
+
+  it('Should delete only closed slots older than the cutoff in reverse row order', async () => {
+    repository.getDates.mockResolvedValueOnce([
+      ['date', 'fromTime', 'toTime', 'reason', 'createdAt'],
+      ['2026-04-01', '12:00', '14:00', 'Evento viejo', '2026-03-20T10:00:00.000Z'],
+      ['2026-04-15', '18:00', '20:00', 'Evento vigente', '2026-04-01T10:00:00.000Z'],
+      ['2026-03-28', '20:00', '22:00', 'Feriado', '2026-03-01T10:00:00.000Z'],
+    ]);
+
+    await expect(
+      service.deleteClosedSlotsBefore('viernes 10 de abril 2026 10/04/2026'),
+    ).resolves.toBe(2);
+
+    expect(repository.deleteRow.mock.calls).toEqual([
+      [4, 4],
+      [2, 4],
+    ]);
+  });
 });

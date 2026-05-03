@@ -1,10 +1,8 @@
 ### History
 
-### 02/05/26
+### 03/05/26
 
-- Refactored google sheets service part 2: logic for update, delete and add reservations
-- fix bug on the closed day: when there is more than one day, creates the day on another row
-- send message with the cause to users when a day is closed and they had a reservation
+- clean up closedSlots sheet
 - TODO:
 - what if sending the closed message fails? 
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
@@ -12,6 +10,12 @@
 - Token limits per request + reasonable max_tokens per response.
 - Terminate abusive conversations (e.g., flooding or repetitive prompts).
 - Alerts for anomalous spikes (RPS, 429s, 5xx errors, OpenAI cost per minute).
+
+### 02/05/26
+
+- Refactored google sheets service part 2: logic for update, delete and add reservations
+- fix bug on the closed day: when there is more than one day, creates the day on another row
+- send message with the cause to users when a day is closed and they had a reservation
 
 ### 29/04/26
 

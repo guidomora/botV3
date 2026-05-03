@@ -52,6 +52,7 @@ export const googleSheetsServiceMock = () => ({
   getDateIndexByDate: jest.fn(),
   deleteOldRows: jest.fn(),
   deleteClosedDaysBefore: jest.fn(),
+  deleteClosedSlotsBefore: jest.fn(),
   closeDay: jest.fn(),
   openDay: jest.fn(),
 });
