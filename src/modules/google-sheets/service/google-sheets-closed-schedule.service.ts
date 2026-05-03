@@ -325,4 +325,30 @@ export class GoogleSheetsClosedScheduleService {
 
     return rowsToDelete.length;
   }
+
+  async deleteClosedSlotsBefore(date: string): Promise<number> {
+    const normalizedCutoffDate = getNormalizedIsoDate(date);
+
+    if (!normalizedCutoffDate) {
+      throw new Error(`Formato de fecha invalido para limpiar ClosedSlots: ${date}`);
+    }
+
+    const closedSlots = await this.getClosedSlotEntries();
+    const rowsToDelete = closedSlots.filter((closedSlot) => closedSlot.date < normalizedCutoffDate);
+
+    if (rowsToDelete.length === 0) {
+      return 0;
+    }
+
+    for (const closedSlot of rowsToDelete.sort(
+      (left, right) => (right.rowIndex ?? 0) - (left.rowIndex ?? 0),
+    )) {
+      await this.googleSheetsRepository.deleteRow(
+        closedSlot.rowIndex ?? 0,
+        GoogleSheetsClosedScheduleService.CLOSED_SLOTS_SHEET_INDEX,
+      );
+    }
+
+    return rowsToDelete.length;
+  }
 }

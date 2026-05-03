@@ -151,6 +151,10 @@ export class GoogleSheetsService {
     return this.closedScheduleService.deleteClosedDaysBefore(date);
   }
 
+  async deleteClosedSlotsBefore(date: string): Promise<number> {
+    return this.closedScheduleService.deleteClosedSlotsBefore(date);
+  }
+
   async getDayAvailability(date: string): Promise<string[][]> {
     return this.availabilityService.getDayAvailability(date);
   }
