@@ -4,8 +4,8 @@
 
 - Refactored google sheets service part 2: logic for update, delete and add reservations
 - fix bug on the closed day: when there is more than one day, creates the day on another row
-- TODO:
 - send message with the cause to users when a day is closed and they had a reservation
+- TODO:
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.

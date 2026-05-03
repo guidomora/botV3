@@ -11,6 +11,7 @@ import {
   ConversationLifecycleState,
   FlowLifecycleStatus,
   CacheMonitorSnapshot,
+  ClosureNotificationState,
 } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
 import { ConversationExpirationNotifierService } from './conversation-expiration-notifier.service';
@@ -254,6 +255,27 @@ export class CacheService {
   async clearAffectedReservationState(waId: string): Promise<void> {
     await this.cacheManager.del(this.key(waId, CacheTypeEnum.AFFECTED_RESERVATION));
     this.logger.log(`Cache clear affected reservation state for ${waId}`, CacheService.name);
+  }
+
+  async getClosureNotificationState(
+    notificationKey: string,
+  ): Promise<ClosureNotificationState | null> {
+    const key = this.key(notificationKey, CacheTypeEnum.CLOSURE_NOTIFICATION);
+    const data = await this.cacheManager.get<ClosureNotificationState>(key);
+    this.logger.log(`Cache closure notification state for ${notificationKey}`, CacheService.name);
+    return data ?? null;
+  }
+
+  async setClosureNotificationState(
+    notificationKey: string,
+    state: ClosureNotificationState,
+  ): Promise<void> {
+    const key = this.key(notificationKey, CacheTypeEnum.CLOSURE_NOTIFICATION);
+    await this.cacheManager.set(key, state, this.HARD_LIMIT_TTL_MS);
+    this.logger.log(
+      `Cache set closure notification state for ${notificationKey}`,
+      CacheService.name,
+    );
   }
 
   async setUpdateState(waId: string, state: UpdateReservationType) {
