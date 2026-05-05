@@ -6,6 +6,7 @@ import {
   CLOSURE_NOTIFICATION_JOB_NAME,
   CLOSURE_NOTIFICATION_QUEUE_NAME,
 } from '../reservation-jobs.constants';
+import { ClosureNotificationOperationService } from './closure-notification-operation.service';
 import { ClosureNotificationProcessorService } from './closure-notification-processor.service';
 import { ReservationJobsRedisService } from './reservation-jobs-redis.service';
 
@@ -17,6 +18,7 @@ export class ClosureNotificationWorkerService implements OnModuleInit, OnModuleD
 
   constructor(
     private readonly processorService: ClosureNotificationProcessorService,
+    private readonly operationService: ClosureNotificationOperationService,
     private readonly reservationJobsRedisService: ReservationJobsRedisService,
   ) {}
 
@@ -40,7 +42,24 @@ export class ClosureNotificationWorkerService implements OnModuleInit, OnModuleD
           `Procesando job closure-notification id=${job.id ?? 'unknown'} phone=${job.data.reservation.phone} date=${job.data.sheetDate} time=${job.data.reservation.time}`,
         );
 
-        await this.processorService.notifyReservation(job.data);
+        try {
+          await this.processorService.notifyReservation(job.data);
+          await this.operationService.markNotificationSent(job.data.operationId);
+        } catch (error) {
+          const maxAttempts = job.opts.attempts ?? 1;
+          const currentAttempt = job.attemptsMade + 1;
+
+          if (currentAttempt >= maxAttempts) {
+            await this.operationService.markNotificationFailed(job.data.operationId, {
+              name: job.data.reservation.name,
+              phone: job.data.reservation.phone.replace(/\D+/g, ''),
+              date: job.data.reservation.date,
+              time: job.data.reservation.time,
+            });
+          }
+
+          throw error;
+        }
       },
       {
         connection: this.workerConnection,

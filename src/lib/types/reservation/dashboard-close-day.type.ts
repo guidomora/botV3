@@ -9,5 +9,6 @@ export interface DashboardCloseDayResult {
   reason: string | null;
   existingReservationsCount: number;
   notificationsQueuedCount: number;
+  closureOperationId: string | null;
   warning: string | null;
 }

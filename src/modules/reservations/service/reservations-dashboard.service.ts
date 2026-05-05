@@ -4,6 +4,7 @@ import {
   DashboardCreateReservationType,
   DashboardAvailableDates,
   DashboardCloseDayResult,
+  DashboardClosureNotificationFailuresResult,
   DashboardCloseDayType,
   DashboardCloseSlotResult,
   DashboardCloseSlotType,
@@ -27,6 +28,7 @@ import { CloseDashboardDayUseCase } from '../application/close-dashboard-day.use
 import { CloseDashboardSlotUseCase } from '../application/close-dashboard-slot.use-case';
 import { OpenDashboardDayUseCase } from '../application/open-dashboard-day.use-case';
 import { OpenDashboardSlotUseCase } from '../application/open-dashboard-slot.use-case';
+import { GetClosureNotificationFailuresUseCase } from '../application/get-closure-notification-failures.use-case';
 
 @Injectable()
 export class ReservationsDashboardService {
@@ -39,6 +41,7 @@ export class ReservationsDashboardService {
     private readonly updateDashboardReservationUseCase: UpdateDashboardReservationUseCase,
     private readonly closeDashboardDayUseCase: CloseDashboardDayUseCase,
     private readonly closeDashboardSlotUseCase: CloseDashboardSlotUseCase,
+    private readonly getClosureNotificationFailuresUseCase: GetClosureNotificationFailuresUseCase,
     private readonly openDashboardDayUseCase: OpenDashboardDayUseCase,
     private readonly openDashboardSlotUseCase: OpenDashboardSlotUseCase,
   ) {}
@@ -79,6 +82,12 @@ export class ReservationsDashboardService {
 
   async closeSlot(payload: DashboardCloseSlotType): Promise<DashboardCloseSlotResult> {
     return this.closeDashboardSlotUseCase.execute(payload);
+  }
+
+  async getClosureNotificationFailures(
+    operationId: string,
+  ): Promise<DashboardClosureNotificationFailuresResult> {
+    return this.getClosureNotificationFailuresUseCase.execute(operationId);
   }
 
   async openDay(date: string): Promise<DashboardOpenDayResult> {

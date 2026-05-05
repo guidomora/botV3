@@ -29,6 +29,7 @@ describe('CloseDashboardDayUseCase', () => {
 
     closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({
       queuedCount: 0,
+      closureOperationId: null,
     });
 
     useCase = new CloseDashboardDayUseCase(
@@ -46,7 +47,10 @@ describe('CloseDashboardDayUseCase', () => {
 
   it('should close the day and report existing reservations', async () => {
     datesServiceMock.resolveAgendaDateLabel.mockResolvedValue('jueves 16 de abril 2026 16/04/2026');
-    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({ queuedCount: 1 });
+    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({
+      queuedCount: 1,
+      closureOperationId: 'op-123',
+    });
     reservationsDashboardReadPort.getReservationsByDate.mockResolvedValue([
       {
         date: 'jueves 16 de abril 2026 16/04/2026',
@@ -66,6 +70,7 @@ describe('CloseDashboardDayUseCase', () => {
       reason: 'Cerrado por mantenimiento',
       existingReservationsCount: 1,
       notificationsQueuedCount: 1,
+      closureOperationId: 'op-123',
       warning: null,
     });
 

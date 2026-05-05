@@ -5,6 +5,7 @@ import {
   RoleEnum,
   type AffectedReservationState,
   type ChatMessage,
+  type ClosureNotificationOperationState,
   type ClosureNotificationState,
   type DeleteReservation,
   type UpdateReservationType,
@@ -24,6 +25,7 @@ describe('CacheService', () => {
   const updateKey = `${CacheTypeEnum.UPDATE}${waId}`;
   const affectedReservationKey = `${CacheTypeEnum.AFFECTED_RESERVATION}${waId}`;
   const closureNotificationKey = `${CacheTypeEnum.CLOSURE_NOTIFICATION}day:2026-04-16:day:day:jueves-16-de-abril-2026-16-04-2026:21-00:${waId}`;
+  const closureNotificationOperationKey = `${CacheTypeEnum.CLOSURE_NOTIFICATION_OPERATION}op-123`;
   const now = 1_700_000_000_000;
 
   let service: CacheService;
@@ -191,6 +193,23 @@ describe('CacheService', () => {
       notificationState,
     );
     expect(cacheManager.store.get(closureNotificationKey)?.ttl).toBe(6 * 60 * 60 * 1000);
+  });
+
+  it('should store closure notification operation state using hard limit ttl', async () => {
+    const operationState = {
+      operationId: 'op-123',
+      isCompleted: false,
+      totalNotifications: 2,
+      processedNotifications: 1,
+      failedNotifications: [],
+    } satisfies ClosureNotificationOperationState;
+
+    await service.setClosureNotificationOperationState('op-123', operationState);
+
+    await expect(service.getClosureNotificationOperationState('op-123')).resolves.toEqual(
+      operationState,
+    );
+    expect(cacheManager.store.get(closureNotificationOperationKey)?.ttl).toBe(6 * 60 * 60 * 1000);
   });
 
   it('should clear cached slices individually', async () => {

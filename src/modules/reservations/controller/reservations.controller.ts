@@ -42,6 +42,8 @@ import { CloseDashboardDayDto } from '../dto/close-dashboard-day.dto';
 import { CloseDashboardDayResponseDto } from '../dto/close-dashboard-day-response.dto';
 import { CloseDashboardSlotDto } from '../dto/close-dashboard-slot.dto';
 import { CloseDashboardSlotResponseDto } from '../dto/close-dashboard-slot-response.dto';
+import { ClosureNotificationFailuresResponseDto } from '../dto/closure-notification-failures-response.dto';
+import { ClosureNotificationOperationParamDto } from '../dto/closure-notification-operation-param.dto';
 import { OpenDashboardDayResponseDto } from '../dto/open-dashboard-day-response.dto';
 import { OpenDashboardSlotDto } from '../dto/open-dashboard-slot.dto';
 import { OpenDashboardSlotResponseDto } from '../dto/open-dashboard-slot-response.dto';
@@ -310,6 +312,34 @@ export class ReservationsController {
       toTime: body.toTime,
       reason: body.reason,
     });
+  }
+
+  @Get('closure-operations/:operationId/failures')
+  @ApiOperation({
+    summary: 'Consultar fallos de notificaciones de un cierre de agenda',
+    description:
+      'Devuelve si la operacion de cierre ya termino y, si corresponde, el listado de reservas cuyos envios de WhatsApp fallaron.',
+  })
+  @ApiParam({
+    name: 'operationId',
+    description: 'Identificador de la operacion de cierre a consultar.',
+    example: 'op_123',
+  })
+  @ApiOkResponse({
+    description: 'Estado de procesamiento y fallos de la operacion consultada.',
+    type: ClosureNotificationFailuresResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'No se encontro la operacion de cierre solicitada.',
+    type: HttpErrorResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'El request no incluyo un token interno valido.',
+  })
+  getClosureNotificationFailures(
+    @Param() params: ClosureNotificationOperationParamDto,
+  ): Promise<ClosureNotificationFailuresResponseDto> {
+    return this.reservationsDashboardService.getClosureNotificationFailures(params.operationId);
   }
 
   @Delete('closed-days/:date')

@@ -15,6 +15,8 @@ export * from './dashboard-delete-reservation.type';
 export * from './dashboard-create-reservation.type';
 export * from './dashboard-close-day.type';
 export * from './dashboard-close-slot.type';
+export * from './dashboard-closure-notification-failures.type';
 export * from './dashboard-open-day.type';
 export * from './dashboard-open-slot.type';
 export * from './affected-reservation-state.type';
+export * from './closure-notification-failure.type';

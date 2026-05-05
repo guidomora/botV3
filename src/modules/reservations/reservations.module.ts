@@ -20,6 +20,7 @@ import { UpdateDashboardReservationUseCase } from './application/update-dashboar
 import { CreateDashboardReservationUseCase } from './application/create-dashboard-reservation.use-case';
 import { CloseDashboardDayUseCase } from './application/close-dashboard-day.use-case';
 import { CloseDashboardSlotUseCase } from './application/close-dashboard-slot.use-case';
+import { GetClosureNotificationFailuresUseCase } from './application/get-closure-notification-failures.use-case';
 import { OpenDashboardDayUseCase } from './application/open-dashboard-day.use-case';
 import { OpenDashboardSlotUseCase } from './application/open-dashboard-slot.use-case';
 import { reservationsProviders } from './reservations.providers';
@@ -46,6 +47,7 @@ import { ReservationJobsModule } from '../reservation-jobs/reservation-jobs.modu
     UpdateDashboardReservationUseCase,
     CloseDashboardDayUseCase,
     CloseDashboardSlotUseCase,
+    GetClosureNotificationFailuresUseCase,
     OpenDashboardDayUseCase,
     OpenDashboardSlotUseCase,
     InternalApiTokenGuard,

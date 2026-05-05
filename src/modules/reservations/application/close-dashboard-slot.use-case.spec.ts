@@ -27,7 +27,10 @@ describe('CloseDashboardSlotUseCase', () => {
       isDayClosed: jest.fn(),
     };
 
-    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({ queuedCount: 0 });
+    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({
+      queuedCount: 0,
+      closureOperationId: null,
+    });
     useCase = new CloseDashboardSlotUseCase(
       datesServiceMock,
       reservationsDashboardReadPort,
@@ -75,7 +78,10 @@ describe('CloseDashboardSlotUseCase', () => {
       toTime: '15:00',
       reason: 'Evento privado',
     });
-    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({ queuedCount: 1 });
+    closureNotificationQueueServiceMock.notifyClosure.mockResolvedValue({
+      queuedCount: 1,
+      closureOperationId: 'op-456',
+    });
 
     await expect(
       useCase.execute({
@@ -92,6 +98,7 @@ describe('CloseDashboardSlotUseCase', () => {
       reason: 'Evento privado',
       existingReservationsCount: 1,
       notificationsQueuedCount: 1,
+      closureOperationId: 'op-456',
       warning: null,
     });
 

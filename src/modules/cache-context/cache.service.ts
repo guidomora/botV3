@@ -11,6 +11,7 @@ import {
   ConversationLifecycleState,
   FlowLifecycleStatus,
   CacheMonitorSnapshot,
+  ClosureNotificationOperationState,
   ClosureNotificationState,
 } from 'src/lib';
 import { DatesService } from 'src/modules/dates/service/dates.service';
@@ -274,6 +275,30 @@ export class CacheService {
     await this.cacheManager.set(key, state, this.HARD_LIMIT_TTL_MS);
     this.logger.log(
       `Cache set closure notification state for ${notificationKey}`,
+      CacheService.name,
+    );
+  }
+
+  async getClosureNotificationOperationState(
+    operationId: string,
+  ): Promise<ClosureNotificationOperationState | null> {
+    const key = this.key(operationId, CacheTypeEnum.CLOSURE_NOTIFICATION_OPERATION);
+    const data = await this.cacheManager.get<ClosureNotificationOperationState>(key);
+    this.logger.log(
+      `Cache closure notification operation state for ${operationId}`,
+      CacheService.name,
+    );
+    return data ?? null;
+  }
+
+  async setClosureNotificationOperationState(
+    operationId: string,
+    state: ClosureNotificationOperationState,
+  ): Promise<void> {
+    const key = this.key(operationId, CacheTypeEnum.CLOSURE_NOTIFICATION_OPERATION);
+    await this.cacheManager.set(key, state, this.HARD_LIMIT_TTL_MS);
+    this.logger.log(
+      `Cache set closure notification operation state for ${operationId}`,
       CacheService.name,
     );
   }

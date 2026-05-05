@@ -5,6 +5,7 @@ import { DatesModule } from '../dates/dates.module';
 import twilioConfig from '../whatsapp/twilio.config';
 import { whatsappProviders } from '../whatsapp/whatsapp.providers';
 import { ClosureNotificationProcessorService } from './service/closure-notification-processor.service';
+import { ClosureNotificationOperationService } from './service/closure-notification-operation.service';
 import { ClosureNotificationQueueService } from './service/closure-notification-queue.service';
 import { ClosureNotificationWorkerService } from './service/closure-notification-worker.service';
 import { CreateReservationQueueService } from './service/create-reservation-queue.service';
@@ -26,6 +27,7 @@ import { UpdateReservationWorkerService } from './service/update-reservation-wor
     DeleteReservationWorkerService,
     UpdateReservationQueueService,
     UpdateReservationWorkerService,
+    ClosureNotificationOperationService,
     ClosureNotificationQueueService,
     ClosureNotificationWorkerService,
     ClosureNotificationProcessorService,
@@ -36,6 +38,7 @@ import { UpdateReservationWorkerService } from './service/update-reservation-wor
     CreateReservationQueueService,
     DeleteReservationQueueService,
     UpdateReservationQueueService,
+    ClosureNotificationOperationService,
     ClosureNotificationQueueService,
   ],
 })

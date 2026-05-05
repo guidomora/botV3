@@ -31,6 +31,7 @@ describe('ClosureNotificationProcessorService', () => {
     );
 
     await service.notifyReservation({
+      operationId: 'op-123',
       closureType: 'day',
       date: '2026-04-16',
       sheetDate: 'jueves 16 de abril 2026 16/04/2026',
@@ -82,6 +83,7 @@ describe('ClosureNotificationProcessorService', () => {
     );
 
     await service.notifyReservation({
+      operationId: 'op-123',
       closureType: 'slot',
       date: '2026-04-16',
       sheetDate: 'jueves 16 de abril 2026 16/04/2026',
@@ -125,6 +127,7 @@ describe('ClosureNotificationProcessorService', () => {
       cacheServiceMock as never,
     );
     const jobData = {
+      operationId: 'op-123',
       closureType: 'day' as const,
       date: '2026-04-16',
       sheetDate: 'jueves 16 de abril 2026 16/04/2026',
