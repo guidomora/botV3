@@ -18,6 +18,7 @@ export enum CacheTypeEnum {
   AFFECTED_RESERVATION = 'affected-reservation',
   CLOSURE_NOTIFICATION = 'closure-notification',
   CLOSURE_NOTIFICATION_OPERATION = 'closure-notification-operation',
+  CLOSURE_NOTIFICATION_MESSAGE = 'closure-notification-message',
   DATA = 'data',
   OTHER = 'other',
 }

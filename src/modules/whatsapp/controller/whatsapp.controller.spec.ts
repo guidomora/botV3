@@ -5,13 +5,20 @@ import { WhatsAppIdempotencyGuard } from '../guards/whatsapp-idempotency.guard';
 import { WhatsAppRateLimitGuard } from '../guards/whatsapp-rate-limit.guard';
 import { WhatsAppService } from '../service/whatsapp.service';
 import { createWhatsAppServiceMock, simplifiedPayloadMock } from '../test/mocks/dependency-mocks';
+import { ClosureNotificationOperationService } from 'src/modules/reservation-jobs/service/closure-notification-operation.service';
 
 describe('WhatsAppController', () => {
   let controller: WhatsAppController;
   let whatsappServiceMock = createWhatsAppServiceMock();
+  let closureNotificationOperationServiceMock = {
+    handleMessageStatusCallback: jest.fn(),
+  };
 
   beforeEach(async () => {
     whatsappServiceMock = createWhatsAppServiceMock();
+    closureNotificationOperationServiceMock = {
+      handleMessageStatusCallback: jest.fn(),
+    };
 
     const moduleBuilder = Test.createTestingModule({
       controllers: [WhatsAppController],
@@ -19,6 +26,10 @@ describe('WhatsAppController', () => {
         {
           provide: WhatsAppService,
           useValue: whatsappServiceMock,
+        },
+        {
+          provide: ClosureNotificationOperationService,
+          useValue: closureNotificationOperationServiceMock,
         },
       ],
     });
@@ -141,5 +152,31 @@ describe('WhatsAppController', () => {
     ).resolves.toEqual({ ok: true });
 
     expect(whatsappServiceMock.handleInboundMessage.mock.calls).toHaveLength(0);
+  });
+
+  it('should delegate Twilio message status callbacks to closure notification operation service', async () => {
+    closureNotificationOperationServiceMock.handleMessageStatusCallback.mockResolvedValue(
+      undefined,
+    );
+
+    await expect(
+      controller.handleMessageStatusCallback({
+        MessageSid: 'SM123',
+        MessageStatus: 'failed',
+        ErrorCode: '63016',
+        ErrorMessage: 'Failed to send',
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(
+      closureNotificationOperationServiceMock.handleMessageStatusCallback.mock.calls[0],
+    ).toEqual([
+      {
+        MessageSid: 'SM123',
+        MessageStatus: 'failed',
+        ErrorCode: '63016',
+        ErrorMessage: 'Failed to send',
+      },
+    ]);
   });
 });

@@ -10,6 +10,7 @@ import { CloseDashboardDayUseCase } from '../application/close-dashboard-day.use
 import { CloseDashboardSlotUseCase } from '../application/close-dashboard-slot.use-case';
 import { OpenDashboardDayUseCase } from '../application/open-dashboard-day.use-case';
 import { OpenDashboardSlotUseCase } from '../application/open-dashboard-slot.use-case';
+import { GetClosureNotificationFailuresUseCase } from '../application/get-closure-notification-failures.use-case';
 
 describe('ReservationsDashboardService', () => {
   let service: ReservationsDashboardService;
@@ -21,6 +22,7 @@ describe('ReservationsDashboardService', () => {
   let updateDashboardReservationUseCase: jest.Mocked<UpdateDashboardReservationUseCase>;
   let closeDashboardDayUseCase: jest.Mocked<CloseDashboardDayUseCase>;
   let closeDashboardSlotUseCase: jest.Mocked<CloseDashboardSlotUseCase>;
+  let getClosureNotificationFailuresUseCase: jest.Mocked<GetClosureNotificationFailuresUseCase>;
   let openDashboardDayUseCase: jest.Mocked<OpenDashboardDayUseCase>;
   let openDashboardSlotUseCase: jest.Mocked<OpenDashboardSlotUseCase>;
 
@@ -57,6 +59,10 @@ describe('ReservationsDashboardService', () => {
       execute: jest.fn(),
     } as unknown as jest.Mocked<CloseDashboardSlotUseCase>;
 
+    getClosureNotificationFailuresUseCase = {
+      execute: jest.fn(),
+    } as unknown as jest.Mocked<GetClosureNotificationFailuresUseCase>;
+
     openDashboardDayUseCase = {
       execute: jest.fn(),
     } as unknown as jest.Mocked<OpenDashboardDayUseCase>;
@@ -74,6 +80,7 @@ describe('ReservationsDashboardService', () => {
       updateDashboardReservationUseCase,
       closeDashboardDayUseCase,
       closeDashboardSlotUseCase,
+      getClosureNotificationFailuresUseCase,
       openDashboardDayUseCase,
       openDashboardSlotUseCase,
     );
@@ -256,6 +263,7 @@ describe('ReservationsDashboardService', () => {
       reason: 'Cerrado por mantenimiento',
       existingReservationsCount: 2,
       notificationsQueuedCount: 2,
+      closureOperationId: 'op-123',
       warning: null,
     });
 
@@ -267,6 +275,7 @@ describe('ReservationsDashboardService', () => {
       reason: 'Cerrado por mantenimiento',
       existingReservationsCount: 2,
       notificationsQueuedCount: 2,
+      closureOperationId: 'op-123',
       warning: null,
     });
   });
@@ -280,6 +289,7 @@ describe('ReservationsDashboardService', () => {
       reason: 'Evento privado',
       existingReservationsCount: 1,
       notificationsQueuedCount: 1,
+      closureOperationId: 'op-456',
       warning: null,
     });
 
@@ -298,6 +308,7 @@ describe('ReservationsDashboardService', () => {
       reason: 'Evento privado',
       existingReservationsCount: 1,
       notificationsQueuedCount: 1,
+      closureOperationId: 'op-456',
       warning: null,
     });
   });

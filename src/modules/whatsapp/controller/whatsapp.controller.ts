@@ -13,8 +13,10 @@ import {
   HttpErrorResponseDto,
   OkResponseDto,
   SimplifiedTwilioWebhookPayload,
+  TwilioMessageStatusCallbackDto,
   TwilioWebhookPayloadDto,
 } from 'src/lib';
+import { ClosureNotificationOperationService } from 'src/modules/reservation-jobs/service/closure-notification-operation.service';
 import { UnsupportedMessage } from '../helpers/unsopported-message.helper';
 import { TwilioSignatureGuard } from '../guards/twilio-signature.guard';
 import { WhatsAppIdempotencyGuard } from '../guards/whatsapp-idempotency.guard';
@@ -24,7 +26,10 @@ import { WhatsAppService } from '../service/whatsapp.service';
 @Controller('communication')
 @ApiTags('Communication')
 export class WhatsAppController {
-  constructor(private readonly whatsappService: WhatsAppService) {}
+  constructor(
+    private readonly whatsappService: WhatsAppService,
+    private readonly closureNotificationOperationService: ClosureNotificationOperationService,
+  ) {}
 
   @Post('/queue')
   @UseGuards(TwilioSignatureGuard, WhatsAppIdempotencyGuard, WhatsAppRateLimitGuard)
@@ -83,6 +88,41 @@ export class WhatsAppController {
     if (response) {
       await this.whatsappService.handleInboundMessage(simplifiedPayload, response);
     }
+
+    return { ok: true };
+  }
+
+  @Post('/message-status')
+  @UseGuards(TwilioSignatureGuard)
+  @ApiOperation({
+    summary: 'Webhook de estado de mensajes enviados via Twilio',
+    description:
+      'Recibe callbacks de Twilio con cambios de estado de mensajes salientes y actualiza las operaciones de cierre asociadas.',
+  })
+  @ApiConsumes('application/x-www-form-urlencoded')
+  @ApiSecurity('twilio-signature')
+  @ApiHeader({
+    name: 'x-twilio-signature',
+    description: 'Firma enviada por Twilio para validar autenticidad del callback.',
+    required: true,
+  })
+  @ApiBody({
+    type: TwilioMessageStatusCallbackDto,
+    description: 'Payload de status callback enviado por Twilio para mensajes salientes.',
+  })
+  @ApiOkResponse({
+    description: 'El callback fue aceptado.',
+    type: OkResponseDto,
+  })
+  @ApiForbiddenResponse({
+    description: 'Firma ausente o invalida.',
+    type: HttpErrorResponseDto,
+  })
+  async handleMessageStatusCallback(@Body() payload: TwilioMessageStatusCallbackDto) {
+    console.log('Twilio message status callback payload', payload);
+    await this.closureNotificationOperationService.handleMessageStatusCallback({
+      ...payload,
+    });
 
     return { ok: true };
   }

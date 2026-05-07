@@ -303,6 +303,28 @@ export class CacheService {
     );
   }
 
+  async getClosureNotificationMessageOperationId(messageSid: string): Promise<string | null> {
+    const key = this.key(messageSid, CacheTypeEnum.CLOSURE_NOTIFICATION_MESSAGE);
+    const data = await this.cacheManager.get<string>(key);
+    this.logger.log(
+      `Cache closure notification message operation for ${messageSid}`,
+      CacheService.name,
+    );
+    return data ?? null;
+  }
+
+  async setClosureNotificationMessageOperationId(
+    messageSid: string,
+    operationId: string,
+  ): Promise<void> {
+    const key = this.key(messageSid, CacheTypeEnum.CLOSURE_NOTIFICATION_MESSAGE);
+    await this.cacheManager.set(key, operationId, this.HARD_LIMIT_TTL_MS);
+    this.logger.log(
+      `Cache set closure notification message operation for ${messageSid}`,
+      CacheService.name,
+    );
+  }
+
   async setUpdateState(waId: string, state: UpdateReservationType) {
     const key = this.key(waId, CacheTypeEnum.UPDATE);
     const ttl = await this.getHistoryTtlMs(waId);
