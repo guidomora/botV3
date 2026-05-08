@@ -27,6 +27,11 @@ describe('TwilioAdapter', () => {
   it('should send text using from number when messaging service sid is not configured', async () => {
     const twilioClientMock = createTwilioClientMock();
     twilioClientMock.messages.create.mockResolvedValue({ sid: 'SM123' });
+    configServiceMock = createConfigServiceMock({
+      'twilio.fromWhatsApp': 'whatsapp:+5491100000000',
+      'twilio.messagingServiceSid': undefined,
+      'twilio.statusCallbackUrl': 'https://bot.example.com/communication/message-status',
+    });
     const adapter = new TwilioAdapter(
       twilioClientMock as never,
       configServiceMock as unknown as ConfigService,
@@ -37,6 +42,7 @@ describe('TwilioAdapter', () => {
       body: 'Hola',
       to: 'whatsapp:5491112345678',
       from: 'whatsapp:+5491100000000',
+      statusCallback: 'https://bot.example.com/communication/message-status',
     });
   });
 

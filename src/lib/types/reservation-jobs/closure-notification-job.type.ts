@@ -1,6 +1,7 @@
 import { ClosureType, DashboardReservation } from '../reservation';
 
 export type ClosureNotificationJobData = {
+  operationId: string | null;
   closureType: ClosureType;
   date: string;
   sheetDate: string;
@@ -10,10 +11,14 @@ export type ClosureNotificationJobData = {
   reservation: DashboardReservation;
 };
 
-export type ClosureNotificationRequest = Omit<ClosureNotificationJobData, 'reservation'> & {
+export type ClosureNotificationRequest = Omit<
+  ClosureNotificationJobData,
+  'reservation' | 'operationId'
+> & {
   reservations: DashboardReservation[];
 };
 
 export type ClosureNotificationQueueResult = {
   queuedCount: number;
+  closureOperationId: string | null;
 };

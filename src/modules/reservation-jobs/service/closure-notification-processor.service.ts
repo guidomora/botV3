@@ -4,6 +4,7 @@ import { AffectedReservationState, ClosureNotificationJobData, RoleEnum } from '
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { TwilioPort } from 'src/modules/whatsapp/ports';
 import { TWILIO_PORT } from 'src/modules/whatsapp/whatsapp.tokens';
+import { ClosureNotificationOperationService } from './closure-notification-operation.service';
 
 @Injectable()
 export class ClosureNotificationProcessorService {
@@ -13,6 +14,7 @@ export class ClosureNotificationProcessorService {
     @Inject(TWILIO_PORT)
     private readonly twilioPort: TwilioPort,
     private readonly cacheService: CacheService,
+    private readonly operationService: ClosureNotificationOperationService,
   ) {}
 
   async notifyReservation(data: ClosureNotificationJobData): Promise<void> {
@@ -32,7 +34,12 @@ export class ClosureNotificationProcessorService {
     const sentAt = currentNotificationState?.sentAt ?? Date.now();
 
     if (!currentNotificationState?.sentAt) {
-      await this.twilioPort.sendText(waId, message);
+      const result = await this.twilioPort.sendText(waId, message);
+      await this.operationService.registerNotificationMessage(
+        data.operationId,
+        result.sid,
+        this.buildFailureEntry(data, waId),
+      );
       await this.cacheService.setClosureNotificationState(notificationKey, {
         status: 'sent',
         sentAt,
@@ -65,6 +72,15 @@ export class ClosureNotificationProcessorService {
       closureType: data.closureType,
       closureReason: data.reason ?? null,
       notifiedAt: Date.now(),
+    };
+  }
+
+  private buildFailureEntry(data: ClosureNotificationJobData, normalizedPhone: string) {
+    return {
+      name: data.reservation.name,
+      phone: normalizedPhone,
+      date: data.reservation.date,
+      time: data.reservation.time,
     };
   }
 

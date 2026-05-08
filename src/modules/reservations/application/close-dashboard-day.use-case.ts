@@ -53,6 +53,7 @@ export class CloseDashboardDayUseCase {
       reason: normalizedReason,
       existingReservationsCount,
       notificationsQueuedCount: notificationResult.queuedCount,
+      closureOperationId: notificationResult.closureOperationId,
       warning: notificationResult.warning,
     };
   }
@@ -62,9 +63,9 @@ export class CloseDashboardDayUseCase {
     sheetDate: string;
     reason: string | null;
     reservations: DashboardReservation[];
-  }): Promise<{ queuedCount: number; warning: string | null }> {
+  }): Promise<{ queuedCount: number; closureOperationId: string | null; warning: string | null }> {
     if (params.reservations.length === 0) {
-      return { queuedCount: 0, warning: null };
+      return { queuedCount: 0, closureOperationId: null, warning: null };
     }
 
     try {
@@ -76,7 +77,11 @@ export class CloseDashboardDayUseCase {
         reservations: params.reservations,
       });
 
-      return { queuedCount: result.queuedCount, warning: null };
+      return {
+        queuedCount: result.queuedCount,
+        closureOperationId: result.closureOperationId,
+        warning: null,
+      };
     } catch (error) {
       this.logger.error(
         `No se pudieron encolar notificaciones de cierre de dia date=${params.date}`,
@@ -85,6 +90,7 @@ export class CloseDashboardDayUseCase {
 
       return {
         queuedCount: 0,
+        closureOperationId: null,
         warning:
           'La fecha fue cerrada, pero no se pudieron encolar las notificaciones a las reservas afectadas.',
       };

@@ -4,7 +4,7 @@
 
 - clean up closedSlots sheet
 - TODO:
-- what if sending the closed message fails? 
+- what if sending the closed message fails?
 - IP-based rate limiting on public endpoints (global + stricter on /webhook). ----> add once is deployed
 - Request timeouts (avoid hanging requests).
 - Token limits per request + reasonable max_tokens per response.

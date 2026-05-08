@@ -45,6 +45,14 @@ export class CloseDashboardSlotResponseDto {
   notificationsQueuedCount!: number;
 
   @ApiPropertyOptional({
+    description:
+      'Identificador de la operacion asincronica de notificaciones para consultar fallos posteriores.',
+    example: 'op_456',
+    nullable: true,
+  })
+  closureOperationId!: string | null;
+
+  @ApiPropertyOptional({
     description: 'Warning operativo para el dashboard cuando ya existian reservas afectadas.',
     example:
       'La franja fue cerrada, pero no se pudieron encolar las notificaciones a las reservas afectadas.',

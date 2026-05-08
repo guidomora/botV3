@@ -24,6 +24,7 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     TWILIO_AUTH_TOKEN: requiredString,
     TWILIO_WHATSAPP_FROM: Joi.string().trim().optional(),
     TWILIO_MESSAGING_SERVICE_SID: Joi.string().trim().optional(),
+    TWILIO_STATUS_CALLBACK_URL: Joi.string().trim().uri().optional(),
 
     REDIS_URL: Joi.string().trim().optional(),
     REDIS_HOST: Joi.string().trim().optional(),

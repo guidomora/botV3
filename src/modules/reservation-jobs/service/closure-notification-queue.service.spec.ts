@@ -1,5 +1,6 @@
 import { Queue } from 'bullmq';
 import { CLOSURE_NOTIFICATION_QUEUE_NAME } from '../reservation-jobs.constants';
+import { ClosureNotificationOperationService } from './closure-notification-operation.service';
 import { ClosureNotificationProcessorService } from './closure-notification-processor.service';
 import { ClosureNotificationQueueService } from './closure-notification-queue.service';
 
@@ -14,6 +15,11 @@ describe('ClosureNotificationQueueService', () => {
   const processorServiceMock = {
     notifyReservation: jest.fn(),
   } as unknown as jest.Mocked<ClosureNotificationProcessorService>;
+  const operationServiceMock = {
+    createOperation: jest.fn(),
+    markNotificationSent: jest.fn(),
+    markNotificationFailed: jest.fn(),
+  } as unknown as jest.Mocked<ClosureNotificationOperationService>;
 
   const reservationJobsRedisServiceMock = {
     isEnabled: jest.fn(),
@@ -48,6 +54,15 @@ describe('ClosureNotificationQueueService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     reservationJobsRedisServiceMock.createBullMqConnection.mockReturnValue({});
+    operationServiceMock.createOperation.mockResolvedValue({
+      operationId: 'op-123',
+      isCompleted: false,
+      totalNotifications: 2,
+      processedNotifications: 0,
+      failedNotifications: [],
+    });
+    operationServiceMock.markNotificationSent.mockResolvedValue(null);
+    operationServiceMock.markNotificationFailed.mockResolvedValue(null);
   });
 
   it('should notify reservations directly when reservation-jobs is disabled', async () => {
@@ -55,14 +70,19 @@ describe('ClosureNotificationQueueService', () => {
     processorServiceMock.notifyReservation.mockResolvedValue(undefined);
     const service = new ClosureNotificationQueueService(
       processorServiceMock,
+      operationServiceMock,
       reservationJobsRedisServiceMock as never,
     );
 
-    await expect(service.notifyClosure(payload)).resolves.toEqual({ queuedCount: 2 });
+    await expect(service.notifyClosure(payload)).resolves.toEqual({
+      queuedCount: 2,
+      closureOperationId: 'op-123',
+    });
 
     expect(processorServiceMock.notifyReservation.mock.calls).toEqual([
       [
         {
+          operationId: 'op-123',
           closureType: 'day',
           date: '2026-04-16',
           sheetDate: 'jueves 16 de abril 2026 16/04/2026',
@@ -72,6 +92,7 @@ describe('ClosureNotificationQueueService', () => {
       ],
       [
         {
+          operationId: 'op-123',
           closureType: 'day',
           date: '2026-04-16',
           sheetDate: 'jueves 16 de abril 2026 16/04/2026',
@@ -97,6 +118,7 @@ describe('ClosureNotificationQueueService', () => {
 
     const service = new ClosureNotificationQueueService(
       processorServiceMock,
+      operationServiceMock,
       reservationJobsRedisServiceMock as never,
     );
 
@@ -117,12 +139,16 @@ describe('ClosureNotificationQueueService', () => {
       }),
     );
 
-    await expect(service.notifyClosure(payload)).resolves.toEqual({ queuedCount: 2 });
+    await expect(service.notifyClosure(payload)).resolves.toEqual({
+      queuedCount: 2,
+      closureOperationId: 'op-123',
+    });
 
     expect(addBulkMock).toHaveBeenCalledWith([
       {
         name: 'notify-closure-reservation',
         data: {
+          operationId: 'op-123',
           closureType: 'day',
           date: '2026-04-16',
           sheetDate: 'jueves 16 de abril 2026 16/04/2026',
@@ -133,6 +159,7 @@ describe('ClosureNotificationQueueService', () => {
       {
         name: 'notify-closure-reservation',
         data: {
+          operationId: 'op-123',
           closureType: 'day',
           date: '2026-04-16',
           sheetDate: 'jueves 16 de abril 2026 16/04/2026',

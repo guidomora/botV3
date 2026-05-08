@@ -33,6 +33,14 @@ export class CloseDashboardDayResponseDto {
   notificationsQueuedCount!: number;
 
   @ApiPropertyOptional({
+    description:
+      'Identificador de la operacion asincronica de notificaciones para consultar fallos posteriores.',
+    example: 'op_123',
+    nullable: true,
+  })
+  closureOperationId!: string | null;
+
+  @ApiPropertyOptional({
     description: 'Warning operativo para el dashboard cuando ya existian reservas.',
     example:
       'La fecha fue cerrada, pero no se pudieron encolar las notificaciones a las reservas afectadas.',

@@ -10,6 +10,7 @@ import {
   CLOSURE_NOTIFICATION_JOB_NAME,
   CLOSURE_NOTIFICATION_QUEUE_NAME,
 } from '../reservation-jobs.constants';
+import { ClosureNotificationOperationService } from './closure-notification-operation.service';
 import { ClosureNotificationProcessorService } from './closure-notification-processor.service';
 import { ReservationJobsRedisService } from './reservation-jobs-redis.service';
 
@@ -21,6 +22,7 @@ export class ClosureNotificationQueueService implements OnModuleInit, OnModuleDe
 
   constructor(
     private readonly processorService: ClosureNotificationProcessorService,
+    private readonly operationService: ClosureNotificationOperationService,
     private readonly reservationJobsRedisService: ReservationJobsRedisService,
   ) {}
 
@@ -59,7 +61,12 @@ export class ClosureNotificationQueueService implements OnModuleInit, OnModuleDe
   async notifyClosure(
     request: ClosureNotificationRequest,
   ): Promise<ClosureNotificationQueueResult> {
+    const operation =
+      request.reservations.length > 0
+        ? await this.operationService.createOperation(request.reservations.length)
+        : null;
     const jobs = request.reservations.map((reservation) => ({
+      operationId: operation?.operationId ?? null,
       closureType: request.closureType,
       date: request.date,
       sheetDate: request.sheetDate,
@@ -70,12 +77,25 @@ export class ClosureNotificationQueueService implements OnModuleInit, OnModuleDe
     }));
 
     if (jobs.length === 0) {
-      return { queuedCount: 0 };
+      return { queuedCount: 0, closureOperationId: null };
     }
 
     if (!this.reservationJobsRedisService.isEnabled()) {
-      await Promise.all(jobs.map((job) => this.processorService.notifyReservation(job)));
-      return { queuedCount: jobs.length };
+      for (const job of jobs) {
+        try {
+          await this.processorService.notifyReservation(job);
+          await this.operationService.markNotificationSent(job.operationId);
+        } catch {
+          await this.operationService.markNotificationFailed(job.operationId, {
+            name: job.reservation.name,
+            phone: job.reservation.phone.replace(/\D+/g, ''),
+            date: job.reservation.date,
+            time: job.reservation.time,
+          });
+        }
+      }
+
+      return { queuedCount: jobs.length, closureOperationId: operation?.operationId ?? null };
     }
 
     if (!this.queue) {
@@ -93,6 +113,6 @@ export class ClosureNotificationQueueService implements OnModuleInit, OnModuleDe
       `Jobs closure-notification encolados count=${jobs.length} date=${request.date}`,
     );
 
-    return { queuedCount: jobs.length };
+    return { queuedCount: jobs.length, closureOperationId: operation?.operationId ?? null };
   }
 }

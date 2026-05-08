@@ -15,6 +15,7 @@ describe('ReservationsController', () => {
     updateReservation: jest.fn(),
     closeDay: jest.fn(),
     closeSlot: jest.fn(),
+    getClosureNotificationFailures: jest.fn(),
     openDay: jest.fn(),
     openSlot: jest.fn(),
   };
@@ -223,6 +224,8 @@ describe('ReservationsController', () => {
       isClosed: true,
       reason: 'Cerrado por mantenimiento',
       existingReservationsCount: 1,
+      notificationsQueuedCount: 1,
+      closureOperationId: 'op-123',
       warning:
         'La fecha fue cerrada, pero todavia existen 1 reservas activas que deberan ser gestionadas manualmente.',
     });
@@ -239,6 +242,8 @@ describe('ReservationsController', () => {
       isClosed: true,
       reason: 'Cerrado por mantenimiento',
       existingReservationsCount: 1,
+      notificationsQueuedCount: 1,
+      closureOperationId: 'op-123',
       warning:
         'La fecha fue cerrada, pero todavia existen 1 reservas activas que deberan ser gestionadas manualmente.',
     });
@@ -252,6 +257,8 @@ describe('ReservationsController', () => {
       isClosed: true,
       reason: 'Evento privado',
       existingReservationsCount: 1,
+      notificationsQueuedCount: 1,
+      closureOperationId: 'op-456',
       warning:
         'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
     });
@@ -272,9 +279,45 @@ describe('ReservationsController', () => {
       isClosed: true,
       reason: 'Evento privado',
       existingReservationsCount: 1,
+      notificationsQueuedCount: 1,
+      closureOperationId: 'op-456',
       warning:
         'La franja fue cerrada, pero todavia existen 1 reservas activas afectadas que deberan ser gestionadas manualmente.',
     });
+  });
+
+  it('should delegate closure notification failures request to dashboard service', async () => {
+    reservationsDashboardServiceMock.getClosureNotificationFailures.mockResolvedValue({
+      isCompleted: true,
+      hasFailures: true,
+      failedNotifications: [
+        {
+          name: 'Juan Perez',
+          phone: '5491122334455',
+          date: 'jueves 16 de abril 2026 16/04/2026',
+          time: '21:00',
+        },
+      ],
+    });
+
+    await expect(
+      controller.getClosureNotificationFailures({ operationId: 'op-123' }),
+    ).resolves.toEqual({
+      isCompleted: true,
+      hasFailures: true,
+      failedNotifications: [
+        {
+          name: 'Juan Perez',
+          phone: '5491122334455',
+          date: 'jueves 16 de abril 2026 16/04/2026',
+          time: '21:00',
+        },
+      ],
+    });
+
+    expect(reservationsDashboardServiceMock.getClosureNotificationFailures).toHaveBeenCalledWith(
+      'op-123',
+    );
   });
 
   it('should delegate open day request to dashboard service', async () => {

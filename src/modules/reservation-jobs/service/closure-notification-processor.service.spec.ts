@@ -12,6 +12,9 @@ describe('ClosureNotificationProcessorService', () => {
     appendEntityMessage: jest.fn(),
     setAffectedReservationState: jest.fn(),
   };
+  const operationServiceMock = {
+    registerNotificationMessage: jest.fn(),
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -21,16 +24,18 @@ describe('ClosureNotificationProcessorService', () => {
 
   it('should send day closure message and persist neutral affected reservation context', async () => {
     jest.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
-    twilioPortMock.sendText.mockResolvedValue({});
+    twilioPortMock.sendText.mockResolvedValue({ sid: 'SM123' });
     cacheServiceMock.appendEntityMessage.mockResolvedValue(undefined);
     cacheServiceMock.setAffectedReservationState.mockResolvedValue(undefined);
 
     const service = new ClosureNotificationProcessorService(
       twilioPortMock as never,
       cacheServiceMock as never,
+      operationServiceMock as never,
     );
 
     await service.notifyReservation({
+      operationId: 'op-123',
       closureType: 'day',
       date: '2026-04-16',
       sheetDate: 'jueves 16 de abril 2026 16/04/2026',
@@ -70,6 +75,16 @@ describe('ClosureNotificationProcessorService', () => {
         notifiedAt: 1_700_000_000_000,
       },
     ]);
+    expect(operationServiceMock.registerNotificationMessage.mock.calls[0]).toEqual([
+      'op-123',
+      'SM123',
+      {
+        name: 'Juan Perez',
+        phone: '5491122334455',
+        date: 'jueves 16 de abril 2026 16/04/2026',
+        time: '21:00',
+      },
+    ]);
   });
 
   it('should send slot closure message without reason', async () => {
@@ -79,9 +94,11 @@ describe('ClosureNotificationProcessorService', () => {
     const service = new ClosureNotificationProcessorService(
       twilioPortMock as never,
       cacheServiceMock as never,
+      operationServiceMock as never,
     );
 
     await service.notifyReservation({
+      operationId: 'op-123',
       closureType: 'slot',
       date: '2026-04-16',
       sheetDate: 'jueves 16 de abril 2026 16/04/2026',
@@ -123,8 +140,10 @@ describe('ClosureNotificationProcessorService', () => {
     const service = new ClosureNotificationProcessorService(
       twilioPortMock as never,
       cacheServiceMock as never,
+      operationServiceMock as never,
     );
     const jobData = {
+      operationId: 'op-123',
       closureType: 'day' as const,
       date: '2026-04-16',
       sheetDate: 'jueves 16 de abril 2026 16/04/2026',

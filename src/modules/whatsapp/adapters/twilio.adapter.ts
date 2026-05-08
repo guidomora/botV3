@@ -8,6 +8,7 @@ import { TWILIO_CLIENT } from '../twilio.provider';
 export class TwilioAdapter {
   private readonly from: string;
   private readonly messagingServiceSid?: string;
+  private readonly statusCallbackUrl?: string;
   private readonly logger = new Logger(TwilioAdapter.name);
 
   constructor(
@@ -16,6 +17,7 @@ export class TwilioAdapter {
   ) {
     this.from = this.config.get<string>('twilio.fromWhatsApp')!;
     this.messagingServiceSid = this.config.get<string>('twilio.messagingServiceSid');
+    this.statusCallbackUrl = this.config.get<string>('twilio.statusCallbackUrl');
     if (!this.from && !this.messagingServiceSid) {
       // Podés permitir uno u otro; si usás Messaging Service, no necesitas "from"
       throw new Error('Configurar TWILIO_WHATSAPP_FROM o TWILIO_MESSAGING_SERVICE_SID');
@@ -28,6 +30,7 @@ export class TwilioAdapter {
     return this.twilio.messages.create({
       body,
       to,
+      ...(this.statusCallbackUrl ? { statusCallback: this.statusCallbackUrl } : {}),
       ...(this.messagingServiceSid
         ? { messagingServiceSid: this.messagingServiceSid }
         : { from: this.from }),

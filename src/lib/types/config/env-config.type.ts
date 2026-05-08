@@ -13,6 +13,7 @@ export type EnvConfig = {
   TWILIO_AUTH_TOKEN: string;
   TWILIO_WHATSAPP_FROM?: string;
   TWILIO_MESSAGING_SERVICE_SID?: string;
+  TWILIO_STATUS_CALLBACK_URL?: string;
   REDIS_URL?: string;
   REDIS_HOST?: string;
   REDIS_PORT?: number;
