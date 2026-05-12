@@ -13,10 +13,12 @@ describe('CacheMonitorService', () => {
   let loggerLogSpy: jest.SpyInstance;
   let memoryUsageSpy: jest.SpyInstance;
   let availableMemorySpy: jest.SpyInstance | null;
+  let originalAvailableMemoryDescriptor: PropertyDescriptor | undefined;
 
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
+    originalAvailableMemoryDescriptor = Object.getOwnPropertyDescriptor(process, 'availableMemory');
 
     cacheService = {
       getMonitoringSnapshot: jest.fn<CacheMonitorSnapshot, []>(() => ({
@@ -33,10 +35,15 @@ describe('CacheMonitorService', () => {
       external: 0,
       arrayBuffers: 0,
     });
-    availableMemorySpy =
-      typeof process.availableMemory === 'function'
-        ? jest.spyOn(process, 'availableMemory').mockReturnValue(availableBytes)
-        : null;
+    if (typeof process.availableMemory !== 'function') {
+      Object.defineProperty(process, 'availableMemory', {
+        configurable: true,
+        value: jest.fn(() => availableBytes),
+      });
+      availableMemorySpy = null;
+    } else {
+      availableMemorySpy = jest.spyOn(process, 'availableMemory').mockReturnValue(availableBytes);
+    }
 
     service = new CacheMonitorService(cacheService as unknown as CacheService);
   });
@@ -44,6 +51,11 @@ describe('CacheMonitorService', () => {
   afterEach(() => {
     service.onModuleDestroy();
     availableMemorySpy?.mockRestore();
+    if (originalAvailableMemoryDescriptor) {
+      Object.defineProperty(process, 'availableMemory', originalAvailableMemoryDescriptor);
+    } else {
+      Reflect.deleteProperty(process, 'availableMemory');
+    }
     memoryUsageSpy.mockRestore();
     loggerLogSpy.mockRestore();
     jest.runOnlyPendingTimers();
