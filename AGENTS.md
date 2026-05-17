@@ -4,7 +4,7 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 
 ### Idea del proyecto:
 
-- Toda la logica del proyecto y de negocio se encuentra en el README.md
+- El `README.md` contiene la vision general del proyecto. La documentacion tecnica, de negocio y de flujos vive en `docs/`.
 
 ## 1) Objetivo del repositorio
 
@@ -18,6 +18,25 @@ Guía operativa para agentes de IA trabajando en **botV3**.
 3. Hacer cambios pequeños y coherentes con el estilo existente.
 4. Ejecutar validaciones mínimas antes de cerrar (lint/tests según impacto).
 5. Dejar resumen claro de qué cambió y por qué.
+
+## 2.1) Documentacion de contexto
+
+Antes de tocar codigo, revisar la documentacion relevante segun el tipo de cambio:
+
+- Cambios de arquitectura, modulos, dependencias, estado, seguridad, guards, rate limits o integraciones:
+  - `docs/architecture/README.md`
+  - Documento especifico dentro de `docs/architecture/`
+- Cambios de reglas de negocio de reservas, disponibilidad, conversacion o agenda:
+  - `docs/domain/README.md`
+  - Documento especifico dentro de `docs/domain/`
+- Cambios sobre un flujo existente de punta a punta:
+  - `docs/workflows/README.md`
+  - Workflow especifico dentro de `docs/workflows/`
+- Cambios planificados o tareas en curso:
+  - `docs/exec-plans/active/`
+
+No duplicar reglas extensas en `AGENTS.md`; mantenerlas en `docs/`.
+Si se modifica comportamiento, actualizar tambien la documentacion correspondiente cuando aplique.
 
 ## 3) Convenciones de código
 
