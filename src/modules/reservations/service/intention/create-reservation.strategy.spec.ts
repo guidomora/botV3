@@ -4,12 +4,15 @@ import {
   createCacheServiceMock,
   createDatesServiceMock,
   createReservationQueueServiceMock as buildCreateReservationQueueServiceMock,
+  createUsageLimitServiceMock,
   simplifiedPayloadMock,
   temporalCompletedResponseMock,
   temporalFailedResponseMock,
   temporalInProgressResponseMock,
 } from '../../test/mocks/dependency-mocks';
 import { CreateReservationStrategy } from './create-reservation.strategy';
+import { UsageLimitService } from 'src/modules/billing-usage/service/usage-limit.service';
+import { CreateReservationQueueError } from 'src/modules/reservation-jobs/errors/create-reservation-queue.error';
 
 describe('CreateReservationStrategy', () => {
   let strategy: CreateReservationStrategy;
@@ -17,6 +20,9 @@ describe('CreateReservationStrategy', () => {
   let createReservationQueueServiceMock = buildCreateReservationQueueServiceMock();
   let aiServiceMock = createAiServiceMock();
   let cacheServiceMock = createCacheServiceMock();
+  let usageLimitServiceMock = createUsageLimitServiceMock();
+  const quotaBlockedReply =
+    'No puedo confirmar nuevas reservas por WhatsApp en este momento. Escribinos por contacto directo y te ayudamos manualmente.';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -24,11 +30,13 @@ describe('CreateReservationStrategy', () => {
     createReservationQueueServiceMock = buildCreateReservationQueueServiceMock();
     aiServiceMock = createAiServiceMock();
     cacheServiceMock = createCacheServiceMock();
+    usageLimitServiceMock = createUsageLimitServiceMock();
     strategy = new CreateReservationStrategy(
       datesServiceMock,
       createReservationQueueServiceMock,
       aiServiceMock,
       cacheServiceMock,
+      usageLimitServiceMock as unknown as UsageLimitService,
     );
   });
 
@@ -70,6 +78,7 @@ describe('CreateReservationStrategy', () => {
       RoleEnum.ASSISTANT,
       Intention.CREATE,
     ]);
+    expect(usageLimitServiceMock.consumeWhatsappReservationQuota.mock.calls).toHaveLength(0);
   });
 
   it('should pass early availability validation message when date must be chosen again', async () => {
@@ -99,6 +108,10 @@ describe('CreateReservationStrategy', () => {
     datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue(
       temporalCompletedResponseMock,
     );
+    usageLimitServiceMock.consumeWhatsappReservationQuota.mockResolvedValue({
+      allowed: true,
+      alreadyConsumed: false,
+    });
     createReservationQueueServiceMock.createReservation.mockResolvedValue({
       status: StatusEnum.SUCCESS,
       message: 'created',
@@ -128,12 +141,53 @@ describe('CreateReservationStrategy', () => {
     ]);
     expect(datesServiceMock.deleteTemporalReservationRow.mock.calls[0]).toEqual([9]);
     expect(cacheServiceMock.markFlowCompleted.mock.calls[0]).toEqual([simplifiedPayloadMock.waId]);
+    expect(usageLimitServiceMock.consumeWhatsappReservationQuota.mock.calls).toHaveLength(1);
+    expect(usageLimitServiceMock.consumeWhatsappReservationQuota.mock.calls[0]).toEqual([
+      {
+        accountId: 'default',
+        idempotencyKey: 'whatsapp-reservation:SM123',
+        metadata: {
+          waId: simplifiedPayloadMock.waId,
+          messageSid: simplifiedPayloadMock.messageSid,
+        },
+      },
+    ]);
+    expect(usageLimitServiceMock.releaseWhatsappReservationQuota.mock.calls).toHaveLength(0);
+  });
+
+  it('should block completed reservation when whatsapp quota is exhausted', async () => {
+    datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue(
+      temporalCompletedResponseMock,
+    );
+    usageLimitServiceMock.consumeWhatsappReservationQuota.mockResolvedValue({
+      allowed: false,
+      reason: 'limit_reached',
+    });
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+
+    await expect(
+      strategy.execute({ intent: Intention.CREATE, useCurrentPhone: true }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: quotaBlockedReply,
+    });
+
+    expect(createReservationQueueServiceMock.createReservation.mock.calls).toHaveLength(0);
+    expect(cacheServiceMock.appendEntityMessage.mock.calls).toContainEqual([
+      simplifiedPayloadMock.waId,
+      quotaBlockedReply,
+      RoleEnum.ASSISTANT,
+      Intention.CREATE,
+    ]);
   });
 
   it('should ask for date again when queued creation fails because date already passed', async () => {
     datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue(
       temporalCompletedResponseMock,
     );
+    usageLimitServiceMock.consumeWhatsappReservationQuota.mockResolvedValue({
+      allowed: true,
+      alreadyConsumed: false,
+    });
     createReservationQueueServiceMock.createReservation.mockResolvedValue({
       status: StatusEnum.DATE_ALREADY_PASSED,
       message: 'fecha pasada',
@@ -156,6 +210,12 @@ describe('CreateReservationStrategy', () => {
     expect(datesServiceMock.clearTemporalReservationFields.mock.calls[0]).toEqual([
       simplifiedPayloadMock.waId,
       ['date', 'time'],
+    ]);
+    expect(usageLimitServiceMock.releaseWhatsappReservationQuota.mock.calls).toContainEqual([
+      {
+        accountId: 'default',
+        idempotencyKey: 'whatsapp-reservation:SM123',
+      },
     ]);
   });
 
@@ -189,8 +249,16 @@ describe('CreateReservationStrategy', () => {
   it('should use generic failed reservation response for other failures', async () => {
     datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue({
       ...temporalFailedResponseMock,
-      errorStatus: StatusEnum.RESERVATION_ERROR,
+      status: TemporalStatusEnum.COMPLETED,
+    });
+    usageLimitServiceMock.consumeWhatsappReservationQuota.mockResolvedValue({
+      allowed: true,
+      alreadyConsumed: false,
+    });
+    createReservationQueueServiceMock.createReservation.mockResolvedValue({
+      status: StatusEnum.RESERVATION_ERROR,
       message: 'Hubo un error',
+      error: true,
     });
     cacheServiceMock.getHistory.mockResolvedValue([]);
     aiServiceMock.createReservationFailed.mockResolvedValue('No pude crear la reserva');
@@ -206,6 +274,117 @@ describe('CreateReservationStrategy', () => {
       [],
       'Hubo un error',
     ]);
+    expect(usageLimitServiceMock.releaseWhatsappReservationQuota.mock.calls).toContainEqual([
+      {
+        accountId: 'default',
+        idempotencyKey: 'whatsapp-reservation:SM123',
+      },
+    ]);
+  });
+
+  it('should keep quota consumed when queue rejects after enqueue state is unknown', async () => {
+    datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue({
+      ...temporalFailedResponseMock,
+      status: TemporalStatusEnum.COMPLETED,
+    });
+    usageLimitServiceMock.consumeWhatsappReservationQuota.mockResolvedValue({
+      allowed: true,
+      alreadyConsumed: false,
+    });
+    createReservationQueueServiceMock.createReservation.mockRejectedValue(
+      new CreateReservationQueueError('queue completion unavailable', true),
+    );
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    aiServiceMock.createReservationFailed.mockResolvedValue('No pude crear la reserva');
+
+    await expect(
+      strategy.execute({ intent: Intention.CREATE, useCurrentPhone: true }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: 'No pude crear la reserva',
+    });
+
+    expect(usageLimitServiceMock.releaseWhatsappReservationQuota.mock.calls).toHaveLength(0);
+    expect(aiServiceMock.createReservationFailed.mock.calls).toContainEqual([
+      temporalFailedResponseMock.reservationData,
+      [],
+      'queue completion unavailable',
+    ]);
+  });
+
+  it('should release quota when queue creation fails before enqueue', async () => {
+    datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue({
+      ...temporalFailedResponseMock,
+      status: TemporalStatusEnum.COMPLETED,
+    });
+    usageLimitServiceMock.consumeWhatsappReservationQuota.mockResolvedValue({
+      allowed: true,
+      alreadyConsumed: false,
+    });
+    createReservationQueueServiceMock.createReservation.mockRejectedValue(
+      new CreateReservationQueueError('queue unavailable', false),
+    );
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    aiServiceMock.createReservationFailed.mockResolvedValue('No pude crear la reserva');
+
+    await expect(
+      strategy.execute({ intent: Intention.CREATE, useCurrentPhone: true }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: 'No pude crear la reserva',
+    });
+
+    expect(usageLimitServiceMock.releaseWhatsappReservationQuota.mock.calls).toContainEqual([
+      {
+        accountId: 'default',
+        idempotencyKey: 'whatsapp-reservation:SM123',
+      },
+    ]);
+    expect(aiServiceMock.createReservationFailed.mock.calls).toContainEqual([
+      temporalFailedResponseMock.reservationData,
+      [],
+      'queue unavailable',
+    ]);
+  });
+
+  it('should log structured context when quota compensation fails after queue failure', async () => {
+    const loggerErrorSpy = jest.spyOn(strategy['logger'], 'error').mockImplementation();
+    datesServiceMock.createReservationWithMultipleMessages.mockResolvedValue(
+      temporalCompletedResponseMock,
+    );
+    usageLimitServiceMock.consumeWhatsappReservationQuota.mockResolvedValue({
+      allowed: true,
+      alreadyConsumed: false,
+    });
+    createReservationQueueServiceMock.createReservation.mockResolvedValue({
+      status: StatusEnum.RESERVATION_ERROR,
+      message: 'Hubo un error',
+      error: true,
+    });
+    usageLimitServiceMock.releaseWhatsappReservationQuota.mockRejectedValue(
+      new Error('db unavailable'),
+    );
+    cacheServiceMock.getHistory.mockResolvedValue([]);
+    aiServiceMock.createReservationFailed.mockResolvedValue('No pude crear la reserva');
+
+    await expect(
+      strategy.execute({ intent: Intention.CREATE, useCurrentPhone: true }, simplifiedPayloadMock),
+    ).resolves.toEqual({
+      reply: 'No pude crear la reserva',
+    });
+
+    expect(loggerErrorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Failed to release WhatsApp reservation quota after queue error',
+        accountId: 'default',
+        idempotencyKey: 'whatsapp-reservation:SM123',
+        waId: simplifiedPayloadMock.waId,
+        messageSid: simplifiedPayloadMock.messageSid,
+        phone: '5491112345678',
+        date: 'domingo 29 de marzo 2026 29/03/2026',
+        time: '21:00',
+        error: 'db unavailable',
+      }),
+    );
+    loggerErrorSpy.mockRestore();
   });
 
   it('should fallback on unexpected temporal status', async () => {

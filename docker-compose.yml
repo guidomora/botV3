@@ -1,0 +1,25 @@
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: botv3-redis
+    ports:
+      - '6379:6379'
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: botv3-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: botv3
+      POSTGRES_USER: botv3
+      POSTGRES_PASSWORD: botv3
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  redis-data:
+  postgres-data:

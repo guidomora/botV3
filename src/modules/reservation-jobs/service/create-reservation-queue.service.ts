@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { Queue, QueueEvents } from 'bullmq';
+import { Job, Queue, QueueEvents } from 'bullmq';
 import IORedis from 'ioredis';
 import {
   CreateReservationJobData,
@@ -12,6 +12,7 @@ import {
   CREATE_RESERVATION_JOB_NAME,
   CREATE_RESERVATION_QUEUE_NAME,
 } from '../reservation-jobs.constants';
+import { CreateReservationQueueError } from '../errors/create-reservation-queue.error';
 import { ReservationJobsRedisService } from './reservation-jobs-redis.service';
 
 @Injectable()
@@ -68,22 +69,43 @@ export class CreateReservationQueueService implements OnModuleInit, OnModuleDest
     options?: CreateReservationOptions,
   ): Promise<ServiceResponse> {
     if (!this.reservationJobsRedisService.isEnabled()) {
-      return this.datesService.createReservation(reservation, options);
+      try {
+        return await this.datesService.createReservation(reservation, options);
+      } catch (error) {
+        throw CreateReservationQueueError.from(error, false);
+      }
     }
 
     if (!this.queue || !this.queueEvents) {
-      throw new Error('La cola de create reservation no esta inicializada');
+      throw new CreateReservationQueueError(
+        'La cola de create reservation no esta inicializada',
+        false,
+      );
     }
 
-    const job = await this.queue.add(CREATE_RESERVATION_JOB_NAME, {
-      reservation,
-      options,
-    });
+    let job: Job<CreateReservationJobData, ServiceResponse>;
+
+    try {
+      job = await this.queue.add(CREATE_RESERVATION_JOB_NAME, {
+        reservation,
+        options,
+      });
+    } catch (error) {
+      throw CreateReservationQueueError.from(error, false);
+    }
+
     this.logger.log(
       `Job create-reservation encolado id=${job.id ?? 'unknown'} phone=${reservation.phone} date=${reservation.date} time=${reservation.time}`,
     );
 
-    const result = await job.waitUntilFinished(this.queueEvents, this.jobTimeoutMs);
+    let result: ServiceResponse;
+
+    try {
+      result = await job.waitUntilFinished(this.queueEvents, this.jobTimeoutMs);
+    } catch (error) {
+      throw CreateReservationQueueError.from(error, true);
+    }
+
     this.logger.log(
       `Job create-reservation finalizado id=${job.id ?? 'unknown'} status=${result.status} error=${result.error}`,
     );

@@ -21,6 +21,7 @@ import { UnsupportedMessage } from '../helpers/unsopported-message.helper';
 import { TwilioSignatureGuard } from '../guards/twilio-signature.guard';
 import { WhatsAppIdempotencyGuard } from '../guards/whatsapp-idempotency.guard';
 import { WhatsAppRateLimitGuard } from '../guards/whatsapp-rate-limit.guard';
+import { WhatsAppUsageLimitGuard } from '../guards/whatsapp-usage-limit.guard';
 import { WhatsAppService } from '../service/whatsapp.service';
 
 @Controller('communication')
@@ -32,7 +33,12 @@ export class WhatsAppController {
   ) {}
 
   @Post('/queue')
-  @UseGuards(TwilioSignatureGuard, WhatsAppIdempotencyGuard, WhatsAppRateLimitGuard)
+  @UseGuards(
+    TwilioSignatureGuard,
+    WhatsAppIdempotencyGuard,
+    WhatsAppUsageLimitGuard,
+    WhatsAppRateLimitGuard,
+  )
   @ApiOperation({
     summary: 'Webhook entrante de WhatsApp via Twilio',
     description:

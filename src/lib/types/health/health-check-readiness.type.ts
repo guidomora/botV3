@@ -16,6 +16,7 @@ export interface HealthCheckReadyResponse {
   checks: {
     config: HealthCheckDependencyStatus;
     googleSheets: HealthCheckDependencyStatus;
+    postgres: HealthCheckDependencyStatus;
     redis: HealthCheckDependencyStatus;
   };
 }

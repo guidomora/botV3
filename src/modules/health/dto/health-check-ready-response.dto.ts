@@ -16,6 +16,13 @@ class HealthCheckReadyChecksDto {
   googleSheets!: 'ok' | 'error' | 'disabled';
 
   @ApiProperty({
+    description: 'Estado de conectividad a PostgreSQL.',
+    enum: ['ok', 'error', 'disabled'],
+    example: 'ok',
+  })
+  postgres!: 'ok' | 'error' | 'disabled';
+
+  @ApiProperty({
     description:
       'Estado de Redis para reservation-jobs. Puede quedar disabled mientras la infraestructura no este habilitada.',
     enum: ['ok', 'error', 'disabled'],

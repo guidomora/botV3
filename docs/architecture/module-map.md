@@ -22,6 +22,8 @@ Modulos importados:
 - `WhatsAppModule`
 - `CacheContextModule`
 - `ReservationJobsModule`
+- `DatabaseModule`
+- `BillingUsageModule`
 - `HealthModule`
 
 ## WhatsAppModule
@@ -31,7 +33,8 @@ Archivo principal: `src/modules/whatsapp/whatsapp.module.ts`
 Responsabilidad:
 
 - Exponer los webhooks HTTP de Twilio.
-- Validar firma, idempotencia, rate limit y tamano maximo de request.
+- Validar firma, idempotencia, cupo mensual, rate limit y tamano maximo de request.
+- Cortar mensajes entrantes antes de OpenAI/orquestacion si el cupo mensual no permite continuar.
 - Agrupar mensajes entrantes enviados en rafaga.
 - Enviar respuestas salientes por WhatsApp.
 
@@ -44,6 +47,7 @@ Dependencias:
 
 - `ReservationsModule` para procesar mensajes conversacionales.
 - `ReservationJobsModule` para actualizar operaciones asociadas a callbacks de estado.
+- `BillingUsageModule` para validar cupo antes de procesar mensajes WhatsApp.
 - Configuracion de Twilio desde `twilio.config`.
 
 Archivos clave:
@@ -53,6 +57,7 @@ Archivos clave:
 - `src/modules/whatsapp/adapters/twilio.adapter.ts`
 - `src/modules/whatsapp/guards/twilio-signature.guard.ts`
 - `src/modules/whatsapp/guards/whatsapp-idempotency.guard.ts`
+- `src/modules/whatsapp/guards/whatsapp-usage-limit.guard.ts`
 - `src/modules/whatsapp/guards/whatsapp-rate-limit.guard.ts`
 - `src/modules/whatsapp/middlewares/request-size-limit.middleware.ts`
 
@@ -82,6 +87,7 @@ Dependencias:
 - `GoogleSheetsModule` para lectura/escritura de reservas y disponibilidad.
 - `CacheContextModule` para historial y estado temporal conversacional.
 - `ReservationJobsModule` para jobs vinculados a operaciones del dashboard.
+- `BillingUsageModule` para limitar nuevas reservas creadas desde WhatsApp.
 
 Archivos clave:
 
@@ -95,6 +101,50 @@ Archivos clave:
 - `src/modules/reservations/controller/reservations.controller.ts`
 - `src/modules/reservations/service/reservations-dashboard.service.ts`
 - `src/modules/reservations/application/*.use-case.ts`
+
+## DatabaseModule
+
+Archivo principal: `src/modules/database/database.module.ts`
+
+Responsabilidad:
+
+- Configurar la conexion TypeORM contra PostgreSQL.
+- Exponer `DatabaseHealthService` para readiness.
+- Centralizar infraestructura SQL usada por modulos de plataforma.
+
+Dependencias:
+
+- `ConfigModule`
+- Variables `DATABASE_*`
+
+Archivos clave:
+
+- `src/modules/database/database.module.ts`
+- `src/modules/database/service/database-health.service.ts`
+- `src/database/data-source.ts`
+- `src/database/migrations/*`
+
+## BillingUsageModule
+
+Archivo principal: `src/modules/billing-usage/billing-usage.module.ts`
+
+Responsabilidad:
+
+- Persistir cuenta, plan, suscripcion y consumo mensual.
+- Validar si el canal WhatsApp puede continuar procesando mensajes antes de generar costo conversacional.
+- Consumir cupo de reservas WhatsApp de forma atomica.
+- Liberar cupo si la creacion de reserva falla despues de reservar consumo.
+
+Dependencias:
+
+- PostgreSQL via TypeORM.
+
+Archivos clave:
+
+- `src/modules/billing-usage/service/usage-limit.service.ts`
+- `src/modules/billing-usage/service/billing-period.service.ts`
+- `src/modules/billing-usage/entities/*`
+- `src/lib/types/billing-usage/*`
 
 ## AiModule
 
@@ -254,6 +304,7 @@ Entradas principales:
 Dependencias:
 
 - `GoogleSheetsModule` para readiness.
+- `DatabaseModule` para readiness de PostgreSQL.
 - `ReservationJobsModule` cuando la configuracion requiere validar Redis.
 
 Archivos clave:

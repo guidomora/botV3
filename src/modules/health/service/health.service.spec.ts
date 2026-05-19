@@ -1,8 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
+import { DatabaseHealthService } from 'src/modules/database/service/database-health.service';
 import { ReservationJobsRedisService } from 'src/modules/reservation-jobs/service/reservation-jobs-redis.service';
-import { HealthService } from './health.service';
 import { createConfigServiceMock } from '../test/mocks/dependency-mocks';
+import { HealthService } from './health.service';
 
 jest.mock('googleapis', () => ({
   google: {
@@ -14,6 +15,7 @@ describe('HealthService', () => {
   let healthService: HealthService;
   let configService: ReturnType<typeof createConfigServiceMock>;
   let reservationJobsRedisService: jest.Mocked<ReservationJobsRedisService>;
+  let databaseHealthService: jest.Mocked<DatabaseHealthService>;
   const googleSheetsMock = google.sheets as unknown as jest.Mock;
 
   beforeEach(() => {
@@ -29,13 +31,17 @@ describe('HealthService', () => {
       getConfig: jest.fn(),
       getReadinessStatus: jest.fn().mockResolvedValue('disabled'),
     } as unknown as jest.Mocked<ReservationJobsRedisService>;
+    databaseHealthService = {
+      isHealthy: jest.fn().mockResolvedValue(true),
+    } as unknown as jest.Mocked<DatabaseHealthService>;
     healthService = new HealthService(
       configService as unknown as ConfigService,
       reservationJobsRedisService,
+      databaseHealthService,
     );
   });
 
-  it('debería devolver liveness ok', () => {
+  it('deberia devolver liveness ok', () => {
     const result = healthService.getLiveStatus();
 
     expect(result.status).toBe('ok');
@@ -43,7 +49,7 @@ describe('HealthService', () => {
     expect(result.timestamp).toBeDefined();
   });
 
-  it('debería devolver readiness ok cuando Google Sheets responde', async () => {
+  it('deberia devolver readiness ok cuando Google Sheets y PostgreSQL responden', async () => {
     const getMock = jest.fn().mockResolvedValue({ data: { spreadsheetId: 'spreadsheet-id' } });
     googleSheetsMock.mockReturnValue({
       spreadsheets: {
@@ -59,6 +65,7 @@ describe('HealthService', () => {
     expect(result.checks).toEqual({
       config: 'ok',
       googleSheets: 'ok',
+      postgres: 'ok',
       redis: 'disabled',
     });
     expect(getMock).toHaveBeenCalledWith({
@@ -68,7 +75,7 @@ describe('HealthService', () => {
     });
   });
 
-  it('debería devolver readiness error cuando falta configuración crítica', async () => {
+  it('deberia devolver readiness error cuando falta configuracion critica', async () => {
     configService = createConfigServiceMock({
       SPREADSHEET_ID: 'spreadsheet-id',
       GOOGLE_CLIENT_EMAIL: 'bot@example.com',
@@ -77,6 +84,7 @@ describe('HealthService', () => {
     healthService = new HealthService(
       configService as unknown as ConfigService,
       reservationJobsRedisService,
+      databaseHealthService,
     );
 
     const result = await healthService.getReadyStatus();
@@ -87,11 +95,13 @@ describe('HealthService', () => {
     expect(result.checks).toEqual({
       config: 'error',
       googleSheets: 'error',
+      postgres: 'error',
       redis: 'error',
     });
+    expect(databaseHealthService.isHealthy.mock.calls).toHaveLength(0);
   });
 
-  it('debería devolver readiness error cuando Google Sheets falla', async () => {
+  it('deberia devolver readiness error cuando Google Sheets falla', async () => {
     const getMock = jest.fn().mockRejectedValue(new Error('google-sheets-failed'));
     googleSheetsMock.mockReturnValue({
       spreadsheets: {
@@ -107,11 +117,34 @@ describe('HealthService', () => {
     expect(result.checks).toEqual({
       config: 'ok',
       googleSheets: 'error',
+      postgres: 'ok',
       redis: 'disabled',
     });
   });
 
-  it('debería devolver readiness error cuando Redis está habilitado y falla', async () => {
+  it('deberia devolver readiness error cuando PostgreSQL falla', async () => {
+    const getMock = jest.fn().mockResolvedValue({ data: { spreadsheetId: 'spreadsheet-id' } });
+    googleSheetsMock.mockReturnValue({
+      spreadsheets: {
+        get: getMock,
+      },
+    });
+    databaseHealthService.isHealthy.mockResolvedValue(false);
+
+    const result = await healthService.getReadyStatus();
+
+    expect(result.status).toBe('error');
+    expect(result.type).toBe('readiness');
+    expect(typeof result.timestamp).toBe('string');
+    expect(result.checks).toEqual({
+      config: 'ok',
+      googleSheets: 'ok',
+      postgres: 'error',
+      redis: 'disabled',
+    });
+  });
+
+  it('deberia devolver readiness error cuando Redis esta habilitado y falla', async () => {
     const getMock = jest.fn().mockResolvedValue({ data: { spreadsheetId: 'spreadsheet-id' } });
     googleSheetsMock.mockReturnValue({
       spreadsheets: {
@@ -129,6 +162,7 @@ describe('HealthService', () => {
     expect(result.checks).toEqual({
       config: 'ok',
       googleSheets: 'ok',
+      postgres: 'ok',
       redis: 'error',
     });
   });

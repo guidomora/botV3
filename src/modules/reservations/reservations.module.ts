@@ -26,6 +26,7 @@ import { OpenDashboardSlotUseCase } from './application/open-dashboard-slot.use-
 import { reservationsProviders } from './reservations.providers';
 import { InternalApiTokenGuard } from './guards/internal-api-token.guard';
 import { ReservationJobsModule } from '../reservation-jobs/reservation-jobs.module';
+import { BillingUsageModule } from '../billing-usage/billing-usage.module';
 
 @Module({
   controllers: [ReservationsController],
@@ -35,6 +36,7 @@ import { ReservationJobsModule } from '../reservation-jobs/reservation-jobs.modu
     GoogleSheetsModule.forRoot(),
     CacheContextModule,
     ReservationJobsModule,
+    BillingUsageModule,
   ],
   providers: [
     ReservationsService,
