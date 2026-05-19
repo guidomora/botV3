@@ -78,6 +78,11 @@ Objetivo principal:
   - Persistencia de reservas y disponibilidad en hojas.
   - Calculo de capacidad real por solapamiento temporal de reservas.
 
+- **Modulo Billing Usage**
+  - Persistencia en PostgreSQL de cuenta, plan, suscripcion y consumo mensual.
+  - Limite mensual de reservas creadas desde WhatsApp.
+  - Consumo atomico de cupo antes de confirmar nuevas reservas por WhatsApp.
+
 - **Modulo Cache Context**
   - Historial conversacional por usuario.
   - Estado temporal por flujo.
@@ -86,7 +91,7 @@ Objetivo principal:
 - **Modulo Health**
   - Endpoints protegidos `GET /bot/health/live` y `GET /bot/health/ready`.
   - Validacion de secret y rate limit para monitoreo operativo.
-  - Readiness extendido para validar Google Sheets y la conectividad base de Redis cuando `reservation-jobs` este habilitado.
+  - Readiness extendido para validar Google Sheets, PostgreSQL y la conectividad base de Redis cuando `reservation-jobs` este habilitado.
 
 ---
 
@@ -104,8 +109,9 @@ Objetivo principal:
    - guarda contexto en cache,
    - detecta intencion con IA,
    - ejecuta estrategia de negocio.
-6. La estrategia interactua con Google Sheets para leer o escribir reservas y disponibilidad.
-7. Se genera respuesta final y se envia por Twilio al usuario.
+6. Para nuevas reservas completas desde WhatsApp, se consume cupo mensual en PostgreSQL antes de encolar la creacion.
+7. La estrategia interactua con Google Sheets para leer o escribir reservas y disponibilidad.
+8. Se genera respuesta final y se envia por Twilio al usuario.
 
 Nota operativa:
 
@@ -279,6 +285,15 @@ Despues de cada alta, baja o modificacion:
 - `GOOGLE_CLIENT_EMAIL`
 - `GOOGLE_PRIVATE_KEY`
 
+### PostgreSQL / billing usage
+
+- `DATABASE_HOST` default `localhost`
+- `DATABASE_PORT` default `5432`
+- `DATABASE_USER` default `botv3`
+- `DATABASE_PASSWORD` default `botv3`
+- `DATABASE_NAME` default `botv3`
+- `DATABASE_SSL` default `false`
+
 ### Redis / reservation-jobs
 
 - `RESERVATION_JOBS_ENABLED` habilita la infraestructura base de Redis para futuros jobs de reservas.
@@ -324,13 +339,23 @@ Despues de cada alta, baja o modificacion:
 - `NODE_ENV`
 - `API_BASE_URL` base publica del despliegue incluyendo `/bot` para workflows operativos
 
-### Redis local
+### Dependencias locales
 
-- Para desarrollo local se incluye `docker-compose.redis.yml`.
-- Levantar Redis con `docker compose -f docker-compose.redis.yml up -d`.
+- Para desarrollo local se incluye `docker-compose.yml` con Redis y PostgreSQL.
+- Levantar dependencias locales con `docker compose up -d`.
+- `docker-compose.redis.yml` queda disponible temporalmente si solo se necesita Redis.
 - Ejemplo minimo local:
   - `RESERVATION_JOBS_ENABLED=true`
   - `REDIS_URL=redis://localhost:6379`
+  - `DATABASE_HOST=localhost`
+  - `DATABASE_PORT=5432`
+
+### Migraciones PostgreSQL
+
+- Generar migracion: `npm run migration:generate`
+- Ejecutar migraciones: `npm run migration:run`
+- Revertir ultima migracion: `npm run migration:revert`
+- La migracion inicial crea un `account` default, un plan `mvp_default` y una suscripcion activa de MVP para evitar que el flujo WhatsApp quede bloqueado en una DB nueva.
 
 ---
 

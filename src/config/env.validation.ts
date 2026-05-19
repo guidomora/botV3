@@ -38,6 +38,13 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     REDISUSER: Joi.string().trim().optional(),
     REDISPASSWORD: Joi.string().trim().optional(),
 
+    DATABASE_HOST: Joi.string().trim().default('localhost'),
+    DATABASE_PORT: positiveInteger.default(5432),
+    DATABASE_USER: Joi.string().trim().default('botv3'),
+    DATABASE_PASSWORD: Joi.string().trim().default('botv3'),
+    DATABASE_NAME: Joi.string().trim().default('botv3'),
+    DATABASE_SSL: booleanFlag.default(false),
+
     MAX_CAPACITY_TOTAL: positiveInteger.required(),
     ONLINE_BUFFER_PERCENT: Joi.number().min(0).max(99).default(0),
     RESERVATION_DURATION_MINUTES: positiveInteger.default(120),
@@ -77,7 +84,7 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
     const validationErrors = validationResult.error.details
       .map((detail) => detail.message)
       .join(', ');
-    throw new Error(`Configuración de entorno inválida: ${validationErrors}`);
+    throw new Error(`Configuracion de entorno invalida: ${validationErrors}`);
   }
 
   const validatedConfig = validationResult.value;
@@ -86,7 +93,7 @@ export function validateEnvironmentVariables(config: Record<string, unknown>): E
 
   if (validatedConfig.RESERVATION_JOBS_ENABLED && !hasRedisConnectionConfig) {
     throw new Error(
-      'Configuración de entorno inválida: si RESERVATION_JOBS_ENABLED=true, debés definir REDIS_URL o REDIS_HOST/REDISHOST.',
+      'Configuracion de entorno invalida: si RESERVATION_JOBS_ENABLED=true, debes definir REDIS_URL o REDIS_HOST/REDISHOST.',
     );
   }
 

@@ -15,7 +15,7 @@ describe('validateEnvironmentVariables', () => {
     INTERNAL_API_TOKEN: 'internal-secret',
   };
 
-  it('debería aceptar una configuración válida y aplicar defaults', () => {
+  it('deberia aceptar una configuracion valida y aplicar defaults', () => {
     const result = validateEnvironmentVariables(validConfig);
 
     expect(result.PORT).toBe(3000);
@@ -28,9 +28,15 @@ describe('validateEnvironmentVariables', () => {
     expect(result.HEALTH_CHECK_RATE_LIMIT_MAX_REQUESTS).toBe(15);
     expect(result.REDIS_DB).toBe(0);
     expect(result.REDIS_TLS_ENABLED).toBe(false);
+    expect(result.DATABASE_HOST).toBe('localhost');
+    expect(result.DATABASE_PORT).toBe(5432);
+    expect(result.DATABASE_USER).toBe('botv3');
+    expect(result.DATABASE_PASSWORD).toBe('botv3');
+    expect(result.DATABASE_NAME).toBe('botv3');
+    expect(result.DATABASE_SSL).toBe(false);
   });
 
-  it('debería fallar cuando falta una variable requerida', () => {
+  it('deberia fallar cuando falta una variable requerida', () => {
     expect(() => {
       validateEnvironmentVariables({
         ...validConfig,
@@ -39,7 +45,7 @@ describe('validateEnvironmentVariables', () => {
     }).toThrow(/OPEN_AI/);
   });
 
-  it('debería fallar cuando falta un origen de Twilio', () => {
+  it('deberia fallar cuando falta un origen de Twilio', () => {
     expect(() => {
       validateEnvironmentVariables({
         ...validConfig,
@@ -49,7 +55,7 @@ describe('validateEnvironmentVariables', () => {
     }).toThrow(/must contain at least one of/);
   });
 
-  it('debería fallar cuando una variable numérica es inválida', () => {
+  it('deberia fallar cuando una variable numerica es invalida', () => {
     expect(() => {
       validateEnvironmentVariables({
         ...validConfig,
@@ -58,7 +64,7 @@ describe('validateEnvironmentVariables', () => {
     }).toThrow(/MAX_CAPACITY_TOTAL/);
   });
 
-  it('debería aceptar configuración Redis cuando reservation-jobs está habilitado', () => {
+  it('deberia aceptar configuracion Redis cuando reservation-jobs esta habilitado', () => {
     const result = validateEnvironmentVariables({
       ...validConfig,
       RESERVATION_JOBS_ENABLED: 'true',
@@ -71,12 +77,36 @@ describe('validateEnvironmentVariables', () => {
     expect(result.REDIS_TLS_ENABLED).toBe(true);
   });
 
-  it('debería fallar cuando reservation-jobs está habilitado sin conexión Redis', () => {
+  it('deberia fallar cuando reservation-jobs esta habilitado sin conexion Redis', () => {
     expect(() => {
       validateEnvironmentVariables({
         ...validConfig,
         RESERVATION_JOBS_ENABLED: 'true',
       });
     }).toThrow(/REDIS_URL o REDIS_HOST\/REDISHOST/);
+  });
+
+  it('deberia fallar cuando DATABASE_PORT no es un entero positivo', () => {
+    expect(() => {
+      validateEnvironmentVariables({
+        ...validConfig,
+        DATABASE_PORT: '0',
+      });
+    }).toThrow(/DATABASE_PORT/);
+  });
+
+  it('deberia parsear DATABASE_SSL como flag booleana', () => {
+    const enabledResult = validateEnvironmentVariables({
+      ...validConfig,
+      DATABASE_SSL: 'true',
+    });
+
+    const disabledResult = validateEnvironmentVariables({
+      ...validConfig,
+      DATABASE_SSL: '0',
+    });
+
+    expect(enabledResult.DATABASE_SSL).toBe(true);
+    expect(disabledResult.DATABASE_SSL).toBe(false);
   });
 });

@@ -15,6 +15,7 @@ import {
 import { AiService } from 'src/modules/ai/service/ai.service';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { DatesService } from 'src/modules/dates/service/dates.service';
+import { UsageLimitService } from 'src/modules/billing-usage/service/usage-limit.service';
 import { IntentionsRouter } from '../../service/intention/intention.router';
 import { CreateReservationQueueService } from 'src/modules/reservation-jobs/service/create-reservation-queue.service';
 import { DeleteReservationQueueService } from 'src/modules/reservation-jobs/service/delete-reservation-queue.service';
@@ -86,6 +87,12 @@ export const createDatesServiceMock = () =>
       [UpdateReservationType]
     >(),
   }) as unknown as jest.Mocked<DatesService>;
+
+export const createUsageLimitServiceMock = () =>
+  ({
+    consumeWhatsappReservationQuota: jest.fn(),
+    releaseWhatsappReservationQuota: jest.fn(),
+  }) as unknown as jest.Mocked<UsageLimitService>;
 
 export const createReservationQueueServiceMock = () =>
   ({

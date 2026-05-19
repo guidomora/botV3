@@ -25,7 +25,10 @@
     "test:cache": "jest src/modules/cache-context --runInBand",
     "test:health": "jest src/modules/health --runInBand",
     "test:reservations": "jest src/modules/reservations --runInBand",
-    "test:whatsapp": "jest src/modules/whatsapp --runInBand"
+    "test:whatsapp": "jest src/modules/whatsapp --runInBand",
+    "migration:generate": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:generate src/database/migrations/Migration",
+    "migration:run": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:run",
+    "migration:revert": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:revert"
   },
   "dependencies": {
     "@googleapis/sheets": "^11.1.0",
@@ -36,6 +39,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/typeorm": "^11.0.1",
     "ajv": "^8.17.1",
     "bullmq": "^5.74.1",
     "cache-manager": "^7.2.4",
@@ -49,11 +53,13 @@
     "ioredis": "^5.10.1",
     "joi": "^17.13.3",
     "openai": "^6.22.0",
+    "pg": "^8.20.0",
     "redis": "^5.12.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1",
-    "twilio": "^5.9.0"
+    "twilio": "^5.9.0",
+    "typeorm": "^0.3.29"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -79,6 +85,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "typeorm-ts-node-commonjs": "^0.3.20",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },

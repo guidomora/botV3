@@ -25,6 +25,12 @@ export type EnvConfig = {
   REDISPORT?: number;
   REDISUSER?: string;
   REDISPASSWORD?: string;
+  DATABASE_HOST: string;
+  DATABASE_PORT: number;
+  DATABASE_USER: string;
+  DATABASE_PASSWORD: string;
+  DATABASE_NAME: string;
+  DATABASE_SSL: boolean;
   MAX_CAPACITY_TOTAL: number;
   ONLINE_BUFFER_PERCENT: number;
   RESERVATION_DURATION_MINUTES: number;

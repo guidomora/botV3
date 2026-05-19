@@ -1,5 +1,6 @@
 import { Queue, QueueEvents } from 'bullmq';
 import { CREATE_RESERVATION_QUEUE_NAME } from '../reservation-jobs.constants';
+import { CreateReservationQueueError } from '../errors/create-reservation-queue.error';
 import { CreateReservationQueueService } from './create-reservation-queue.service';
 
 jest.mock('bullmq', () => ({
@@ -135,5 +136,82 @@ describe('CreateReservationQueueService', () => {
         allowLargeReservations: true,
       },
     });
+  });
+  it('deberia marcar error como no encolado cuando queue.add falla', async () => {
+    const addMock = jest.fn().mockRejectedValue(new Error('redis unavailable'));
+    const waitUntilReadyMock = jest.fn().mockResolvedValue(undefined);
+    const queueEventsWaitUntilReadyMock = jest.fn().mockResolvedValue(undefined);
+
+    reservationJobsRedisServiceMock.isEnabled.mockReturnValue(true);
+    queueConstructorMock.mockImplementation(() => ({
+      add: addMock,
+      waitUntilReady: waitUntilReadyMock,
+      close: jest.fn(),
+    }));
+    queueEventsConstructorMock.mockImplementation(() => ({
+      waitUntilReady: queueEventsWaitUntilReadyMock,
+      close: jest.fn(),
+    }));
+
+    const service = new CreateReservationQueueService(
+      datesServiceMock as never,
+      reservationJobsRedisServiceMock as never,
+    );
+
+    await service.onModuleInit();
+
+    await expect(
+      service.createReservation({
+        date: 'domingo 29 de marzo 2026 29/03/2026',
+        time: '21:00',
+        name: 'guido',
+        phone: '5491112345678',
+        quantity: 2,
+      }),
+    ).rejects.toMatchObject({
+      enqueued: false,
+      message: 'redis unavailable',
+    } satisfies Partial<CreateReservationQueueError>);
+  });
+
+  it('deberia marcar error como encolado cuando falla waitUntilFinished', async () => {
+    const waitUntilFinishedMock = jest.fn().mockRejectedValue(new Error('queue timeout'));
+    const addMock = jest.fn().mockResolvedValue({
+      id: 'job-1',
+      waitUntilFinished: waitUntilFinishedMock,
+    });
+    const waitUntilReadyMock = jest.fn().mockResolvedValue(undefined);
+    const queueEventsWaitUntilReadyMock = jest.fn().mockResolvedValue(undefined);
+
+    reservationJobsRedisServiceMock.isEnabled.mockReturnValue(true);
+    queueConstructorMock.mockImplementation(() => ({
+      add: addMock,
+      waitUntilReady: waitUntilReadyMock,
+      close: jest.fn(),
+    }));
+    queueEventsConstructorMock.mockImplementation(() => ({
+      waitUntilReady: queueEventsWaitUntilReadyMock,
+      close: jest.fn(),
+    }));
+
+    const service = new CreateReservationQueueService(
+      datesServiceMock as never,
+      reservationJobsRedisServiceMock as never,
+    );
+
+    await service.onModuleInit();
+
+    await expect(
+      service.createReservation({
+        date: 'domingo 29 de marzo 2026 29/03/2026',
+        time: '21:00',
+        name: 'guido',
+        phone: '5491112345678',
+        quantity: 2,
+      }),
+    ).rejects.toMatchObject({
+      enqueued: true,
+      message: 'queue timeout',
+    } satisfies Partial<CreateReservationQueueError>);
   });
 });

@@ -3,9 +3,11 @@ import { WhatsAppController } from './whatsapp.controller';
 import { TwilioSignatureGuard } from '../guards/twilio-signature.guard';
 import { WhatsAppIdempotencyGuard } from '../guards/whatsapp-idempotency.guard';
 import { WhatsAppRateLimitGuard } from '../guards/whatsapp-rate-limit.guard';
+import { WhatsAppUsageLimitGuard } from '../guards/whatsapp-usage-limit.guard';
 import { WhatsAppService } from '../service/whatsapp.service';
 import { createWhatsAppServiceMock, simplifiedPayloadMock } from '../test/mocks/dependency-mocks';
 import { ClosureNotificationOperationService } from 'src/modules/reservation-jobs/service/closure-notification-operation.service';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 
 describe('WhatsAppController', () => {
   let controller: WhatsAppController;
@@ -43,10 +45,30 @@ describe('WhatsAppController', () => {
     moduleBuilder
       .overrideGuard(WhatsAppRateLimitGuard)
       .useValue({ canActivate: jest.fn(() => true) });
+    moduleBuilder
+      .overrideGuard(WhatsAppUsageLimitGuard)
+      .useValue({ canActivate: jest.fn(() => true) });
 
     const module: TestingModule = await moduleBuilder.compile();
 
     controller = module.get(WhatsAppController);
+  });
+
+  it('should run usage limit guard before processing inbound whatsapp messages', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(
+      WhatsAppController.prototype,
+      'handleMultipleMessages',
+    );
+    const handler = descriptor?.value as object | undefined;
+
+    expect(handler).toBeDefined();
+
+    expect(Reflect.getMetadata(GUARDS_METADATA, handler as object) as unknown).toEqual([
+      TwilioSignatureGuard,
+      WhatsAppIdempotencyGuard,
+      WhatsAppUsageLimitGuard,
+      WhatsAppRateLimitGuard,
+    ]);
   });
 
   it('should reply with unsupported message when payload contains media', async () => {

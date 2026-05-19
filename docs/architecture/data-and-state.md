@@ -7,6 +7,7 @@ Este documento resume donde vive la informacion del sistema y que reglas de cons
 El sistema combina estado persistente, estado temporal y estado de ejecucion:
 
 - Google Sheets: fuente operativa para reservas, disponibilidad, agenda y datos temporales.
+- PostgreSQL: fuente de plataforma para cuenta, plan, suscripcion y consumo mensual.
 - Cache conversacional: historial y estado de flujos por usuario.
 - Redis/jobs: colas y estado operacional para trabajos asincronicos.
 - Variables de entorno: configuracion de integraciones, seguridad, limites y reglas operativas.
@@ -55,6 +56,44 @@ Codigo relacionado:
 - `src/modules/dates/application/update-reservation.use-case.ts`
 - `src/modules/dates/application/delete-reservation.use-case.ts`
 - `src/modules/google-sheets/service/google-sheets-reservations.service.ts`
+
+## PostgreSQL
+
+PostgreSQL persiste datos de plataforma que no pertenecen a la agenda operativa en Google Sheets.
+
+Responsabilidades:
+
+- Persistir cuenta/restaurante, planes y suscripciones.
+- Registrar eventos de uso de reservas creadas desde WhatsApp.
+- Mantener el agregado mensual usado para validar limites.
+- Sostener el limite hard de nuevas reservas WhatsApp.
+
+Tablas principales:
+
+- `accounts`
+- `plans`
+- `subscriptions`
+- `usage_events`
+- `monthly_usage`
+
+Reglas:
+
+- `usage_events.idempotencyKey` evita consumir cupo dos veces por el mismo evento de negocio. En WhatsApp se deriva de `MessageSid`.
+- `monthly_usage` tiene una unica fila por `accountId + period`.
+- `WhatsAppUsageLimitGuard` corta mensajes entrantes antes de OpenAI/orquestacion si no hay cupo, no hay suscripcion activa, el plan esta inactivo o PostgreSQL no permite validar el estado.
+- El cupo se consume en una transaccion antes de encolar la creacion de reserva WhatsApp.
+- Si la cola falla antes de encolar o la creacion responde con error, se libera el cupo reservado.
+- Si el job ya fue encolado y falla la espera del resultado, el cupo queda reservado para evitar subcontabilizar una reserva con resultado desconocido.
+- La migracion inicial crea `account` default, plan `mvp_default` y suscripcion activa de MVP.
+
+Codigo relacionado:
+
+- `src/modules/database/database.module.ts`
+- `src/modules/database/service/database-health.service.ts`
+- `src/modules/billing-usage/billing-usage.module.ts`
+- `src/modules/billing-usage/service/usage-limit.service.ts`
+- `src/modules/billing-usage/entities/*`
+- `src/database/migrations/*`
 
 ## Disponibilidad
 
@@ -136,11 +175,17 @@ Rate limit:
 - Controla frecuencia por usuario de WhatsApp.
 - Tiene ventanas cortas, largas, bloqueo y cooldown de notificacion.
 
+Uso/billing:
+
+- Valida cupo mensual antes de ejecutar el controller y antes de llamar OpenAI.
+- Si no puede validar cupo de forma confiable, deriva a atencion manual y corta el request.
+
 Codigo relacionado:
 
 - `src/modules/whatsapp/service/idempotency.service.ts`
 - `src/modules/whatsapp/service/rate-limit.service.ts`
 - `src/modules/whatsapp/guards/whatsapp-idempotency.guard.ts`
+- `src/modules/whatsapp/guards/whatsapp-usage-limit.guard.ts`
 - `src/modules/whatsapp/guards/whatsapp-rate-limit.guard.ts`
 
 ## Redis y jobs
@@ -179,8 +224,10 @@ Categorias principales:
 - Google Sheets: credenciales e identificadores de hojas.
 - Seguridad interna: tokens, secrets y firmas HMAC.
 - Rate limit e idempotencia.
+- Cupo mensual WhatsApp previo al procesamiento conversacional.
 - Capacidad y reglas de reservas.
 - Redis/jobs.
+- PostgreSQL/billing usage.
 - Health checks.
 
 Codigo relacionado:
@@ -198,6 +245,8 @@ Cada cambio que afecte reservas debe preservar estas relaciones:
 - Un cierre de dia o franja debe bloquear nuevas reservas hacia ese rango.
 - Un flujo expirado debe limpiar estado conversacional y datos temporales asociados cuando aplique.
 - Un webhook duplicado no debe producir dos operaciones de negocio.
+- Un reintento de reserva WhatsApp no debe consumir cupo dos veces.
+- Una reserva WhatsApp fallida despues de reservar cupo debe liberar ese cupo o dejar contexto suficiente para reparacion.
 
 Antes de cambiar codigo que toque estado, revisar:
 

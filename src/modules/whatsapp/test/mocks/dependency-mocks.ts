@@ -2,6 +2,7 @@ import { Cache } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitDecision, SimplifiedTwilioWebhookPayload } from 'src/lib';
 import { ReservationsService } from 'src/modules/reservations/service/reservations.service';
+import { UsageLimitService } from 'src/modules/billing-usage/service/usage-limit.service';
 import { TwilioPort } from '../../ports';
 import { IdempotencyService } from '../../service/idempotency.service';
 import { RateLimitService } from '../../service/rate-limit.service';
@@ -74,6 +75,11 @@ export const createRateLimitServiceMock = () =>
   ({
     evaluateInboundMessage: jest.fn<Promise<RateLimitDecision>, [string]>(),
   }) as unknown as jest.Mocked<RateLimitService>;
+
+export const createUsageLimitServiceMock = () =>
+  ({
+    canCreateWhatsappReservation: jest.fn(),
+  }) as unknown as jest.Mocked<UsageLimitService>;
 
 export const simplifiedPayloadMock: SimplifiedTwilioWebhookPayload = {
   body: 'Hola',

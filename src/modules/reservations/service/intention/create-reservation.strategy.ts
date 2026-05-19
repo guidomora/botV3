@@ -14,6 +14,13 @@ import { AiService } from 'src/modules/ai/service/ai.service';
 import { Logger } from '@nestjs/common';
 import { CacheService } from 'src/modules/cache-context/cache.service';
 import { CreateReservationQueueService } from 'src/modules/reservation-jobs/service/create-reservation-queue.service';
+import { UsageLimitService } from 'src/modules/billing-usage/service/usage-limit.service';
+import {
+  DEFAULT_ACCOUNT_ID,
+  WHATSAPP_QUOTA_BLOCKED_REPLY,
+} from 'src/modules/billing-usage/constants/billing-usage.constants';
+import { CreateReservationQueueError } from 'src/modules/reservation-jobs/errors/create-reservation-queue.error';
+
 @Injectable()
 export class CreateReservationStrategy implements IntentionStrategyInterface {
   readonly intent = Intention.CREATE;
@@ -23,6 +30,7 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
     private readonly createReservationQueueService: CreateReservationQueueService,
     private readonly aiService: AiService,
     private readonly cacheService: CacheService,
+    private readonly usageLimitService: UsageLimitService,
   ) {}
 
   async execute(
@@ -64,15 +72,96 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
       }
 
       case TemporalStatusEnum.COMPLETED: {
-        const queueResponse = await this.createReservationQueueService.createReservation({
+        const idempotencyKey = `whatsapp-reservation:${simplifiedPayload.messageSid}`;
+        const usageContext = {
+          accountId: DEFAULT_ACCOUNT_ID,
+          idempotencyKey,
+          waId: data.waId,
+          messageSid: simplifiedPayload.messageSid,
+          phone: response.reservationData.phone,
           date: response.reservationData.date,
           time: response.reservationData.time,
-          name: response.reservationData.name!,
-          phone: response.reservationData.phone!,
-          quantity: Number(response.reservationData.quantity!),
+        };
+        const usageCheck = await this.usageLimitService.consumeWhatsappReservationQuota({
+          accountId: usageContext.accountId,
+          idempotencyKey: usageContext.idempotencyKey,
+          metadata: {
+            waId: usageContext.waId,
+            messageSid: usageContext.messageSid,
+          },
         });
 
+        if (!usageCheck.allowed) {
+          await this.cacheService.appendEntityMessage(
+            data.waId,
+            WHATSAPP_QUOTA_BLOCKED_REPLY,
+            RoleEnum.ASSISTANT,
+            Intention.CREATE,
+          );
+          return { reply: WHATSAPP_QUOTA_BLOCKED_REPLY };
+        }
+
+        let queueResponse: {
+          status: StatusEnum;
+          message: string;
+          error: boolean;
+        };
+
+        try {
+          queueResponse = await this.createReservationQueueService.createReservation({
+            date: response.reservationData.date,
+            time: response.reservationData.time,
+            name: response.reservationData.name!,
+            phone: response.reservationData.phone!,
+            quantity: Number(response.reservationData.quantity!),
+          });
+        } catch (error) {
+          if (this.shouldReleaseQuotaAfterQueueException(error, usageCheck.alreadyConsumed)) {
+            try {
+              await this.usageLimitService.releaseWhatsappReservationQuota({
+                accountId: usageContext.accountId,
+                idempotencyKey: usageContext.idempotencyKey,
+              });
+            } catch (releaseError) {
+              this.logger.error({
+                message: 'Failed to release WhatsApp reservation quota after queue error',
+                ...usageContext,
+                error: releaseError instanceof Error ? releaseError.message : String(releaseError),
+              });
+            }
+          }
+
+          const queueErrorMessage = error instanceof Error ? error.message : String(error);
+          const failedReply = await this.aiService.createReservationFailed(
+            response.reservationData,
+            history,
+            queueErrorMessage,
+          );
+          await this.cacheService.appendEntityMessage(
+            data.waId,
+            failedReply,
+            RoleEnum.ASSISTANT,
+            Intention.CREATE,
+          );
+          return { reply: failedReply };
+        }
+
         if (queueResponse.error) {
+          if (!usageCheck.alreadyConsumed) {
+            try {
+              await this.usageLimitService.releaseWhatsappReservationQuota({
+                accountId: usageContext.accountId,
+                idempotencyKey: usageContext.idempotencyKey,
+              });
+            } catch (error) {
+              this.logger.error({
+                message: 'Failed to release WhatsApp reservation quota after queue error',
+                ...usageContext,
+                error: error instanceof Error ? error.message : String(error),
+              });
+            }
+          }
+
           if (queueResponse.status === StatusEnum.DATE_ALREADY_PASSED) {
             const clearedReservation = await this.datesService.clearTemporalReservationFields(
               data.waId,
@@ -201,5 +290,13 @@ export class CreateReservationStrategy implements IntentionStrategyInterface {
           reply: 'Hubo un problema al procesar la reserva, por favor intentá nuevamente.',
         };
     }
+  }
+
+  private shouldReleaseQuotaAfterQueueException(error: unknown, alreadyConsumed: boolean): boolean {
+    if (alreadyConsumed) {
+      return false;
+    }
+
+    return error instanceof CreateReservationQueueError && !error.enqueued;
   }
 }
