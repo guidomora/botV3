@@ -16,6 +16,8 @@ import {
   createDatesServiceMock,
 } from './test/mocks/dependency-mocks';
 import { CacheService } from './cache.service';
+import { WhatsappAgentCacheService } from './whatsapp-agent-cache.service';
+import { ClosureNotificationCacheService } from './closure-notification-cache.service';
 
 describe('CacheService', () => {
   const waId = '5491112345678';
@@ -42,7 +44,13 @@ describe('CacheService', () => {
     datesService = createDatesServiceMock();
     expirationNotifier = createConversationExpirationNotifierMock();
 
-    service = new CacheService(cacheManager, datesService, expirationNotifier);
+    const whatsappAgentCacheService = new WhatsappAgentCacheService(
+      cacheManager,
+      datesService,
+      expirationNotifier,
+    );
+    const closureNotificationCacheService = new ClosureNotificationCacheService(cacheManager);
+    service = new CacheService(whatsappAgentCacheService, closureNotificationCacheService);
   });
 
   afterEach(() => {
